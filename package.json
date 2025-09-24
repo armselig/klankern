@@ -1,0 +1,10 @@
+{
+  "name": "vibe",
+  "version": "0.1.0",
+  "description": "i'm vibinn",
+  "scripts": {},
+  "keywords": [],
+  "author": "Hendrik Neumann <henne@armselig.net>",
+  "license": "UNLICENSED",
+  "packageManager": "pnpm@10.13.1"
+}
