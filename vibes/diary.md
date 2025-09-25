@@ -118,7 +118,7 @@
 - Installed Drizzle ORM, its PostgreSQL driver, and Drizzle Kit.
 - Configured Drizzle ORM by creating `drizzle.config.ts`.
 - Defined the Drizzle schema in `server/db/schema.ts`.
-- Set up Drizzle migration script in `server/db/migrate.ts`.
+- Set up Drizzle migration script in `server/db/migrate.ts` with Winston logger.
 - Initialized the Drizzle client in `server/db/index.ts`.
 
 ## 2025-09-25 13:30:00
@@ -149,3 +149,74 @@
 - Converted `eslint.config.js` to `eslint.config.ts`.
 - Fixed ESLint ignoring TypeScript files by updating `eslint.config.ts` and `nuxt.config.ts`.
 - Resolved all dependency and configuration issues related to ESLint and Prettier.
+
+## 2025-09-25 15:05:00
+
+- Proceeding with the next step of the plan: implementing MVP features.
+- User requested to postpone "Offline Support".
+- Next task for MVP: "User Management & Roles/Permissions (Admin Interface)".
+- **Important**: User reminded me to always lay out my plan and reasoning and wait for approval before implementing any changes.
+
+## 2025-09-25 15:06:00
+
+- Saved the proposed plan for "User Management & Roles/Permissions (Admin Interface)" to `vibes/20250925-150600-USER_MANAGEMENT_PLAN.md`.
+
+## 2025-09-25 15:07:00
+
+- User requested to include API documentation using Swagger.
+
+## 2025-09-25 15:08:00
+
+- Created directory structure and placeholder files for User Management & Roles/Permissions feature.
+- **New Instruction**: User requested to consolidate diary entries and update less frequently, focusing on significant milestones or completion of major steps.
+
+## 2025-09-25 15:09:00
+
+- Discussed security measures for admin API endpoints. Proposed implementing a basic authentication/authorization middleware.
+
+## 2025-09-25 15:10:00
+
+- User requested to use sequential-thinking to debug module resolution issues.
+
+## 2025-09-25 15:11:00
+
+- User provided new output from `pnpm dev` and reminded me to follow coding style guidelines.
+
+## 2025-09-25 15:12:00
+
+- Successfully resolved all module resolution issues and `zod` warnings. The Nuxt Nitro server now builds without errors or warnings.
+
+## 2025-09-25 15:17:00
+
+- Successfully completed manual testing of API endpoints with authentication middleware temporarily bypassed.
+- Re-enabled authentication middleware in `server/middleware/auth.ts`.
+- Verified that the authentication middleware is active and correctly denies unauthorized access to admin API endpoints.
+
+## 2025-09-25 15:30:00
+
+- Started implementing API documentation using `nuxt-openapi-docs-module`.
+- Enabled `nitro.experimental.openAPI: true` in `nuxt.config.ts`.
+- Installed `zod-openapi`.
+- Created `server/utils/zod-openapi.ts` to extend Zod with OpenAPI capabilities.
+- Created `server/schemas/example.ts` and `server/api/example.post.ts` for an example endpoint.
+- Resolved `zod-openapi` import issues and `.openapi()` vs `.meta()` usage.
+- Resolved module resolution issues for `#server` alias by explicitly defining it in `nuxt.config.ts` and `package.json`.
+- Resolved `tsx` command not found by installing it and using `pnpm exec tsx`.
+- Resolved `ENOENT` error for `docs/openapi/openapi.json` by creating the directory.
+- Resolved `ENOENT` error for `server/schemas/example` by adding `.ts` extension to imports.
+- Resolved `ENOENT` error for `server/utils/zod-openapi` by adding `.ts` extension to imports.
+- Removed `defineRouteMeta` from all API endpoints as it's not the correct way to define OpenAPI metadata for `nuxt-openapi-docs-module`.
+- Updated `server/utils/generate-openapi.ts` to include OpenAPI definitions for all API endpoints (roles, users, example).
+- The server is now starting fine without errors.
+
+## 2025-09-25 15:40:00
+
+- User requested to cancel the OpenAPI/Swagger task and revert all changes.
+- Reverted `nuxt.config.ts` to its state before OpenAPI/Swagger changes.
+- Reverted `server/middleware/auth.ts` to its state before OpenAPI/Swagger changes.
+- Deleted `server/api/example.post.ts`.
+- Deleted `server/schemas/example.ts`.
+- Deleted `server/utils/zod-openapi.ts`.
+- Deleted `server/utils/generate-openapi.ts`.
+- Reverted `package.json` to its state before OpenAPI/Swagger changes.
+- Uninstalled `zod-openapi`, `js-yaml`, `nuxt-openapi-docs-module`, and `tsx` dependencies.

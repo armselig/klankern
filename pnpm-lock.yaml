@@ -19,6 +19,9 @@ importers:
             winston:
                 specifier: 3.17.0
                 version: 3.17.0
+            zod:
+                specifier: 4.1.11
+                version: 4.1.11
         devDependencies:
             "@nuxt/eslint":
                 specifier: ^1.9.0
@@ -62,9 +65,6 @@ importers:
             prettier-plugin-vue:
                 specifier: ^1.1.6
                 version: 1.1.6
-            tsx:
-                specifier: 4.20.5
-                version: 4.20.5
 
 packages:
     "@antfu/install-pkg@1.1.0":
@@ -7240,6 +7240,12 @@ packages:
             }
         engines: { node: ">= 14" }
 
+    zod@4.1.11:
+        resolution:
+            {
+                integrity: sha512-WPsqwxITS2tzx1bzhIKsEs19ABD5vmCVa4xBo2tq/SrV4RNZtfws1EnCWQXM6yh8bD08a1idvkB5MZSBiZsjwg==,
+            }
+
 snapshots:
     "@antfu/install-pkg@1.1.0":
         dependencies:
@@ -11376,6 +11382,7 @@ snapshots:
             get-tsconfig: 4.10.1
         optionalDependencies:
             fsevents: 2.3.3
+        optional: true
 
     type-check@0.4.0:
         dependencies:
@@ -11782,3 +11789,5 @@ snapshots:
             archiver-utils: 5.0.2
             compress-commons: 6.0.2
             readable-stream: 4.7.0
+
+    zod@4.1.11: {}

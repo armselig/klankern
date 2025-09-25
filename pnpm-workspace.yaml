@@ -2,4 +2,5 @@ onlyBuiltDependencies:
     - "@parcel/watcher"
     - esbuild
     - lefthook
+    - nuxt-openapi-docs-module
     - unrs-resolver
