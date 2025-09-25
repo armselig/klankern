@@ -54,10 +54,6 @@
 *   Updated the concept document with the new Dashboard feature.
 *   Updated the user stories document with user stories for the Dashboard feature.
 
-## 2025-09-25 10:55:00
-
-*   User provided initial prioritization for key features: Offline Support (must-have), User Management/Roles/Permissions (next), Digital Corkboard (after admin interface).
-
 ## 2025-09-25 11:00:00
 
 *   User provided further prioritization: Shared Calendar (after corkboard), Shared To-Do Lists (after calendar), Meal Planner (after to-do list).
@@ -108,3 +104,7 @@
 ## 2025-09-25 12:30:00
 
 *   Installed Lefthook and configured `lefthook.yml`.
+
+## 2025-09-25 12:40:00
+
+*   Created `docker/postgres/Dockerfile` and `docker/postgres/init.sql` for PostgreSQL setup.
