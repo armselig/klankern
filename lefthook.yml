@@ -2,11 +2,10 @@
 # It is based on the project guidelines and best practices.
 
 pre-commit:
-  commands:
-    biome-format:
-      glob: "*.{js,ts,jsx,tsx,json}"
-      run: pnpm biome format --write {staged_files}
-    biome-lint:
-      glob: "*.{js,ts,jsx,tsx,json}"
-      run: pnpm biome lint {staged_files}
-    # Add other pre-commit checks here (e.g., TypeScript type checking)
+    commands:
+        prettier:
+            glob: "*.{js,ts,jsx,tsx,json,css,html,scss,vue,md,yaml,yml}"
+            run: pnpm prettier --write {staged_files}
+        eslint:
+            glob: "*.{js,ts,jsx,tsx,vue}"
+            run: pnpm eslint {staged_files}

@@ -1,38 +1,45 @@
 {
-  "name": "klankern",
-  "version": "0.1.0",
-  "description": "A web application for families to manage common family tasks together and collaborate.",
-  "type": "module",
-  "private": true,
-  "scripts": {
-    "build": "nuxt build",
-    "dev": "nuxt dev",
-    "generate": "nuxt generate",
-    "preview": "nuxt preview",
-    "postinstall": "nuxt prepare",
-    "db:generate": "pnpm drizzle-kit generate",
-    "db:migrate": "tsx server/db/migrate.ts",
-    "lint": "pnpm biome lint .",
-    "format": "pnpm biome format --write ."
-  },
-  "dependencies": {
-    "nuxt": "^4.1.2",
-    "vue": "^3.5.21",
-    "vue-router": "^4.5.1",
-    "winston": "3.17.0"
-  },
-  "keywords": [],
-  "author": "Hendrik Neumann <henne@armselig.net>",
-  "license": "UNLICENSED",
-  "packageManager": "pnpm@10.13.1",
-  "devDependencies": {
-    "@biomejs/biome": "2.2.4",
-    "@types/pg": "8.15.5",
-    "dotenv": "17.2.2",
-    "drizzle-kit": "0.31.4",
-    "drizzle-orm": "0.44.5",
-    "lefthook": "1.13.4",
-    "pg": "8.16.3",
-    "tsx": "4.20.5"
-  }
+    "name": "klankern",
+    "version": "0.1.0",
+    "description": "A web application for families to manage common family tasks together and collaborate.",
+    "type": "module",
+    "private": true,
+    "scripts": {
+        "build": "nuxt build",
+        "dev": "nuxt dev",
+        "generate": "nuxt generate",
+        "preview": "nuxt preview",
+        "postinstall": "nuxt prepare",
+        "db:generate": "pnpm drizzle-kit generate",
+        "db:migrate": "tsx server/db/migrate.ts",
+        "lint": "eslint .",
+        "format": "prettier --write ."
+    },
+    "dependencies": {
+        "nuxt": "^4.1.2",
+        "vue": "^3.5.21",
+        "vue-router": "^4.5.1",
+        "winston": "3.17.0"
+    },
+    "keywords": [],
+    "author": "Hendrik Neumann <henne@armselig.net>",
+    "license": "UNLICENSED",
+    "packageManager": "pnpm@10.13.1",
+    "devDependencies": {
+        "@nuxt/eslint": "^1.9.0",
+        "@nuxt/eslint-config": "^1.9.0",
+        "eslint": "^9.36.0",
+        "eslint-config-prettier": "^10.1.8",
+        "eslint-plugin-prettier": "^5.5.4",
+        "eslint-plugin-vue": "^10.5.0",
+        "prettier": "^3.6.2",
+        "prettier-plugin-vue": "^1.1.6",
+        "@types/pg": "8.15.5",
+        "dotenv": "17.2.2",
+        "drizzle-kit": "0.31.4",
+        "drizzle-orm": "0.44.5",
+        "lefthook": "1.13.4",
+        "pg": "8.16.3",
+        "tsx": "4.20.5"
+    }
 }

@@ -4,14 +4,14 @@
 - use latest node lts
 - use corepack
 - avoid dependencies.
-  - example: do not use complex state management library, if simple state management can be easily implemented in the project.
-  - example 2: when asked for a javscript linter and a formatting tool, choose biome over eslint and prettier to save on the extra dependency
-  - example 3: instead of installing lodash for some utilities like debounce or throttle, implement those yourself
+    - example: do not use complex state management library, if simple state management can be easily implemented in the project.
+    - example 2: when asked for a javscript linter and a formatting tool, choose biome over eslint and prettier to save on the extra dependency
+    - example 3: instead of installing lodash for some utilities like debounce or throttle, implement those yourself
 - choose modern, but reliable toolings
 - prefer fast (e.g. rust based) toolings over js/ts implementations
 - use extensive JSDoc comments for slower javascript and TSDoc for typescript
-  - example: choose lefthook over husky for git hooks
-  - but don't forget: maybe it is easier to develop your own simple git hooks implementation
+    - example: choose lefthook over husky for git hooks
+    - but don't forget: maybe it is easier to develop your own simple git hooks implementation
 - use typescript
 - use a linter for every language in the project, e.g. html, css, ts, markdown
 - keep files relevant for ai agents in ./vibes/ directory

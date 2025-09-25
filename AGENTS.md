@@ -37,31 +37,31 @@ To set up the development environment, follow these steps:
 
 The following scripts are available for development:
 
--   `pnpm dev`: Starts the development server with hot-reloading.
--   `pnpm build`: Builds the application for production.
--   `pnpm generate`: Generates a static version of the site.
--   `pnpm preview`: Previews the production build locally.
+- `pnpm dev`: Starts the development server with hot-reloading.
+- `pnpm build`: Builds the application for production.
+- `pnpm generate`: Generates a static version of the site.
+- `pnpm preview`: Previews the production build locally.
 
 ## Database
 
 The database schema is managed by Drizzle ORM.
 
--   **Schema Definition**: The database schema is defined in `server/db/schema.ts`.
--   **Run Migrations**: To apply migrations, run `pnpm db:migrate`.
--   **Generate Migrations**: After making changes to the schema in `server/db/schema.ts`, generate a new migration by running `pnpm db:generate`.
+- **Schema Definition**: The database schema is defined in `server/db/schema.ts`.
+- **Run Migrations**: To apply migrations, run `pnpm db:migrate`.
+- **Generate Migrations**: After making changes to the schema in `server/db/schema.ts`, generate a new migration by running `pnpm db:generate`.
 
 ## Linting and Formatting
 
 We use Prettier for formatting and ESLint for linting.
 
--   `pnpm lint`: Lints the entire codebase.
--   `pnpm format`: Formats the entire codebase.
+- `pnpm lint`: Lints the entire codebase.
+- `pnpm format`: Formats the entire codebase.
 
 ## Version Control
 
--   **Commit Messages**: Please use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for all commit messages.
+- **Commit Messages**: Please use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for all commit messages.
 
 ## AI Agent Collaboration
 
--   **Agent-Relevant Files**: Keep all files relevant for AI agents within the `./vibes/` directory.
--   **Interaction Diary**: Proactively and autonomously maintain a time-stamped diary of our interactions in `./vibes/diary.md`.
+- **Agent-Relevant Files**: Keep all files relevant for AI agents within the `./vibes/` directory.
+- **Interaction Diary**: Proactively and autonomously maintain a time-stamped diary of our interactions in `./vibes/diary.md`.
