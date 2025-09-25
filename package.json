@@ -19,5 +19,8 @@
   "keywords": [],
   "author": "Hendrik Neumann <henne@armselig.net>",
   "license": "UNLICENSED",
-  "packageManager": "pnpm@10.13.1"
+  "packageManager": "pnpm@10.13.1",
+  "devDependencies": {
+    "@biomejs/biome": "2.2.4"
+  }
 }

@@ -100,3 +100,7 @@
 ## 2025-09-25 12:10:00
 
 *   Corrected `package.json` after `nuxi init` overwrote it, merging previous content with Nuxt-specific entries.
+
+## 2025-09-25 12:20:00
+
+*   Installed Biome.js and configured `biome.json` and `.biomeignore`.
