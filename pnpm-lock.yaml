@@ -7,6 +7,9 @@ settings:
 importers:
     .:
         dependencies:
+            bcryptjs:
+                specifier: 3.0.2
+                version: 3.0.2
             nuxt:
                 specifier: ^4.1.2
                 version: 4.1.2(@biomejs/biome@2.2.4)(@parcel/watcher@2.5.1)(@types/node@24.5.2)(@vue/compiler-sfc@3.5.22)(db0@0.3.2(drizzle-orm@0.44.5(@types/pg@8.15.5)(pg@8.16.3)))(drizzle-orm@0.44.5(@types/pg@8.15.5)(pg@8.16.3))(eslint@9.36.0(jiti@2.6.0))(ioredis@5.8.0)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.52.2)(terser@5.44.0)(tsx@4.20.5)(typescript@5.9.2)(vite@7.1.7(@types/node@24.5.2)(jiti@2.6.0)(terser@5.44.0)(tsx@4.20.5)(yaml@2.8.1))(yaml@2.8.1)
@@ -2790,6 +2793,13 @@ packages:
         resolution:
             {
                 integrity: sha512-wrH5NNqren/QMtKUEEJf7z86YjfqW/2uw3IL3/xpqZUC95SSVIFXYQeeGjL6FT/X68IROu6RMehZQS5foy2BXw==,
+            }
+        hasBin: true
+
+    bcryptjs@3.0.2:
+        resolution:
+            {
+                integrity: sha512-k38b3XOZKv60C4E2hVsXTolJWfkGRMbILBIe2IBITXciy5bOsTKot5kDrf3ZfufQtQOUN5mXceUEpU1rTl9Uog==,
             }
         hasBin: true
 
@@ -8995,6 +9005,8 @@ snapshots:
     base64-js@1.5.1: {}
 
     baseline-browser-mapping@2.8.6: {}
+
+    bcryptjs@3.0.2: {}
 
     bindings@1.5.0:
         dependencies:

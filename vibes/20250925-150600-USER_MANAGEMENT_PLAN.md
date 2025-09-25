@@ -59,3 +59,77 @@ This feature is crucial for the Klankern app as it allows administrators to mana
     - Manually test the API endpoints using a tool like Postman or Insomnia.
     - Manually test the frontend functionality.
     - (Later, consider adding automated tests if time permits within the MVP scope).
+
+## Frontend Implementation Plan for User Management & Roles/Permissions (Admin Interface)
+
+**Reasoning:**
+To make the already implemented backend API for user and role management usable, a corresponding frontend interface is essential. This will allow administrators to interact with the system, create, view, update, and delete users and roles.
+
+**Steps (Chunked Approach):**
+
+1.  **Implement "List All Roles" Page (`pages/admin/roles/index.vue`):**
+    - Create the `pages/admin/roles/index.vue` file.
+    - Fetch all roles from the `/api/admin/roles` endpoint.
+    - Display the roles in a simple list or table.
+    - Handle loading, error, and empty states.
+
+2.  **Implement "Create New Role" Page (`pages/admin/roles/create.vue`):**
+    - Create the `pages/admin/roles/create.vue` file.
+    - Develop a form for adding new roles (name, description).
+    - Implement client-side validation.
+    - Send POST request to `/api/admin/roles` endpoint.
+    - Handle success (e.g., redirect to roles list) and error states.
+
+3.  **Implement "View/Edit Role" Page (`pages/admin/roles/[id].vue`):**
+    - Create the `pages/admin/roles/[id].vue` file.
+    - Fetch a single role from `/api/admin/roles/{id}`.
+    - Display role details in an editable form.
+    - Implement client-side validation.
+    - Send PUT request to `/api/admin/roles/{id}` endpoint for updates.
+    - Handle success and error states.
+
+4.  **Implement "Delete Role" Functionality (within `pages/admin/roles/index.vue` or `pages/admin/roles/[id].vue`):**
+    - Add a delete button to the roles list or edit page.
+    - Implement a confirmation dialog.
+    - Send DELETE request to `/api/admin/roles/{id}` endpoint.
+    - Handle success (e.g., remove role from list) and error states.
+
+5.  **Implement "List All Users" Page (`pages/admin/users/index.vue`):**
+    - Create the `pages/admin/users/index.vue` file.
+    - Fetch all users from the `/api/admin/users` endpoint.
+    - Display the users in a simple list or table, including their roles.
+    - Handle loading, error, and empty states.
+
+6.  **Implement "Create New User" Page (`pages/admin/users/create.vue`):**
+    - Create the `pages/admin/users/create.vue` file.
+    - Develop a form for adding new users (email, password, role selection).
+    - Fetch available roles from `/api/admin/roles` for the role selection dropdown.
+    - Implement client-side validation.
+    - Send POST request to `/api/admin/users` endpoint.
+    - Handle success and error states.
+
+7.  **Implement "View/Edit User" Page (`pages/admin/users/[id].vue`):**
+    - Create the `pages/admin/users/[id].vue` file.
+    - Fetch a single user from `/api/admin/users/{id}`.
+    - Display user details in an editable form.
+    - Allow changing email, password, and assigning roles.
+    - Fetch available roles from `/api/admin/roles` for the role selection dropdown.
+    - Implement client-side validation.
+    - Send PUT request to `/api/admin/users/{id}` endpoint for updates.
+    - Handle success and error states.
+
+8.  **Implement "Delete User" Functionality (within `pages/admin/users/index.vue` or `pages/admin/users/[id].vue`):**
+    - Add a delete button to the users list or edit page.
+    - Implement a confirmation dialog.
+    - Send DELETE request to `/api/admin/users/{id}` endpoint.
+    - Handle success and error states.
+
+9.  **Implement Basic Authentication Flow (Frontend):**
+    - Create a login page (`pages/auth/login.vue`).
+    - Implement a mechanism to send credentials to a backend login endpoint (which we'll need to create).
+    - Store the session token (e.g., in a cookie or local storage).
+    - Implement route guards to protect admin routes, redirecting unauthenticated users to the login page.
+
+10. **Testing:**
+    - Manually test all frontend pages and their interactions with the backend API.
+    - Verify authentication and authorization flows.
