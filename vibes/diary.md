@@ -96,3 +96,7 @@
 ## 2025-09-25 12:00:00
 
 *   Approved the proposed project structure.
+
+## 2025-09-25 12:10:00
+
+*   Corrected `package.json` after `nuxi init` overwrote it, merging previous content with Nuxt-specific entries.
