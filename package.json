@@ -1,7 +1,7 @@
 {
-  "name": "vibe",
+  "name": "klankern",
   "version": "0.1.0",
-  "description": "i'm vibinn",
+  "description": "A web application for families to manage common family tasks together and collaborate.",
   "scripts": {},
   "keywords": [],
   "author": "Hendrik Neumann <henne@armselig.net>",
