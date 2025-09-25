@@ -20,7 +20,7 @@ Klankern is a Progressive Web App (PWA) designed to help families stay organized
 - **Validation**: [Zod](https://zod.dev/)
 - **Logging**: [Winston](https://github.com/winstonjs/winston)
 - **Package Manager**: [pnpm](https://pnpm.io/)
-- **Linting & Formatting**: [Biome.js](https://biomejs.dev/)
+- **Linting & Formatting**: [Prettier](https://prettier.io/), [ESLint](https://eslint.org/)
 - **Git Hooks**: [Lefthook](https://github.com/evilmartians/lefthook)
 - **Containerization**: [Podman](https://podman.io/)
 
@@ -52,7 +52,7 @@ The database schema is managed by Drizzle ORM.
 
 ## Linting and Formatting
 
-We use Biome.js for linting and formatting.
+We use Prettier for formatting and ESLint for linting.
 
 -   `pnpm lint`: Lints the entire codebase.
 -   `pnpm format`: Formats the entire codebase.

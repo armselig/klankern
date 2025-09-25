@@ -120,3 +120,20 @@
 *   Defined the Drizzle schema in `server/db/schema.ts`.
 *   Set up Drizzle migration script in `server/db/migrate.ts`.
 *   Initialized the Drizzle client in `server/db/index.ts`.
+
+## 2025-09-25 13:30:00
+
+*   Recovered lost changes by investigating the project state.
+*   Fixed database migration scripts and successfully ran migrations.
+*   Committed all recovered files and changes.
+*   Replaced `console.log` with a `winston` logger in the migration script to fix linter warnings.
+
+## 2025-09-25 14:00:00
+
+*   Created `AGENTS.md` to provide guidelines for AI agents.
+*   Configured `lefthook` to ignore markdown files during pre-commit checks.
+*   Committed `AGENTS.md` and the updated `lefthook.yml` and `biome.json` files.
+
+## 2025-09-25 14:30:00
+
+*   User requested to replace Biome with Prettier and ESLint. This is now a TODO item.
