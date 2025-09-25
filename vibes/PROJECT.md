@@ -24,3 +24,15 @@
 - for containers/containerization always use podman
 - make suggestions how the frontend and backend should communicate
 - this file may only be edited by me, a human
+
+## project idea
+
+- a web application for families to manage common family tasks together and collaborate
+- shared to-do-lists, e.g. for shopping lists, chores. tasks can be assigned to family members
+- shared calendar for appointments, events. entries can belong to a single or multiple family members, e.g. mom and child1 go to the swimming course on monday, on friday dad and child2 need to go to the doctor
+- a board to post short notes or upload a photo like you would do with post-its on the refrigerator, e.g. "dinner is in the fridge!"
+- should be a progressive web app with offline support
+- ai agent should suggest additional features
+- authentication and authorization. there should be an admin user who can access and control everything. parents should have more rights than the children. access should be configurable.
+- no new user registration. admin will have to add users manually to maintain family privacy/security
+- strong security measurements
