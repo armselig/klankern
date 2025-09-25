@@ -4,7 +4,9 @@
 pre-commit:
   commands:
     biome-format:
+      glob: "*.{js,ts,jsx,tsx,json}"
       run: pnpm biome format --write {staged_files}
     biome-lint:
+      glob: "*.{js,ts,jsx,tsx,json}"
       run: pnpm biome lint {staged_files}
     # Add other pre-commit checks here (e.g., TypeScript type checking)
