@@ -9,12 +9,17 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "db:generate": "pnpm drizzle-kit generate",
+    "db:migrate": "tsx server/db/migrate.ts",
+    "lint": "pnpm biome lint .",
+    "format": "pnpm biome format --write ."
   },
   "dependencies": {
     "nuxt": "^4.1.2",
     "vue": "^3.5.21",
-    "vue-router": "^4.5.1"
+    "vue-router": "^4.5.1",
+    "winston": "3.17.0"
   },
   "keywords": [],
   "author": "Hendrik Neumann <henne@armselig.net>",
@@ -23,9 +28,11 @@
   "devDependencies": {
     "@biomejs/biome": "2.2.4",
     "@types/pg": "8.15.5",
+    "dotenv": "17.2.2",
     "drizzle-kit": "0.31.4",
     "drizzle-orm": "0.44.5",
     "lefthook": "1.13.4",
-    "pg": "8.16.3"
+    "pg": "8.16.3",
+    "tsx": "4.20.5"
   }
 }

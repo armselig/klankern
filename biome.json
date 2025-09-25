@@ -3,6 +3,7 @@
   "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "linter": {
     "enabled": true,
+    "includes": ["**", "!.nuxt/**"],
     "rules": {
       "recommended": true,
       "suspicious": {
