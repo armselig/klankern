@@ -104,3 +104,7 @@
 ## 2025-09-25 12:20:00
 
 *   Installed Biome.js and configured `biome.json` and `.biomeignore`.
+
+## 2025-09-25 12:30:00
+
+*   Installed Lefthook and configured `lefthook.yml`.
