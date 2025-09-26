@@ -295,3 +295,15 @@
 - Added `SameSite: "Lax"` to the `session_token` cookie in `server/api/auth/login.post.ts` for enhanced security.
 - Modified `stores/admin/roles.ts` to separate business logic from the presentational layer by adding a `createRole` action.
 - Created `pages/admin/roles/create.vue` to use the `createRole` action from the `roles` store, adhering to the separation of concerns principle.
+- Corrected `fetch` to `$fetch` in `composables/useAuth.ts`.
+- Modified `stores/admin/roles.ts` to include `fetchRoleById` and `updateRole` actions.
+- Created `pages/admin/roles/[id].vue` to view and edit roles using the new store actions.
+- Modified `stores/admin/roles.ts` to include a `deleteRole` action.
+- Modified `pages/admin/roles/index.vue` to include delete functionality.
+
+## 2025-09-26 11:00:00
+
+- Updated the knowledge graph to reflect the recent manual fix of the ESLint configuration.
+- Created new entities for `Nuxt Configuration` and `tsconfig.eslint.json`.
+- Updated existing entities for `ESLint Configuration`, `Lefthook Configuration`, and `package.json` with new observations based on the commit.
+- Reviewed `AGENTS.md` and determined no changes were necessary.
