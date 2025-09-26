@@ -11,7 +11,7 @@
 
 ## 2025-09-24 10:06:00
 
-- Read project guidelines from `vibes/20250924-100000-GUIDELINES.md`.
+- Read project guidelines from `vibes/20250924-100000-GUIDELINES.md`.- 
 - User requested to stage and commit all files.
 - Clarified user's preference for "git mcp" and noted limitations with current tools.
 - Staged and committed `vibes/20250924-100000-GUIDELINES.md` and `vibes/diary.md` using standard git commands.
@@ -258,7 +258,7 @@
 
 ## 2025-09-25 16:35:00
 
-- User reported 401 error when accessing `/admin/roles`.
+- User reported 401 error when accessing `/admin/roles`.- 
 - Identified the need to implement login functionality.
 - Proposed Backend Login Endpoint (`server/api/auth/login.post.ts`).
 - Discussed validation aspects and recommended `bcryptjs` for password hashing.
@@ -271,3 +271,11 @@
 - User wants to stop for the day.
 - Updated knowledge graph with `pages/auth/login.vue` and its relations.
 - **Left off:** Proposed Frontend Login Page (`pages/auth/login.vue`). Waiting for user approval to create the file.
+
+## 2025-09-26 10:00:00
+
+- Implemented core login functionality (frontend and backend API).
+- Developed automated database seeding for test users and roles.
+- Resolved multiple ESLint configuration issues, including TypeScript parsing errors and `no-unused-vars` warnings, ensuring a clean linting state.
+- Updated `AGENTS.md` with new general coding guidelines (named exports, separation of concerns, ID naming, explanation and approval).
+- **Left off:** All linting errors are resolved, and the commit is ready to be re-attempted.
