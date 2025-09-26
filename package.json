@@ -12,6 +12,7 @@
         "postinstall": "nuxt prepare",
         "db:generate": "pnpm drizzle-kit generate",
         "db:migrate": "tsx server/db/migrate.ts",
+        "db:seed": "tsx server/db/seed.ts",
         "lint": "eslint .",
         "format": "prettier --write ."
     },

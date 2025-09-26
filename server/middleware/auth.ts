@@ -4,7 +4,11 @@ import { sessions, users, roles } from "#server/db/schema.ts"; // Added roles im
 import { eq } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
-    const publicRoutes = ["/api/auth/login", "/api/auth/register"]; // Example public routes
+    const publicRoutes = [
+        "/api/auth/login",
+        "/api/auth/register",
+        "/auth/login",
+    ]; // Example public routes
 
     // Skip auth for public routes
     if (publicRoutes.some((route) => event.path.startsWith(route))) {

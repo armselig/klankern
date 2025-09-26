@@ -7,7 +7,7 @@ const logFormat = printf(({ level, message, timestamp, stack }) => {
     return `${timestamp} ${level}: ${stack || message}`;
 });
 
-const logger = createLogger({
+export const logger = createLogger({
     level: process.env.NODE_ENV === "production" ? "info" : "debug", // Log level based on environment
     format: combine(timestamp({ format: "YYYY-MM-DD HH:mm:ss" }), logFormat),
     transports: [
@@ -43,5 +43,3 @@ if (process.env.NODE_ENV !== "production") {
         }),
     );
 }
-
-export default logger;

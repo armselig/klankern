@@ -65,3 +65,19 @@ We use Prettier for formatting and ESLint for linting.
 
 - **Agent-Relevant Files**: Keep all files relevant for AI agents within the `./vibes/` directory.
 - **Interaction Diary**: Proactively and autonomously maintain a time-stamped diary of our interactions in `./vibes/diary.md`.
+
+## General Coding Guidelines
+
+- Function and method names should always reflect what they do, avoiding generic names like `handle...`. Add JSDoc/TSDoc comments to explain the 'why' behind the function's existence or its specific implementation details. This is a general rule that applies to all projects and sessions.
+- Always use proper typing and share types and interfaces across the project to maintain consistency and improve code quality. This is a general rule that applies to all projects and sessions.
+- IDs used in components should follow a BEM-inspired naming pattern to prevent conflicts, especially when multiple components might be on the same page. For example, use `component-name__element-name`.
+- Always separate the presentational layer from business logic. Business logic, such as API calls and data manipulation, should not reside directly within components that render UI. This is a general rule that applies to all projects and sessions.
+- Always prefer explicit named exports over default exports. This is a general coding rule that applies to all projects and sessions.
+
+## Frontend Development Guidelines
+
+- When creating frontend components, always create the HTML first, ensuring it is semantic and follows WCAG requirements (without overloading it with ARIA attributes). Then add JavaScript/TypeScript functionality. Do not care about CSS/styles unless absolutely necessary. Use progressive enhancement.
+
+## Project-Specific Guidelines
+
+- For the Klankern project, always use the Winston logger instead of `console.log`. ESLint should be configured to flag `console.log` usage as an error.
