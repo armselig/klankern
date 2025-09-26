@@ -2,11 +2,14 @@
 # It is based on the project guidelines and best practices.
 
 pre-commit:
+    parallel: true
     commands:
         prettier:
             glob: "*.{json,css,html,scss,md,yaml,yml}"
             run: pnpm exec prettier --write {staged_files}
             stage_fixed: true
+            exclude:
+                - pnpm-lock.yaml
         eslint:
             glob: "*.{js,ts,jsx,tsx,vue}"
             run: pnpm exec eslint --fix {staged_files}

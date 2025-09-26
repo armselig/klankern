@@ -1,32 +1,39 @@
 import withNuxt from "./.nuxt/eslint.config.mjs";
 import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended";
-import tsParser from "@typescript-eslint/parser"; // Keep this import
+import ts from "@typescript-eslint/eslint-plugin";
+import tsParser from "@typescript-eslint/parser";
+import vue from "eslint-plugin-vue";
+import vueParser from "vue-eslint-parser";
 
-export default withNuxt(
-    [eslintPluginPrettierRecommended],
-    {
-        files: ["**/*.{js,ts,vue}"], // Apply to JS, TS, and Vue files
-        rules: {
-            "vue/multi-word-component-names": "off", // Disable for Nuxt pages
-            "no-console": "error", // Disallow console.log as per project guidelines
-        },
+export default withNuxt([
+  {
+    ignores: [".nuxt/**", "eslint.config.mjs"],
+  },
+  ...vue.configs["flat/recommended"],
+  {
+    files: ["**/*.{ts,tsx,vue}"],
+    languageOptions: {
+      parser: vueParser,
+      parserOptions: {
+        parser: tsParser,
+        project: "./tsconfig.eslint.json",
+        extraFileExtensions: [".vue"],
+      },
     },
-    // Explicitly configure TypeScript parser for .ts files
-    {
-        files: ["**/*.ts", "**/*.tsx"],
-        languageOptions: {
-            parser: tsParser,
-            parserOptions: {
-                ecmaVersion: "latest",
-                sourceType: "module",
-            },
-        },
+    plugins: {
+      "@typescript-eslint": ts,
+      vue: vue,
     },
-    // Separate config object for overrides (for useLogger.ts)
-    {
-        files: ["composables/useLogger.ts"],
-        rules: {
-            "no-console": "off", // Allow console.log in the logger composable
-        },
+    rules: {
+      "vue/multi-word-component-names": "off",
+      "no-console": "error",
     },
-);
+  },
+  {
+    files: ["composables/useLogger.ts"],
+    rules: {
+      "no-console": "off",
+    },
+  },
+  eslintPluginPrettierRecommended,
+]);

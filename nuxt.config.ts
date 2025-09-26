@@ -18,4 +18,9 @@ export default defineNuxtConfig({
             "#server": aliasServer,
         },
     },
+    eslint: {
+        config: {
+            standalone: false,
+        },
+    },
 });
