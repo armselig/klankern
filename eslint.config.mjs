@@ -3,7 +3,7 @@ import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended"
 import tsParser from "@typescript-eslint/parser"; // Keep this import
 
 export default withNuxt(
-    eslintPluginPrettierRecommended,
+    [eslintPluginPrettierRecommended],
     {
         files: ["**/*.{js,ts,vue}"], // Apply to JS, TS, and Vue files
         rules: {

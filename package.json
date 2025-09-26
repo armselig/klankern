@@ -10,10 +10,11 @@
         "generate": "nuxt generate",
         "preview": "nuxt preview",
         "postinstall": "nuxt prepare",
-        "db:generate": "pnpm drizzle-kit generate",
+        "db:generate": "drizzle-kit generate",
         "db:migrate": "tsx server/db/migrate.ts",
         "db:seed": "tsx server/db/seed.ts",
         "lint": "eslint .",
+        "lint:fix": "eslint --fix .",
         "format": "prettier --write ."
     },
     "dependencies": {
