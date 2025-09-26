@@ -11,7 +11,7 @@
 
 ## 2025-09-24 10:06:00
 
-- Read project guidelines from `vibes/20250924-100000-GUIDELINES.md`.-
+- Read project guidelines from `vibes/20250924-100000-GUIDELINES.md`.
 - User requested to stage and commit all files.
 - Clarified user's preference for "git mcp" and noted limitations with current tools.
 - Staged and committed `vibes/20250924-100000-GUIDELINES.md` and `vibes/diary.md` using standard git commands.
@@ -258,7 +258,7 @@
 
 ## 2025-09-25 16:35:00
 
-- User reported 401 error when accessing `/admin/roles`.-
+- User reported 401 error when accessing `/admin/roles`.
 - Identified the need to implement login functionality.
 - Proposed Backend Login Endpoint (`server/api/auth/login.post.ts`).
 - Discussed validation aspects and recommended `bcryptjs` for password hashing.
@@ -283,3 +283,15 @@
 ## 2025-09-26 10:05:00
 
 - Committed changes related to ESLint, Prettier, Lefthook configuration, and package.json updates.
+
+## 2025-09-26 10:10:00
+
+- User aborted commit topic.
+- Confirmed `pages/auth/login.vue` is implemented.
+- Inspected `composables/useAuth.ts` and `server/api/auth/login.post.ts`.
+- Confirmed backend sets `HttpOnly` cookie and frontend does not need to explicitly store session token.
+- Inspected `server/middleware/auth.ts` and confirmed correct authentication and authorization.
+- Inspected `pages/admin/roles/index.vue` and `stores/admin/roles.ts` and confirmed correct implementation for listing roles.
+- Added `SameSite: "Lax"` to the `session_token` cookie in `server/api/auth/login.post.ts` for enhanced security.
+- Modified `stores/admin/roles.ts` to separate business logic from the presentational layer by adding a `createRole` action.
+- Created `pages/admin/roles/create.vue` to use the `createRole` action from the `roles` store, adhering to the separation of concerns principle.
