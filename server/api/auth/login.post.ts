@@ -4,6 +4,7 @@ import { users, sessions } from "#server/db/schema.ts";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
+import { logger } from "#server/utils/logger"; // Import logger
 
 // Define the schema for login request
 const loginSchema = z.object({
@@ -65,7 +66,7 @@ export default defineEventHandler(async (event) => {
             user: { id: user.id, email: user.email },
         };
     } catch (error) {
-        console.error("Login error:", error);
+        logger.error("Login error:", error); // Use logger.error
         if (error instanceof z.ZodError) {
             throw createError({
                 statusCode: 400,

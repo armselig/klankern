@@ -2,6 +2,7 @@ import { defineEventHandler } from "h3";
 import { db } from "#server/db/index.ts";
 import { users, roles } from "#server/db/schema.ts";
 import { eq } from "drizzle-orm";
+import { logger } from "#server/utils/logger"; // Import logger
 
 export default defineEventHandler(async () => {
     try {
@@ -19,7 +20,7 @@ export default defineEventHandler(async () => {
 
         return { users: allUsers };
     } catch (error) {
-        console.error("Error fetching users:", error);
+        logger.error("Error fetching users:", error); // Use logger.error
         throw createError({
             statusCode: 500,
             statusMessage: "Failed to fetch users.",

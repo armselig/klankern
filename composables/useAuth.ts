@@ -1,4 +1,3 @@
-import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useLogger } from "#app/composables/useLogger";
 

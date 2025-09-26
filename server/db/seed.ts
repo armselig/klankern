@@ -2,7 +2,6 @@ import { db } from "#server/db";
 import { users, roles } from "#server/db/schema"; // Import roles table
 import bcrypt from "bcryptjs";
 import { logger } from "#server/utils/logger";
-import { eq } from "drizzle-orm"; // Import eq for queries
 
 async function seed() {
     logger.info("Starting database seeding...");

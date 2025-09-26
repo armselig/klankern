@@ -3,6 +3,7 @@ import { db } from "#server/db/index.ts"; // Corrected import path
 import { roles } from "#server/db/schema.ts";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { logger } from "#server/utils/logger"; // Import logger
 
 // Define the schema for updating a role
 const updateRoleSchema = z.object({
@@ -39,7 +40,7 @@ export default defineEventHandler(async (event) => {
 
         return { role: updatedRole };
     } catch (error) {
-        console.error("Error updating role:", error);
+        logger.error("Error updating role:", error); // Use logger.error
         if (error instanceof z.ZodError) {
             throw createError({
                 statusCode: 400,

@@ -2,6 +2,7 @@ import { defineEventHandler, getRouterParam } from "h3";
 import { db } from "#server/db/index.ts";
 import { roles } from "#server/db/schema.ts";
 import { eq } from "drizzle-orm";
+import { logger } from "#server/utils/logger"; // Import logger
 
 export default defineEventHandler(async (event) => {
     try {
@@ -25,7 +26,7 @@ export default defineEventHandler(async (event) => {
 
         return { role };
     } catch (error) {
-        console.error("Error fetching role:", error);
+        logger.error("Error fetching role:", error); // Use logger.error
         throw createError({
             statusCode: 500,
             statusMessage: "Failed to fetch role.",

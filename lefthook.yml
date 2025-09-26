@@ -6,6 +6,6 @@ pre-commit:
         prettier:
             glob: "*.{js,ts,jsx,tsx,json,css,html,scss,vue,md,yaml,yml}"
             run: pnpm prettier --write {staged_files}
-        # eslint:
-        #     glob: "*.{js,ts,jsx,tsx,vue}"
-        #     run: pnpm eslint {staged_files}
+        eslint:
+            glob: "*.{js,ts,jsx,tsx,vue}"
+            run: pnpm eslint {staged_files}

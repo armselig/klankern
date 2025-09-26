@@ -2,6 +2,7 @@ import { defineEventHandler, readBody } from "h3";
 import { db } from "#server/db/index.ts";
 import { roles } from "#server/db/schema.ts";
 import { z } from "zod";
+import { logger } from "#server/utils/logger"; // Import logger
 
 // Define the schema for creating a new role
 const createRoleSchema = z.object({
@@ -28,7 +29,7 @@ export default defineEventHandler(async (event) => {
 
         return { role: newRole };
     } catch (error) {
-        console.error("Error creating role:", error);
+        logger.error("Error creating role:", error); // Use logger.error
         if (error instanceof z.ZodError) {
             throw createError({
                 statusCode: 400,

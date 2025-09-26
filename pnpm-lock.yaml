@@ -35,6 +35,9 @@ importers:
             "@types/pg":
                 specifier: 8.15.5
                 version: 8.15.5
+            "@typescript-eslint/parser":
+                specifier: ^8.0.0
+                version: 8.44.1(eslint@9.36.0(jiti@2.6.0))(typescript@5.9.2)
             dotenv:
                 specifier: 17.2.2
                 version: 17.2.2
