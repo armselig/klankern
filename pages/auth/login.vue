@@ -27,19 +27,24 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-import { useAuth } from "#app/composables/useAuth"; // Import useAuth composable
+import { useAuthStore } from "~/stores/auth";
+import { useLogger } from "~/composables/useLogger";
 
 const email = ref("");
 const password = ref("");
-const { login } = useAuth(); // Initialize useAuth composable
+const errorMessage = ref("");
+const authStore = useAuthStore();
+const logger = useLogger();
 
-/**
- * Handles the submission of the login form.
- * This function is responsible for initiating the login process by
- * calling the login function from the useAuth composable with the
- * user's credentials (email and password).
- */
 const submitLoginForm = async () => {
-    await login(email.value, password.value);
+    errorMessage.value = ""; // Clear previous errors
+    try {
+        await authStore.login(email.value, password.value);
+    } catch (error: any) {
+        errorMessage.value =
+            error.data?.message ||
+            "Login failed. Please check your credentials.";
+        logger.error("Login error:", error);
+    }
 };
 </script>

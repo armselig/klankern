@@ -1,5 +1,5 @@
 import { migrate } from "drizzle-orm/node-postgres/migrator";
-import logger from "../utils/logger";
+import { logger } from "../utils/logger";
 import { db } from "./index"; // Assuming db client is exported from index.ts
 
 async function main() {

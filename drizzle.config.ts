@@ -1,4 +1,5 @@
 import { defineConfig } from "drizzle-kit";
+import "dotenv/config";
 
 export default defineConfig({
     schema: "./server/db/schema.ts",
@@ -9,6 +10,6 @@ export default defineConfig({
         port: Number(process.env.DB_PORT) || 5432,
         user: process.env.DB_USER || "klankern_user",
         password: process.env.DB_PASSWORD || "klankern_password",
-        database: process.env.env.DB_NAME || "klankern_db",
+        database: process.env.DB_NAME || "klankern_db",
     },
 });

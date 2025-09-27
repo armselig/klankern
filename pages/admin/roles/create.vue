@@ -51,6 +51,8 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useRolesStore } from "~/stores/admin/roles"; // Import the store
 
+definePageMeta({ middleware: "auth" });
+
 const roleName = ref("");
 const roleDescription = ref("");
 const router = useRouter();

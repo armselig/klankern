@@ -54,6 +54,8 @@ import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useRolesStore } from "~/stores/admin/roles";
 
+definePageMeta({ middleware: "auth" });
+
 interface Role {
     id: string;
     name: string;

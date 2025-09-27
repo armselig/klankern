@@ -49,6 +49,8 @@
 import { useRolesStore } from "~/stores/admin/roles";
 import { onMounted } from "vue";
 
+definePageMeta({ middleware: "auth" });
+
 const rolesStore = useRolesStore();
 
 onMounted(() => {

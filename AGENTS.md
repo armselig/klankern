@@ -81,3 +81,10 @@ We use Prettier for formatting and ESLint for linting.
 ## Project-Specific Guidelines
 
 - For the Klankern project, always use the Winston logger instead of `console.log`. ESLint should be configured to flag `console.log` usage as an error.
+
+## Authentication
+
+- We are using `nuxt-security` and `nuxt-auth-utils` for authentication.
+- Server-side utilities from `nuxt-auth-utils` (like `setUserSession`) are auto-imported in the `server/` directory and should not be imported explicitly.
+- Password verification is done using `bcryptjs`.
+- The login logic is handled by the `useAuthStore` Pinia store.

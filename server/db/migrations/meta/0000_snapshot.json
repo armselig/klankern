@@ -1,5 +1,5 @@
 {
-    "id": "c5b1c455-b855-49ab-9b17-8fd3a3dc6479",
+    "id": "8fde60bf-419e-4bf9-85bb-21325b522a81",
     "prevId": "00000000-0000-0000-0000-000000000000",
     "version": "7",
     "dialect": "postgresql",
@@ -13,7 +13,7 @@
                     "type": "uuid",
                     "primaryKey": true,
                     "notNull": true,
-                    "default": "uuid_generate_v1mc()"
+                    "default": "uuid_generate_v7()"
                 },
                 "user_id": {
                     "name": "user_id",
@@ -23,7 +23,8 @@
                 },
                 "type": {
                     "name": "type",
-                    "type": "text",
+                    "type": "corkboard_post_type",
+                    "typeSchema": "public",
                     "primaryKey": false,
                     "notNull": true
                 },
@@ -75,11 +76,12 @@
                     "type": "uuid",
                     "primaryKey": true,
                     "notNull": true,
-                    "default": "uuid_generate_v1mc()"
+                    "default": "uuid_generate_v7()"
                 },
                 "name": {
                     "name": "name",
-                    "type": "text",
+                    "type": "user_role",
+                    "typeSchema": "public",
                     "primaryKey": false,
                     "notNull": true
                 },
@@ -113,7 +115,7 @@
                     "type": "uuid",
                     "primaryKey": true,
                     "notNull": true,
-                    "default": "uuid_generate_v1mc()"
+                    "default": "uuid_generate_v7()"
                 },
                 "user_id": {
                     "name": "user_id",
@@ -174,7 +176,7 @@
                     "type": "uuid",
                     "primaryKey": true,
                     "notNull": true,
-                    "default": "uuid_generate_v1mc()"
+                    "default": "uuid_generate_v7()"
                 },
                 "email": {
                     "name": "email",
