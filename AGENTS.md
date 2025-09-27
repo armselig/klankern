@@ -88,3 +88,7 @@ We use Prettier for formatting and ESLint for linting.
 - Server-side utilities from `nuxt-auth-utils` (like `setUserSession`) are auto-imported in the `server/` directory and should not be imported explicitly.
 - Password verification is done using `bcryptjs`.
 - The login logic is handled by the `useAuthStore` Pinia store.
+
+## Known Issues
+
+- **Unresolved Blank Screen Issue**: All pages render as blank screens. The browser console shows the warning: "Create a Vue component in the `pages/` directory to enable `<NuxtPage>`". The issue persists even after checking all configuration files, reinstalling dependencies, and creating new pages. The root cause is unknown and the issue is currently unresolved. **This issue needs to be handled rather sooner than later.**

@@ -6,34 +6,34 @@ import vue from "eslint-plugin-vue";
 import vueParser from "vue-eslint-parser";
 
 export default withNuxt([
-  {
-    ignores: [".nuxt/**", "eslint.config.mjs"],
-  },
-  ...vue.configs["flat/recommended"],
-  {
-    files: ["**/*.{ts,tsx,vue}"],
-    languageOptions: {
-      parser: vueParser,
-      parserOptions: {
-        parser: tsParser,
-        project: "./tsconfig.eslint.json",
-        extraFileExtensions: [".vue"],
-      },
+    {
+        ignores: [".nuxt/**", "eslint.config.mjs"],
     },
-    plugins: {
-      "@typescript-eslint": ts,
-      vue: vue,
+    ...vue.configs["flat/recommended"],
+    {
+        files: ["**/*.{ts,tsx,vue}"],
+        languageOptions: {
+            parser: vueParser,
+            parserOptions: {
+                parser: tsParser,
+                project: "./tsconfig.eslint.json",
+                extraFileExtensions: [".vue"],
+            },
+        },
+        plugins: {
+            "@typescript-eslint": ts,
+            vue: vue,
+        },
+        rules: {
+            "vue/multi-word-component-names": "off",
+            "no-console": "error",
+        },
     },
-    rules: {
-      "vue/multi-word-component-names": "off",
-      "no-console": "error",
+    {
+        files: ["composables/useLogger.ts"],
+        rules: {
+            "no-console": "off",
+        },
     },
-  },
-  {
-    files: ["composables/useLogger.ts"],
-    rules: {
-      "no-console": "off",
-    },
-  },
-  eslintPluginPrettierRecommended,
+    eslintPluginPrettierRecommended,
 ]);

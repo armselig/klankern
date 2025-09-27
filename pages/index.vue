@@ -1,3 +1,5 @@
 <template>
-    <h1>Klankern</h1>
+    <div>
+        <h1>Klankern</h1>
+    </div>
 </template>
