@@ -324,3 +324,10 @@
 - The browser console shows the warning: "Create a Vue component in the `pages/` directory to enable `<NuxtPage>`".
 - The issue persists even after checking all configuration files, reinstalling dependencies, and creating new pages.
 - The root cause is unknown and the issue is currently unresolved. We are both frustrated.
+
+## 2025-09-28 00:00:00
+
+- Identified the Nuxt 4 folder structure as the cause of the blank screen issue. Nuxt 4 expects `pages/` and `composables/` to be inside `app/`.
+- Moved `/Users/henneuma/src/_asl/vibe/composables` to `/Users/henneuma/src/_asl/vibe/app/composables`.
+- Moved `/Users/henneuma/src/_asl/vibe/pages` to `/Users/henneuma/src/_asl/vibe/app/pages`.
+- This change aligns the project structure with Nuxt 4's default and should resolve the blank screen issue.

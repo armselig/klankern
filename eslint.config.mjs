@@ -30,9 +30,9 @@ export default withNuxt([
         },
     },
     {
-        files: ["composables/useLogger.ts"],
+        files: ["app/**/*.{ts,tsx,vue}", "composables/useLogger.ts"],
         rules: {
-            "no-console": "off",
+            "no-console": "warn",
         },
     },
     eslintPluginPrettierRecommended,
