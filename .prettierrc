@@ -1,6 +1,5 @@
 {
     "printWidth": 80,
     "semi": true,
-    "singleQuote": false,
-    "ignore": ["pnpm-lock.yaml"]
+    "singleQuote": false
 }
