@@ -11,6 +11,7 @@ export default defineNuxtConfig({
         "nuxt-security",
         "nuxt-auth-utils",
         "@nuxt/test-utils/module",
+        "@pinia/nuxt",
     ],
     build: {
         transpile: ["zod"],
