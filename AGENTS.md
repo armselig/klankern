@@ -83,6 +83,7 @@ We use Prettier for formatting and ESLint for linting.
 
 - **Agent-Relevant Files**: Keep all files relevant for AI agents within the `./vibes/` directory.
 - **Interaction Diary**: Proactively and autonomously maintain a time-stamped diary of our interactions in `./vibes/diary.md`.
+- **Knowledge Graph**: If the MCP server `memory` is available, proactively and autonomously read the graph at the beginning of each session and keep it updated and maintained as you go.
 
 ## General Coding Guidelines
 
@@ -106,7 +107,3 @@ We use Prettier for formatting and ESLint for linting.
 - Server-side utilities from `nuxt-auth-utils` (like `setUserSession`) are auto-imported in the `server/` directory and should not be imported explicitly.
 - Password verification is done using `bcryptjs`.
 - The login logic is handled by the `useAuthStore` Pinia store.
-
-## Known Issues
-
-- **Unresolved Blank Screen Issue**: All pages render as blank screens. The browser console shows the warning: "Create a Vue component in the `pages/` directory to enable `<NuxtPage>`". The issue persists even after checking all configuration files, reinstalling dependencies, and creating new pages. The root cause is unknown and the issue is currently unresolved. **This issue needs to be handled rather sooner than later.**
