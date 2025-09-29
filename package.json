@@ -9,6 +9,9 @@
         "dev": "nuxt dev",
         "generate": "nuxt generate",
         "preview": "nuxt preview",
+        "test": "vitest run",
+        "test:ui": "vitest --ui",
+        "test:nuxt": "vitest run --project nuxt",
         "postinstall": "nuxt prepare",
         "db:generate": "drizzle-kit generate",
         "db:migrate": "tsx server/db/migrate.ts",
@@ -34,9 +37,11 @@
     "devDependencies": {
         "@nuxt/eslint": "^1.9.0",
         "@nuxt/eslint-config": "^1.9.0",
+        "@nuxt/test-utils": "3.19.2",
         "@types/pg": "8.15.5",
         "@typescript-eslint/eslint-plugin": "8.44.1",
         "@typescript-eslint/parser": "^8.0.0",
+        "@vue/test-utils": "2.4.6",
         "dotenv": "17.2.2",
         "drizzle-kit": "0.31.4",
         "drizzle-orm": "0.44.5",
@@ -44,12 +49,14 @@
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-prettier": "^5.5.4",
         "eslint-plugin-vue": "^10.5.0",
+        "happy-dom": "19.0.1",
         "lefthook": "1.13.4",
         "pg": "8.16.3",
         "prettier": "^3.6.2",
         "prettier-plugin-vue": "^1.1.6",
         "tsx": "4.20.6",
         "typescript": "5.9.2",
+        "vitest": "3.2.4",
         "vue-eslint-parser": "10.2.0"
     }
 }

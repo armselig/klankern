@@ -19,6 +19,7 @@ Klankern is a Progressive Web App (PWA) designed to help families stay organized
 - **ORM**: [Drizzle ORM](https://orm.drizzle.team/)
 - **Validation**: [Zod](https://zod.dev/)
 - **Logging**: [Winston](https://github.com/winstonjs/winston)
+- **Testing**: [Vitest](https://vitest.dev/), [@nuxt/test-utils](https://nuxt.com/docs/getting-started/testing)
 - **Package Manager**: [pnpm](https://pnpm.io/)
 - **Linting & Formatting**: [Prettier](https://prettier.io/), [ESLint](https://eslint.org/)
 - **Git Hooks**: [Lefthook](https://github.com/evilmartians/lefthook)
@@ -41,6 +42,23 @@ The following scripts are available for development:
 - `pnpm build`: Builds the application for production.
 - `pnpm generate`: Generates a static version of the site.
 - `pnpm preview`: Previews the production build locally.
+
+## Testing
+
+This project uses [Vitest](https://vitest.dev/) with [`@nuxt/test-utils`](https://nuxt.com/docs/getting-started/testing) for unit and component testing.
+
+### Test Environments
+
+The configuration in `vitest.config.ts` sets up two distinct test projects:
+
+1.  **`unit`**: For simple unit tests that run in a standard Node.js environment. Place these tests in the `test/unit/` directory.
+2.  **`nuxt`**: For tests that require the Nuxt runtime context (e.g., testing components, composables, or server utilities). **Place these tests in the `test/nuxt/` directory.**
+
+### Running Tests
+
+- `pnpm test`: Runs all tests and exits.
+- `pnpm test:nuxt`: Runs only the tests in the `nuxt` environment.
+- `pnpm test:ui`: Starts the Vitest UI for interactive testing.
 
 ## Database
 

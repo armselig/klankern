@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { isClient } from "#app";
 
 // A simple client-side logger composable.

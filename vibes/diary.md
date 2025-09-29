@@ -331,3 +331,11 @@
 - Moved `/Users/henneuma/src/_asl/vibe/composables` to `/Users/henneuma/src/_asl/vibe/app/composables`.
 - Moved `/Users/henneuma/src/_asl/vibe/pages` to `/Users/henneuma/src/_asl/vibe/app/pages`.
 - This change aligns the project structure with Nuxt 4's default and should resolve the blank screen issue.
+
+## 2025-09-29 11:45:00
+
+- Implemented a robust unit testing setup for the Nuxt project using Vitest and the official `@nuxt/test-utils` library.
+- Created a dedicated 'nuxt' test environment in `vitest.config.ts` to properly test server-side utilities.
+- Successfully wrote and debugged unit tests for the Winston logger (`server/utils/logger.ts`), overcoming several configuration and assertion challenges.
+- Configured the `pnpm test` script to perform a single run instead of entering watch mode.
+- Resolved a `no-console` linting warning in the client-side `useLogger` composable by disabling the rule for that specific file.
