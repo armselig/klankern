@@ -1,7 +1,7 @@
-import { db } from "#server/db";
-import { users, roles } from "#server/db/schema"; // Import roles table
+import { db } from "./index";
+import { users, roles } from "./schema"; // Import roles table
 import bcrypt from "bcryptjs";
-import { logger } from "#server/utils/logger";
+import { logger } from "../utils/logger";
 
 async function seed() {
     logger.info("Starting database seeding...");

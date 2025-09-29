@@ -1,5 +1,5 @@
 # Use the official PostgreSQL image as a base
-FROM postgres:16-alpine
+FROM postgres:18-alpine
 
 # Set environment variables for PostgreSQL
 ENV POSTGRES_DB=klankern_db
