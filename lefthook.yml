@@ -14,3 +14,8 @@ pre-commit:
             glob: "*.{js,ts,jsx,tsx,vue}"
             run: pnpm exec eslint --fix {staged_files}
             stage_fixed: true
+
+pre-push:
+    commands:
+        test:
+            run: pnpm run test
