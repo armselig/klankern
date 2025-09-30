@@ -104,7 +104,7 @@ We use Prettier for formatting and ESLint for linting.
 
 ## Project-Specific Guidelines
 
-- For the Klankern project, always use the Winston logger instead of `console.log`. ESLint should be configured to flag `console.log` usage as an error.
+- For the Klankern project, always use the Winston logger instead of `console.log` for server-side logging. For client-side logging, `console.log` is permitted _only_ within the `useLogger` composable. ESLint should be configured to flag direct `console.log` usage in other files as an error.
 
 ## Authentication
 

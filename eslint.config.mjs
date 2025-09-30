@@ -26,13 +26,13 @@ export default withNuxt([
         },
         rules: {
             "vue/multi-word-component-names": "off",
-            "no-console": "error",
+            "no-console": "error", // Default to error for all files
         },
     },
     {
-        files: ["app/**/*.{ts,tsx,vue}", "composables/useLogger.ts"],
+        files: ["app/composables/useLogger.ts"], // Only allow console.log in useLogger.ts
         rules: {
-            "no-console": "warn",
+            "no-console": "off",
         },
     },
     eslintPluginPrettierRecommended,
