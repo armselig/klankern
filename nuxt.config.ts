@@ -13,6 +13,7 @@ export default defineNuxtConfig({
         "@nuxt/test-utils/module",
         "@pinia/nuxt",
     ],
+    css: ["~/assets/styles/index.css"],
     build: {
         transpile: ["zod"],
     },

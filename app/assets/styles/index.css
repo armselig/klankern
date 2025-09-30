@@ -1,0 +1,7 @@
+/* index.css */
+
+@layer reset, vars, base, components, utilities;
+
+@import "./reset.css" layer(reset);
+@import "./vars.css" layer(vars);
+@import "./base.css" layer(base);

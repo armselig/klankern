@@ -1,0 +1,18 @@
+/* vars.css */
+
+:root {
+    /* Colors */
+    --color-primary: light-dark(#1890ff, #69c0ff);
+    --color-secondary: light-dark(#52c41a, #95de64);
+    --color-background: light-dark(#ffffff, #141414);
+    --color-text: light-dark(#333333, #ffffffd9);
+    --color-text-light: light-dark(#666666, #ffffffa6);
+    --color-border: light-dark(#d9d9d9, #434343);
+
+    /* Spacing */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+}
