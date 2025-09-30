@@ -1,10 +1,23 @@
 import { defineStore } from "pinia";
 import { useUserSession } from "#imports";
 import { useLogger } from "~/composables/useLogger";
+import { computed } from "vue";
 
 export const useAuthStore = defineStore("auth", () => {
-    const { fetch: refreshSession } = useUserSession();
+    const {
+        loggedIn,
+        user,
+        fetch: refreshSession,
+        clear: clearSession,
+    } = useUserSession();
     const logger = useLogger();
+
+    const isLoggedIn = computed(() => loggedIn.value);
+
+    const logout = async () => {
+        await clearSession();
+        await navigateTo("/auth/login");
+    };
 
     const login = async (email, password) => {
         try {
@@ -21,5 +34,5 @@ export const useAuthStore = defineStore("auth", () => {
         }
     };
 
-    return { login };
+    return { login, logout, isLoggedIn };
 });
