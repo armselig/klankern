@@ -11,9 +11,12 @@ export default defineConfig({
                     include: ["test/nuxt/**/*.{test,spec}.ts"],
                     environment: "nuxt",
                 },
+                css: {
+                    include: /.+/,
+                },
                 resolve: {
                     alias: {
-                        "~": path.resolve(__dirname, "./"),
+                        "~": path.resolve(__dirname, "./app"),
                         "~~": path.resolve(__dirname, "./"),
                         "#server": path.resolve(__dirname, "./server"),
                     },

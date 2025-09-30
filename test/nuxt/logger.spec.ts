@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { logger } from "~/server/utils/logger";
+import { logger } from "#server/utils/logger";
 import winston from "winston";
 
 describe("server/utils/logger", () => {
