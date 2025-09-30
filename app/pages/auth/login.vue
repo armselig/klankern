@@ -3,22 +3,26 @@
         <form class="login-form" @submit.prevent="submitLoginForm">
             <h2>Login</h2>
             <div class="form-group">
-                <label for="login-form__email-input">Email:</label>
-                <input
-                    id="login-form__email-input"
-                    v-model="email"
-                    type="email"
-                    required
-                />
+                <label>
+                    Email:
+                    <input
+                        id="login-form__email-input"
+                        v-model="email"
+                        type="email"
+                        required
+                    />
+                </label>
             </div>
             <div class="form-group">
-                <label for="login-form__password-input">Password:</label>
-                <input
-                    id="login-form__password__input"
-                    v-model="password"
-                    type="password"
-                    required
-                />
+                <label>
+                    Password:
+                    <input
+                        id="login-form__password-input"
+                        v-model="password"
+                        type="password"
+                        required
+                    />
+                </label>
             </div>
             <button type="submit">Login</button>
         </form>

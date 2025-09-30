@@ -13,23 +13,25 @@
 
         <form v-if="role" @submit.prevent="handleUpdateRole">
             <div class="form-group">
-                <label for="role-edit__name-input">Role Name:</label>
-                <input
-                    id="role-edit__name-input"
-                    v-model="role.name"
-                    type="text"
-                    required
-                />
+                <label>
+                    Role Name:
+                    <input
+                        id="role-edit__name-input"
+                        v-model="role.name"
+                        type="text"
+                        required
+                    />
+                </label>
             </div>
 
             <div class="form-group">
-                <label for="role-edit__description-textarea"
-                    >Description:</label
-                >
-                <textarea
-                    id="role-edit__description-textarea"
-                    v-model="role.description"
-                ></textarea>
+                <label>
+                    Description:
+                    <textarea
+                        id="role-edit__description-textarea"
+                        v-model="role.description"
+                    ></textarea>
+                </label>
             </div>
 
             <button type="submit" :disabled="rolesStore.loading">

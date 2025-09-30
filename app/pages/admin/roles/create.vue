@@ -13,23 +13,25 @@
             </section>
 
             <div class="form-group">
-                <label for="role-create__name-input">Role Name:</label>
-                <input
-                    id="role-create__name-input"
-                    v-model="roleName"
-                    type="text"
-                    required
-                />
+                <label>
+                    Role Name:
+                    <input
+                        id="role-create__name-input"
+                        v-model="roleName"
+                        type="text"
+                        required
+                    />
+                </label>
             </div>
 
             <div class="form-group">
-                <label for="role-create__description-textarea"
-                    >Description:</label
-                >
-                <textarea
-                    id="role-create__description-textarea"
-                    v-model="roleDescription"
-                ></textarea>
+                <label>
+                    Description:
+                    <textarea
+                        id="role-create__description-textarea"
+                        v-model="roleDescription"
+                    ></textarea>
+                </label>
             </div>
 
             <button type="submit" :disabled="rolesStore.loading">

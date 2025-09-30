@@ -5,6 +5,7 @@ import tsParser from "@typescript-eslint/parser";
 import vue from "eslint-plugin-vue";
 import vueParser from "vue-eslint-parser";
 import importPlugin from "eslint-plugin-import";
+import vueA11y from "eslint-plugin-vuejs-accessibility"; // New import
 
 export default withNuxt([
     {
@@ -17,6 +18,7 @@ export default withNuxt([
             "@typescript-eslint": ts,
             vue: vue,
             import: importPlugin,
+            "vuejs-accessibility": vueA11y, // Add the new plugin
         },
         languageOptions: {
             parser: vueParser,
@@ -35,6 +37,12 @@ export default withNuxt([
         rules: {
             "vue/multi-word-component-names": "off",
             "no-console": "error", // Default to error for all files
+            ...vueA11y.configs.recommended.rules, // Add recommended a11y rules
+            "vuejs-accessibility/label-has-for": ["error", {
+                "required": {
+                    "some": ["nesting", "id"],
+                }
+            }]
         },
     },
     {

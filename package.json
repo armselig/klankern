@@ -57,6 +57,7 @@
         "eslint-plugin-import": "2.32.0",
         "eslint-plugin-prettier": "^5.5.4",
         "eslint-plugin-vue": "^10.5.0",
+        "eslint-plugin-vuejs-accessibility": "2.4.1",
         "happy-dom": "^18.0.1",
         "lefthook": "1.13.4",
         "pg": "8.16.3",
