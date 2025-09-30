@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { useUserSession } from "#app/composables/useUserSession";
+import { useUserSession } from "#imports";
 import { useLogger } from "~/composables/useLogger";
 
 export const useAuthStore = defineStore("auth", () => {

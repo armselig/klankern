@@ -1,12 +1,13 @@
 /* eslint-disable no-console */
-import { isClient } from "#app";
 
-// A simple client-side logger composable.
-// In a real application, this would likely send logs to a server-side endpoint
-// or integrate with a client-side logging library.
+/**
+ * A simple client-side logger composable.
+ * In a real application, this would likely send logs to a server-side endpoint
+ * or integrate with a client-side logging library.
+ */
 export const useLogger = () => {
     const log = (level: string, ...args: any[]) => {
-        if (isClient) {
+        if (import.meta.client) {
             // For now, just use console.log on the client side.
             // This can be replaced with a more sophisticated client-side logger later.
             switch (level) {

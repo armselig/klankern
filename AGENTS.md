@@ -85,6 +85,11 @@ We use Prettier for formatting and ESLint for linting.
 - **Interaction Diary**: Proactively and autonomously maintain a time-stamped diary of our interactions in `./vibes/diary.md`.
 - **Knowledge Graph**: If the MCP server `memory` is available, proactively and autonomously read the graph at the beginning of each session and keep it updated and maintained as you go.
 
+## Default Admin Login
+
+- **Email**: `test@example.com`
+- **Password**: `password123`
+
 ## General Coding Guidelines
 
 - Function and method names should always reflect what they do, avoiding generic names like `handle...`. Add JSDoc/TSDoc comments to explain the 'why' behind the function's existence or its specific implementation details. This is a general rule that applies to all projects and sessions.
