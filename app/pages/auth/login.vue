@@ -26,6 +26,10 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+    middleware: ["guest"],
+});
+
 import { ref } from "vue";
 import { useAuthStore } from "~/stores/auth";
 import { useLogger } from "~/composables/useLogger";
