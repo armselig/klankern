@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 /**
  * A simple client-side logger composable.
  * In a real application, this would likely send logs to a server-side endpoint

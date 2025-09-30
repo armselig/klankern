@@ -345,3 +345,9 @@
 - Updated the knowledge graph with information about the new Vitest testing setup.
 - Removed the "Unresolved Blank Screen Issue" and "Vitest Mocking Issue" from the knowledge graph.
 - Acknowledged the user's request to "obey @AGENTS.md" and confirmed that I am following the guidelines, including maintaining this diary.
+
+## 2025-09-30 13:12:00
+
+- Refactored the `button-base.vue` component to improve reusability and testability by adding props, a BEM-style `id`, and event emissions.
+- Created a new test file, `test/nuxt/button-base.spec.ts`, to ensure the component's functionality, including rendering, disabled state, and click events.
+- Successfully ran the test suite to confirm that all changes are working as expected and that no existing tests were broken.

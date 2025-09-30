@@ -4,6 +4,7 @@ import ts from "@typescript-eslint/eslint-plugin";
 import tsParser from "@typescript-eslint/parser";
 import vue from "eslint-plugin-vue";
 import vueParser from "vue-eslint-parser";
+import importPlugin from "eslint-plugin-import";
 
 export default withNuxt([
     {
@@ -12,6 +13,11 @@ export default withNuxt([
     ...vue.configs["flat/recommended"],
     {
         files: ["**/*.{ts,tsx,vue}"],
+        plugins: {
+            "@typescript-eslint": ts,
+            vue: vue,
+            "import": importPlugin,
+        },
         languageOptions: {
             parser: vueParser,
             parserOptions: {
@@ -20,9 +26,11 @@ export default withNuxt([
                 extraFileExtensions: [".vue"],
             },
         },
-        plugins: {
-            "@typescript-eslint": ts,
-            vue: vue,
+        settings: {
+            "import/resolver": {
+                typescript: true,
+                node: true,
+            },
         },
         rules: {
             "vue/multi-word-component-names": "off",
