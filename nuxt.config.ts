@@ -1,3 +1,4 @@
+import pkg from "./package.json";
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import { fileURLToPath } from "url";
 
@@ -33,6 +34,9 @@ export default defineNuxtConfig({
     runtimeConfig: {
         public: {
             apiBase: process.env.NUXT_PUBLIC_API_BASE || "/api",
+            appName: pkg.name,
+            appVersion: pkg.version,
+            appDescription: pkg.description,
         },
     },
 });

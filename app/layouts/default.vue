@@ -1,7 +1,7 @@
 <template>
     <div>
         <header>
-            <span>{{ APP.name }} v{{ APP.version }}</span>
+            <span>{{ appName }} v{{ appVersion }}</span>
             <client-only>
                 <button-base v-if="isLoggedIn" @click="handleLogout">
                     Logout
@@ -23,8 +23,10 @@
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
 import { useAuthStore } from "~/stores/auth";
-import { APP } from "#shared/constants";
 
+const {
+    public: { appName, appVersion },
+} = useRuntimeConfig();
 const logger = useLogger();
 const authStore = useAuthStore();
 const { isLoggedIn } = storeToRefs(authStore);

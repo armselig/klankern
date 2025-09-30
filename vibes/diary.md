@@ -136,7 +136,7 @@
 
 ## 2025-09-25 14:30:00
 
-- User requested to replace Biome with Prettier and ESLint. This is now a TODO item.
+- User requested to replace Biome with Prettier and ESLint. This task was completed on 2025-09-30.
 
 ## 2025-09-25 15:00:00
 

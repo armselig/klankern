@@ -16,7 +16,7 @@ export default withNuxt([
         plugins: {
             "@typescript-eslint": ts,
             vue: vue,
-            "import": importPlugin,
+            import: importPlugin,
         },
         languageOptions: {
             parser: vueParser,
