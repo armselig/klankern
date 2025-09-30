@@ -1,7 +1,12 @@
 <template>
     <div>
         <header>
-            <span>{{ appName }} v{{ appVersion }}</span>
+            <template v-if="$route.path === '/'">
+                <span>{{ appName }} v{{ appVersion }}</span>
+            </template>
+            <template v-else>
+                <nuxt-link to="/">{{ appName }} v{{ appVersion }}</nuxt-link>
+            </template>
             <client-only>
                 <button-base v-if="isLoggedIn" @click="handleLogout">
                     Logout
