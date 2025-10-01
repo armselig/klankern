@@ -5,11 +5,13 @@ import {
     timestamp,
     pgEnum,
     jsonb,
+    boolean,
+    primaryKey,
 } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 
 // Enums
-export const userRoleEnum = pgEnum("user_role", ["admin", "parent", "child"]);
+export const userRoleEnum = pgEnum("user_role", ["admin", "user"]);
 export const corkboardPostTypeEnum = pgEnum("corkboard_post_type", [
     "note",
     "photo",
@@ -29,14 +31,33 @@ export const users = pgTable("users", {
         .primaryKey()
         .default(sql`uuidv7()`),
     email: text("email").notNull().unique(),
-    passwordHash: text("password_hash").notNull(),
-    roleId: uuid("role_id")
-        .notNull()
-        .references(() => roles.id),
+    username: text("username").notNull().unique(),
+    display_name: text("display_name"),
+    password: text("password").notNull(),
+    first_name: text("first_name"),
+    last_name: text("last_name"),
+    is_active: boolean("is_active").default(true),
     dashboardConfig: jsonb("dashboard_config"), // JSONB for dashboard preferences
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
+
+export const userRoles = pgTable(
+    "user_roles",
+    {
+        userId: uuid("user_id")
+            .notNull()
+            .references(() => users.id, { onDelete: "cascade" }),
+        roleId: uuid("role_id")
+            .notNull()
+            .references(() => roles.id, { onDelete: "cascade" }),
+    },
+    (table) => {
+        return {
+            pk: primaryKey({ columns: [table.userId, table.roleId] }),
+        };
+    },
+);
 
 export const sessions = pgTable("sessions", {
     id: uuid("id")
@@ -44,7 +65,7 @@ export const sessions = pgTable("sessions", {
         .default(sql`uuidv7()`),
     userId: uuid("user_id")
         .notNull()
-        .references(() => users.id),
+        .references(() => users.id, { onDelete: "cascade" }),
     token: text("token").notNull().unique(),
     expiresAt: timestamp("expires_at").notNull(),
     createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -56,9 +77,31 @@ export const corkboardPosts = pgTable("corkboard_posts", {
         .default(sql`uuidv7()`),
     userId: uuid("user_id")
         .notNull()
-        .references(() => users.id),
+        .references(() => users.id, { onDelete: "cascade" }),
     type: corkboardPostTypeEnum("type").notNull(),
     data: jsonb("data"), // JSONB for content (note text or photo URL/caption)
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
+
+// Relations
+export const usersRelations = relations(users, ({ many }) => ({
+    userRoles: many(userRoles),
+    sessions: many(sessions),
+    corkboardPosts: many(corkboardPosts),
+}));
+
+export const rolesRelations = relations(roles, ({ many }) => ({
+    userRoles: many(userRoles),
+}));
+
+export const userRolesRelations = relations(userRoles, ({ one }) => ({
+    role: one(roles, {
+        fields: [userRoles.roleId],
+        references: [roles.id],
+    }),
+    user: one(users, {
+        fields: [userRoles.userId],
+        references: [users.id],
+    }),
+}));

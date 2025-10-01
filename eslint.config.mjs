@@ -38,11 +38,14 @@ export default withNuxt([
             "vue/multi-word-component-names": "off",
             "no-console": "error", // Default to error for all files
             ...vueA11y.configs.recommended.rules, // Add recommended a11y rules
-            "vuejs-accessibility/label-has-for": ["error", {
-                "required": {
-                    "some": ["nesting", "id"],
-                }
-            }]
+            "vuejs-accessibility/label-has-for": [
+                "error",
+                {
+                    required: {
+                        some: ["nesting", "id"],
+                    },
+                },
+            ],
         },
     },
     {

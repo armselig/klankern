@@ -1,0 +1,52 @@
+<template>
+    <div>
+        <h1>Edit User</h1>
+        <div v-if="loading">Loading user...</div>
+        <div v-else-if="error">Error loading user: {{ error.message }}</div>
+        <user-form v-else-if="user" :user="user" @submit="handleSubmit" />
+    </div>
+</template>
+
+<script setup lang="ts">
+import { onMounted, ref } from "vue";
+import { storeToRefs } from "pinia";
+import { useRoute } from "vue-router";
+import {
+    useAdminUserStore,
+    type UserUpdatePayload,
+} from "~/stores/admin/users";
+import UserForm from "~/components/admin/user-form.vue";
+
+/**
+ * @file Page for editing an existing user.
+ * @description This page fetches the user's data and uses the user-form
+ * component to allow an administrator to modify it.
+ */
+
+const route = useRoute();
+const userStore = useAdminUserStore();
+const { currentUser: user, loading, error } = storeToRefs(userStore);
+
+const userId = route.params.id as string;
+
+/**
+ * Handles the form submission event from the user-form component.
+ * @param formData The updated user data from the form.
+ */
+async function handleSubmit(formData: UserUpdatePayload) {
+    try {
+        await userStore.updateUser(userId, formData);
+        await navigateTo("/admin/users");
+    } catch (err) {
+        // The store action will set the error state
+    }
+}
+
+/**
+ * Fetches the user data when the component is mounted.
+ * This ensures that the form is populated with the correct data for editing.
+ */
+onMounted(() => {
+    userStore.fetchUser(userId);
+});
+</script>

@@ -7,6 +7,11 @@
             <template v-else>
                 <nuxt-link to="/">{{ appName }} v{{ appVersion }}</nuxt-link>
             </template>
+
+            <nav v-if="isLoggedIn && isAdmin">
+                <nuxt-link to="/admin/users">Users</nuxt-link>
+            </nav>
+
             <client-only>
                 <button-base v-if="isLoggedIn" @click="handleLogout">
                     Logout
@@ -34,7 +39,7 @@ const {
 } = useRuntimeConfig();
 const logger = useLogger();
 const authStore = useAuthStore();
-const { isLoggedIn } = storeToRefs(authStore);
+const { isLoggedIn, isAdmin } = storeToRefs(authStore);
 
 async function handleLogout() {
     logger.info("Logout");
@@ -57,6 +62,7 @@ function handleLogin() {
     header {
         display: flex;
         justify-content: space-between;
+        align-items: center;
     }
 
     footer {
