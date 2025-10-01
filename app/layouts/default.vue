@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div id="body">
         <header>
             <template v-if="$route.path === '/'">
                 <span>{{ appName }} v{{ appVersion }}</span>
@@ -48,11 +48,19 @@ function handleLogin() {
 
 <style>
 @layer layout {
+    #body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100dvh;
+    }
+
     header {
         display: flex;
-        min-height: 0;
-        min-width: 0;
         justify-content: space-between;
+    }
+
+    footer {
+        margin-top: auto; /* and STAY down! */
     }
 }
 </style>
