@@ -1,7 +1,8 @@
 /* index.css */
 
-@layer reset, vars, base, components, utilities;
+@layer reset, theme, base, layout, components, utilities, overrides;
 
 @import "./reset.css" layer(reset);
-@import "./vars.css" layer(vars);
+@import "./vars.css" layer(theme);
 @import "./base.css" layer(base);
+@import "./utils.css" layer(utilities);

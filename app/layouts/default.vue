@@ -45,3 +45,14 @@ function handleLogin() {
     navigateTo("/auth/login");
 }
 </script>
+
+<style>
+@layer layout {
+    header {
+        display: flex;
+        min-height: 0;
+        min-width: 0;
+        justify-content: space-between;
+    }
+}
+</style>
