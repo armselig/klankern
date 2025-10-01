@@ -19,7 +19,7 @@ export const corkboardPostTypeEnum = pgEnum("corkboard_post_type", [
 export const roles = pgTable("roles", {
     id: uuid("id")
         .primaryKey()
-        .default(sql`uuid_generate_v7()`),
+        .default(sql`uuidv7()`),
     name: userRoleEnum("name").notNull().unique(),
     description: text("description"),
 });
@@ -27,7 +27,7 @@ export const roles = pgTable("roles", {
 export const users = pgTable("users", {
     id: uuid("id")
         .primaryKey()
-        .default(sql`uuid_generate_v7()`),
+        .default(sql`uuidv7()`),
     email: text("email").notNull().unique(),
     passwordHash: text("password_hash").notNull(),
     roleId: uuid("role_id")
@@ -41,7 +41,7 @@ export const users = pgTable("users", {
 export const sessions = pgTable("sessions", {
     id: uuid("id")
         .primaryKey()
-        .default(sql`uuid_generate_v7()`),
+        .default(sql`uuidv7()`),
     userId: uuid("user_id")
         .notNull()
         .references(() => users.id),
@@ -53,7 +53,7 @@ export const sessions = pgTable("sessions", {
 export const corkboardPosts = pgTable("corkboard_posts", {
     id: uuid("id")
         .primaryKey()
-        .default(sql`uuid_generate_v7()`),
+        .default(sql`uuidv7()`),
     userId: uuid("user_id")
         .notNull()
         .references(() => users.id),

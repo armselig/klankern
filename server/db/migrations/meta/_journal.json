@@ -8,6 +8,13 @@
             "when": 1758980723058,
             "tag": "0000_first_dreadnoughts",
             "breakpoints": true
+        },
+        {
+            "idx": 1,
+            "version": "7",
+            "when": 1759323389418,
+            "tag": "0001_ambitious_ozymandias",
+            "breakpoints": true
         }
     ]
 }

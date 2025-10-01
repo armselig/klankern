@@ -1,7 +1,7 @@
 CREATE TYPE "public"."corkboard_post_type" AS ENUM('note', 'photo');--> statement-breakpoint
 CREATE TYPE "public"."user_role" AS ENUM('admin', 'parent', 'child');--> statement-breakpoint
 CREATE TABLE "corkboard_posts" (
-	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
 	"user_id" uuid NOT NULL,
 	"type" "corkboard_post_type" NOT NULL,
 	"data" jsonb,
@@ -10,14 +10,14 @@ CREATE TABLE "corkboard_posts" (
 );
 --> statement-breakpoint
 CREATE TABLE "roles" (
-	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
 	"name" "user_role" NOT NULL,
 	"description" text,
 	CONSTRAINT "roles_name_unique" UNIQUE("name")
 );
 --> statement-breakpoint
 CREATE TABLE "sessions" (
-	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
 	"user_id" uuid NOT NULL,
 	"token" text NOT NULL,
 	"expires_at" timestamp NOT NULL,
@@ -26,7 +26,7 @@ CREATE TABLE "sessions" (
 );
 --> statement-breakpoint
 CREATE TABLE "users" (
-	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
 	"email" text NOT NULL,
 	"password_hash" text NOT NULL,
 	"role_id" uuid NOT NULL,

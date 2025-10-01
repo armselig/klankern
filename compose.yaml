@@ -1,6 +1,6 @@
 services:
     db:
-        image: altacoda/pg_uuidv7:latest
+        build: ./docker/postgres
         container_name: klankern_db_container
         restart: always
         ports:
