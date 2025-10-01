@@ -10,6 +10,7 @@ export default defineConfig({
                     name: "nuxt",
                     include: ["test/nuxt/**/*.{test,spec}.ts"],
                     environment: "nuxt",
+                    setupFiles: ["./test/setup.ts"],
                 },
                 css: {
                     include: /.+/,
@@ -27,6 +28,7 @@ export default defineConfig({
                     name: "unit",
                     include: ["test/unit/**/*.{test,spec}.ts"],
                     environment: "node",
+                    setupFiles: ["./test/setup.ts"],
                 },
             },
         ],
