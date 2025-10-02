@@ -1,5 +1,6 @@
 import { computed } from "vue";
 import { useUserSession } from "#imports";
+import type { UserCreation } from "#/shared/types/user";
 
 /**
  * @file Composable for admin-related checks.
@@ -21,5 +22,12 @@ export const useAdmin = () => {
         return user.value.roles.some((role) => role.name === "admin");
     });
 
-    return { isAdmin };
+    const createUser = async (userData: UserCreation) => {
+        return useFetch("/api/admin/users", {
+            method: "POST",
+            body: userData,
+        });
+    };
+
+    return { isAdmin, createUser };
 };
