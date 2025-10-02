@@ -47,7 +47,11 @@ const logger = useLogger();
 const submitLoginForm = async () => {
     errorMessage.value = ""; // Clear previous errors
     try {
-        await authStore.login(email.value, password.value);
+        const credentials: LoginCredentials = {
+            email: email.value,
+            password: password.value,
+        };
+        await authStore.login(credentials);
     } catch (error: any) {
         errorMessage.value =
             error.data?.message ||

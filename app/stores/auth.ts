@@ -10,24 +10,13 @@ import { computed } from "vue";
  * authentication status and role.
  */
 
-// Define a more specific type for our user object to provide type safety.
-interface AppUser {
-    id: string;
-    userRoles: {
-        role: {
-            name: "admin" | "user";
-        };
-    }[];
-    [key: string]: any;
-}
-
 export const useAuthStore = defineStore("auth", () => {
     const {
         loggedIn,
         user,
         fetch: refreshSession,
         clear: clearSession,
-    } = useUserSession<AppUser>();
+    } = useUserSession<UserResponse>();
     const logger = useLogger();
 
     const isLoggedIn = computed(() => loggedIn.value);
@@ -38,12 +27,10 @@ export const useAuthStore = defineStore("auth", () => {
      * to check for admin privileges across the application.
      */
     const isAdmin = computed(() => {
-        if (!user.value || !Array.isArray(user.value.userRoles)) {
+        if (!user.value || !Array.isArray(user.value.roles)) {
             return false;
         }
-        return user.value.userRoles.some(
-            (userRole) => userRole.role.name === "admin",
-        );
+        return user.value.roles.some((role) => role.name === "admin");
     });
 
     const logout = async () => {
@@ -51,11 +38,11 @@ export const useAuthStore = defineStore("auth", () => {
         await navigateTo("/auth/login");
     };
 
-    const login = async (email, password) => {
+    const login = async (credentials: LoginCredentials) => {
         try {
             await $fetch("/api/auth/credentials", {
                 method: "POST",
-                body: { email, password },
+                body: credentials,
             });
 
             await refreshSession();

@@ -58,17 +58,11 @@ import { useRolesStore } from "~/stores/admin/roles";
 
 definePageMeta({ middleware: "auth" });
 
-interface Role {
-    id: string;
-    name: string;
-    description: string;
-}
-
 const route = useRoute();
 const router = useRouter();
 const rolesStore = useRolesStore();
 
-const role = ref<Role | null>(null);
+const role = ref<RoleResponse | null>(null);
 
 /**
  * Fetches the role details when the component is mounted.
@@ -91,11 +85,11 @@ const handleUpdateRole = async () => {
     if (!role.value) return;
 
     try {
-        await rolesStore.updateRole(
-            role.value.id,
-            role.value.name,
-            role.value.description,
-        );
+        const updatePayload: UpdateRole = {
+            name: role.value.name,
+            description: role.value.description,
+        };
+        await rolesStore.updateRole(role.value.id, updatePayload);
         router.push("/admin/roles"); // Navigate only on success
     } catch {
         // Error is handled and displayed by the store, no need to re-handle here

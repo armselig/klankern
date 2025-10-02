@@ -1,35 +1,45 @@
-import { defineEventHandler, getRouterParam } from "h3";
+import { defineEventHandler, getRouterParam, createError } from "h3";
 import { db } from "#server/db/index.ts";
 import { roles } from "#server/db/schema.ts";
 import { eq } from "drizzle-orm";
-import { logger } from "#server/utils/logger"; // Import logger
+import { logger } from "#server/utils/logger";
+import { z } from "zod";
 
-export default defineEventHandler(async (event) => {
-    try {
-        const id = getRouterParam(event, "id");
+const roleIdSchema = z.string().uuid();
 
-        if (!id) {
+export default defineEventHandler(
+    async (event): Promise<{ role: RoleResponse }> => {
+        try {
+            const id = getRouterParam(event, "id");
+            const parsedRoleId = roleIdSchema.safeParse(id);
+
+            if (!parsedRoleId.success) {
+                throw createError({
+                    statusCode: 400,
+                    statusMessage: "Invalid Role ID",
+                    data: parsedRoleId.error.errors,
+                });
+            }
+
+            const [role] = await db
+                .select()
+                .from(roles)
+                .where(eq(roles.id, parsedRoleId.data));
+
+            if (!role) {
+                throw createError({
+                    statusCode: 404,
+                    statusMessage: "Role not found.",
+                });
+            }
+
+            return { role };
+        } catch (error) {
+            logger.error("Error fetching role:", error);
             throw createError({
-                statusCode: 400,
-                statusMessage: "Role ID is required.",
+                statusCode: 500,
+                statusMessage: "Failed to fetch role.",
             });
         }
-
-        const [role] = await db.select().from(roles).where(eq(roles.id, id));
-
-        if (!role) {
-            throw createError({
-                statusCode: 404,
-                statusMessage: "Role not found.",
-            });
-        }
-
-        return { role };
-    } catch (error) {
-        logger.error("Error fetching role:", error); // Use logger.error
-        throw createError({
-            statusCode: 500,
-            statusMessage: "Failed to fetch role.",
-        });
-    }
-});
+    },
+);

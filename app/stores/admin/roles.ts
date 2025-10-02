@@ -4,7 +4,7 @@ import { useRuntimeConfig } from "#app";
 import { useLogger } from "~/composables/useLogger";
 
 export const useRolesStore = defineStore("roles", () => {
-    const roles = ref([]);
+    const roles = ref<RoleResponse[]>([]);
     const loading = ref(false);
     const error = ref<Error | null>(null);
     const config = useRuntimeConfig();
@@ -14,7 +14,7 @@ export const useRolesStore = defineStore("roles", () => {
         loading.value = true;
         error.value = null;
         try {
-            const response = await $fetch(
+            const response = await $fetch<{ roles: RoleResponse[] }>(
                 `${config.public.apiBase}/admin/roles`,
             );
             roles.value = response.roles;
@@ -28,18 +28,19 @@ export const useRolesStore = defineStore("roles", () => {
 
     /**
      * Creates a new role by sending a POST request to the API.
-     * @param name The name of the new role.
-     * @param description The description of the new role.
+     * @param newRoleData The data for the new role.
      */
-    async function createRole(name: string, description: string) {
+    async function createRole(newRoleData: CreateRole) {
         loading.value = true;
         error.value = null;
         try {
             await $fetch(`${config.public.apiBase}/admin/roles`, {
                 method: "POST",
-                body: { name, description },
+                body: newRoleData,
             });
-            logger.info("Role created successfully", { name }); // Use logger
+            logger.info("Role created successfully", {
+                name: newRoleData.name,
+            }); // Use logger
             await fetchRoles(); // Refresh the list of roles
         } catch (err: any) {
             logger.error("Failed to create role:", err); // Use logger
@@ -55,11 +56,11 @@ export const useRolesStore = defineStore("roles", () => {
      * @param id The ID of the role to fetch.
      * @returns The fetched role, or null if not found.
      */
-    async function fetchRoleById(id: string) {
+    async function fetchRoleById(id: string): Promise<RoleResponse | null> {
         loading.value = true;
         error.value = null;
         try {
-            const role = await $fetch(
+            const role = await $fetch<RoleResponse>(
                 `${config.public.apiBase}/admin/roles/${id}`,
             );
             logger.info("Role fetched successfully", { id });
@@ -76,18 +77,20 @@ export const useRolesStore = defineStore("roles", () => {
     /**
      * Updates an existing role.
      * @param id The ID of the role to update.
-     * @param name The new name for the role.
-     * @param description The new description for the role.
+     * @param updatedRoleData The new data for the role.
      */
-    async function updateRole(id: string, name: string, description: string) {
+    async function updateRole(id: string, updatedRoleData: UpdateRole) {
         loading.value = true;
         error.value = null;
         try {
             await $fetch(`${config.public.apiBase}/admin/roles/${id}`, {
                 method: "PUT",
-                body: { name, description },
+                body: updatedRoleData,
             });
-            logger.info("Role updated successfully", { id, name });
+            logger.info("Role updated successfully", {
+                id,
+                name: updatedRoleData.name,
+            });
             await fetchRoles(); // Refresh the list of roles
         } catch (err: any) {
             logger.error(`Failed to update role with ID ${id}:`, err);

@@ -66,7 +66,11 @@ const rolesStore = useRolesStore(); // Initialize the store
  */
 const handleCreateRole = async () => {
     try {
-        await rolesStore.createRole(roleName.value, roleDescription.value);
+        const createPayload: CreateRole = {
+            name: roleName.value,
+            description: roleDescription.value,
+        };
+        await rolesStore.createRole(createPayload);
         router.push("/admin/roles"); // Navigate only on success
     } catch {
         // Error is handled and displayed by the store, no need to re-handle here

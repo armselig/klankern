@@ -1,19 +1,25 @@
-### 2025-10-02
+### 2025-10-02 (Continued)
 
-**User Management Module Refinements**
+**Comprehensive Refactoring for Zod Validation and Shared Types**
 
-- **Backend API Updates:**
-    - Refactored user fetching logic in `server/api/admin/users/index.get.ts` to use explicit SQL joins instead of Drizzle ORM's nested `with` clauses, resolving a SQL syntax error for many-to-many relationships.
-    - Fixed password comparison logic in `server/api/auth/credentials.post.ts` by correctly referencing `user.password` instead of `user.passwordHash`.
-    - Added Zod validation for `userId` parameters in `server/api/admin/users/[id].delete.ts`, `server/api/admin/users/[id].get.ts`, `server/api/admin/users/[id].put.ts`, `server/api/admin/users/[id]/reset-password.post.ts`, and `server/api/admin/users/[id]/status.put.ts` for improved robustness.
+- **Backend API Updates (Roles Management):**
+    - Refactored `server/api/admin/roles.get.ts` to use `z.infer<typeof roleSchema>[]` for the return type, ensuring type consistency.
+    - Refactored `server/api/admin/roles.post.ts` to use auto-imported `createRoleSchema` and `RoleResponse` for request body validation and return type.
+    - Refactored `server/api/admin/roles/[id].delete.ts` to add Zod validation for the `id` parameter and use `RoleResponse` for the return type.
+    - Refactored `server/api/admin/roles/[id].get.ts` to add Zod validation for the `id` parameter and use `RoleResponse` for the return type.
+    - Refactored `server/api/admin/roles/[id].put.ts` to add Zod validation for the `id` parameter, use auto-imported `updateRoleSchema` for request body validation, and `RoleResponse` for the return type.
 
-- **Shared Types and Zod Schemas:**
-    - Created `shared/types/user.ts` and moved `newUserSchema`, `updateUserSchema`, `passwordResetSchema`, `roleSchema`, `userResponseSchema`, and `statusUpdateSchema` to this file to enable type sharing between frontend and backend.
+- **Shared Types (New Files):**
+    - Created `shared/types/role.ts` to define `createRoleSchema`, `CreateRole`, `roleResponseSchema`, `RoleResponse`, `updateRoleSchema`, and `UpdateRole` for roles management.
+    - Created `shared/types/auth.ts` to define `loginCredentialsSchema` and `LoginCredentials` for authentication.
 
-- **Frontend Updates:**
-    - Updated frontend user roles display in `app/pages/admin/users/index.vue` to correctly match the new API response structure (`user.roles` instead of `user.userRoles`).
-    - Updated Pinia store (`app/stores/admin/users.ts`) and Vue components (`app/pages/admin/users/create.vue`, `app/pages/admin/users/[id].vue`, `app/components/admin/user-form.vue`) to utilize the new shared Zod-inferred types.
+- **Frontend Updates (Stores and Components):**
+    - Refactored `app/stores/auth.ts` to use `UserResponse` and `LoginCredentials` types from shared schemas, and adjusted the `isAdmin` computed property for consistency.
+    - Refactored `app/stores/admin/roles.ts` to use shared Zod-inferred types (`RoleResponse`, `CreateRole`, `UpdateRole`) for type consistency.
+    - Refactored `app/pages/admin/roles/[id].vue` to use shared Zod-inferred types (`RoleResponse`, `UpdateRole`).
+    - Refactored `app/pages/admin/roles/create.vue` to use shared Zod-inferred types (`CreateRole`).
+    - Refactored `app/pages/auth/login.vue` to use shared Zod-inferred types (`LoginCredentials`).
 
-- **Import Optimization:**
-    - Optimized import statements across all modified files to leverage Nuxt 4's auto-import feature for types from `~/shared/types`.
-    - Ensured `import { z } from "zod";` is explicitly present in server-side files where `zod` is directly used, as `zod` is not auto-imported by Nuxt 4.
+- **Import Management:**
+    - Ensured all files leverage Nuxt 4's auto-import feature for types from `~/shared/types`.
+    - Confirmed that `import { z } from "zod";` is explicitly present in server-side files where `zod` is directly used, as `zod` is not auto-imported by Nuxt 4.
