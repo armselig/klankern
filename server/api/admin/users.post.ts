@@ -1,0 +1,70 @@
+import { db } from "#server/db";
+import { users, userRoles } from "#server/db/schema";
+import { createUserFormSchema } from "#/shared/types/user";
+import { logger } from "#server/utils/logger";
+import { hash } from "bcryptjs";
+
+export default defineEventHandler(async (event) => {
+    try {
+        const body = await readValidatedBody(event, (body) =>
+            createUserFormSchema.parse(body),
+        );
+
+        const hashedPassword = await hash(body.password, 12);
+
+        const newUser = await db.transaction(async (tx) => {
+            const [createdUser] = await tx
+                .insert(users)
+                .values({
+                    email: body.email,
+                    username: body.username,
+                    password: hashedPassword,
+                    display_name: body.display_name,
+                    first_name: body.first_name,
+                    last_name: body.last_name,
+                })
+                .returning();
+
+            if (body.roleIds && body.roleIds.length > 0) {
+                await tx.insert(userRoles).values(
+                    body.roleIds.map((roleId) => ({
+                        userId: createdUser.id,
+                        roleId,
+                    })),
+                );
+            }
+
+            return createdUser;
+        });
+
+        logger.info(`User created: ${newUser.email}`);
+        return newUser;
+    } catch (error: any) {
+        logger.error("Error creating user:", {
+            error: error.message,
+            stack: error.stack,
+        });
+
+        if (error.code === "23505") {
+            // Unique constraint violation for email or username
+            throw createError({
+                statusCode: 409,
+                statusMessage:
+                    "A user with this email or username already exists.",
+            });
+        }
+
+        if (error.name === "ZodError") {
+            throw createError({
+                statusCode: 400,
+                statusMessage: "Validation failed",
+                data: error.errors,
+            });
+        }
+
+        throw createError({
+            statusCode: 500,
+            statusMessage: "An unexpected error occurred.",
+        });
+    }
+});
