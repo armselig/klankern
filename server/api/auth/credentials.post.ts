@@ -2,41 +2,16 @@ import { defineEventHandler, readBody, createError } from "h3";
 
 import bcrypt from "bcryptjs";
 import { db } from "#server/db/index.ts";
-import { roles, userRoles, users } from "#server/db/schema.ts";
-import { eq, sql } from "drizzle-orm";
+import { getUserWithRolesByEmail } from "#server/db/utils";
 import { z } from "zod";
-import { logger } from "#server/utils/logger";
-
-// Define the schema for login request
-const credentialsSchema = z.object({
-    email: z.string().email(),
-    password: z.string().min(6),
-});
 
 export default defineEventHandler(async (event) => {
     try {
         const body = await readBody(event);
-        const { email, password } = credentialsSchema.parse(body);
+        const { email, password } = loginCredentialsSchema.parse(body);
 
         // Find the user by email
-        const userWithRoles = await db
-            .select({
-                id: users.id,
-                email: users.email,
-                password: users.password,
-                roles: sql<
-                    {
-                        id: string;
-                        name: string;
-                        description: string | null;
-                    }[]
-                >`json_agg(json_build_object('id', ${roles.id}, 'name', ${roles.name}, 'description', ${roles.description}))`,
-            })
-            .from(users)
-            .leftJoin(userRoles, eq(users.id, userRoles.userId))
-            .leftJoin(roles, eq(userRoles.roleId, roles.id))
-            .where(eq(users.email, email))
-            .groupBy(users.id);
+        const userWithRoles = await getUserWithRolesByEmail(email);
 
         if (!userWithRoles || userWithRoles.length === 0) {
             throw createError({
