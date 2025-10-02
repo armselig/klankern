@@ -22,7 +22,7 @@ function emitEvent() {
 
 <template>
     <button
-        :[id]="props.id"
+        :id="props.id"
         :type="props.type"
         :disabled="props.disabled"
         @click="emitEvent"

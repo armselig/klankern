@@ -1,7 +1,7 @@
 <template>
     <div>
         <h1>Create New User</h1>
-        <form-user-create @submit="handleCreateUser" />
+        <admin-form-user-create @submit="handleCreateUser" />
         <p v-if="userStore.loading">Creating user...</p>
         <p v-if="userStore.error" class="error">
             Error creating user:
@@ -11,8 +11,8 @@
 </template>
 
 <script setup lang="ts">
-import { useAdminUserStore } from "#/app/stores/admin/users";
-import type { CreateUserFormData } from "#/shared/types/user";
+import { useAdminUserStore } from "~/stores/admin/users";
+import type { CreateUserFormData } from "#imports";
 
 const userStore = useAdminUserStore();
 

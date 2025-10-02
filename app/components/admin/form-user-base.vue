@@ -5,14 +5,14 @@
             <label for="username">Username</label>
             <input
                 id="username"
-                :value="props.username"
+                :value="props.user.username"
                 type="text"
                 required
                 @input="
-                    $emit(
-                        'update:username',
-                        ($event.target as HTMLInputElement).value,
-                    )
+                    $emit('update:user', {
+                        ...props.user,
+                        username: ($event.target as HTMLInputElement).value,
+                    })
                 "
             />
         </div>
@@ -20,14 +20,14 @@
             <label for="email">Email</label>
             <input
                 id="email"
-                :value="props.email"
+                :value="props.user.email"
                 type="email"
                 required
                 @input="
-                    $emit(
-                        'update:email',
-                        ($event.target as HTMLInputElement).value,
-                    )
+                    $emit('update:user', {
+                        ...props.user,
+                        email: ($event.target as HTMLInputElement).value,
+                    })
                 "
             />
         </div>
@@ -36,13 +36,13 @@
             <label for="display_name">Display Name</label>
             <input
                 id="display_name"
-                :value="props.display_name"
+                :value="props.user.display_name"
                 type="text"
                 @input="
-                    $emit(
-                        'update:display_name',
-                        ($event.target as HTMLInputElement).value,
-                    )
+                    $emit('update:user', {
+                        ...props.user,
+                        display_name: ($event.target as HTMLInputElement).value,
+                    })
                 "
             />
         </div>
@@ -50,13 +50,13 @@
             <label for="first_name">First Name</label>
             <input
                 id="first_name"
-                :value="props.first_name"
+                :value="props.user.first_name"
                 type="text"
                 @input="
-                    $emit(
-                        'update:first_name',
-                        ($event.target as HTMLInputElement).value,
-                    )
+                    $emit('update:user', {
+                        ...props.user,
+                        first_name: ($event.target as HTMLInputElement).value,
+                    })
                 "
             />
         </div>
@@ -64,13 +64,13 @@
             <label for="last_name">Last Name</label>
             <input
                 id="last_name"
-                :value="props.last_name"
+                :value="props.user.last_name"
                 type="text"
                 @input="
-                    $emit(
-                        'update:last_name',
-                        ($event.target as HTMLInputElement).value,
-                    )
+                    $emit('update:user', {
+                        ...props.user,
+                        last_name: ($event.target as HTMLInputElement).value,
+                    })
                 "
             />
         </div>
@@ -81,7 +81,7 @@
         <div v-for="role in availableRoles.roles" :key="role.id">
             <input
                 :id="`role-${role.id}`"
-                :checked="props.roleIds.includes(role.id)"
+                :checked="props.user.roleIds.includes(role.id)"
                 type="checkbox"
                 :value="role.id"
                 @change="
@@ -97,7 +97,6 @@
 </template>
 
 <script setup lang="ts">
-/* eslint-disable vue/prop-name-casing */
 import { onMounted } from "vue";
 import { storeToRefs } from "pinia";
 import { useAdminUserStore } from "~/stores/admin/users";
@@ -108,34 +107,23 @@ import { useAdminUserStore } from "~/stores/admin/users";
  * It is designed to be used by `form-user-create.vue` and `form-user-update.vue`.
  */
 
+import type { CreateUserFormData } from "#imports";
+
 const props = defineProps<{
-    username: string;
-    email: string;
-    display_name?: string;
-    first_name?: string;
-    last_name?: string;
-    roleIds: string[];
+    user: CreateUserFormData;
 }>();
 
-const emit = defineEmits([
-    "update:username",
-    "update:email",
-    "update:display_name",
-    "update:first_name",
-    "update:last_name",
-    "update:roleIds",
-]);
+const emit = defineEmits(["update:user"]);
 
 const userStore = useAdminUserStore();
 const { roles: availableRoles } = storeToRefs(userStore);
 
 function handleRoleChange(roleId: string, isChecked: boolean) {
     const newRoleIds = isChecked
-        ? [...props.roleIds, roleId]
-        : props.roleIds.filter((id) => id !== roleId);
-    emit("update:roleIds", newRoleIds);
+        ? [...props.user.roleIds, roleId]
+        : props.user.roleIds.filter((id) => id !== roleId);
+    emit("update:user", { ...props.user, roleIds: newRoleIds });
 }
-
 onMounted(async () => {
     // Fetch available roles if they haven't been fetched already.
     if (availableRoles.value.length === 0) {

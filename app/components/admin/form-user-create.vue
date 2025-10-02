@@ -1,15 +1,36 @@
 <template>
     <form @submit.prevent="handleSubmit">
-        <form-user-base v-model:user="formData" />
+        <AdminFormUserBase v-model:user="formData" />
+
+        <div>
+            <label for="password">Password</label>
+            <input
+                id="password"
+                v-model="formData.password"
+                type="password"
+                required
+            />
+        </div>
+        <div>
+            <label for="confirm_password">Confirm Password</label>
+            <input
+                id="confirm_password"
+                v-model="confirmPassword"
+                type="password"
+                required
+            />
+        </div>
+
         <button-base type="submit">Create User</button-base>
     </form>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import type { CreateUserFormData } from "#/shared/types/user";
 
 const emit = defineEmits(["submit"]);
+const logger = useLogger();
 
 const formData = ref<CreateUserFormData>({
     username: "",
@@ -21,7 +42,20 @@ const formData = ref<CreateUserFormData>({
     roleIds: [] as string[],
 });
 
+const confirmPassword = ref("");
+
+watch(confirmPassword, (newVal) => {
+    if (newVal !== formData.value.password) {
+        // Handle password mismatch error, e.g., set an error message
+        logger.warn("Passwords do not match!");
+    }
+});
+
 const handleSubmit = () => {
+    if (formData.value.password !== confirmPassword.value) {
+        logger.warn("Passwords do not match!");
+        return;
+    }
     emit("submit", formData.value);
 };
 </script>
