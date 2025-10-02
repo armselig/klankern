@@ -60,7 +60,7 @@
 
         <fieldset>
             <legend>Roles</legend>
-            <div v-for="role in availableRoles" :key="role.id">
+            <div v-for="role in availableRoles.roles" :key="role.id">
                 <input
                     :id="`role-${role.id}`"
                     v-model="formData.roleIds"
@@ -144,10 +144,10 @@ function handleSubmit() {
     emit("submit", submissionData);
 }
 
-onMounted(() => {
+onMounted(async () => {
     // Fetch available roles if they haven't been fetched already.
     if (availableRoles.value.length === 0) {
-        userStore.fetchRoles();
+        await userStore.fetchRoles();
     }
 });
 </script>

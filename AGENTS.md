@@ -82,7 +82,6 @@ We use Prettier for formatting and ESLint for linting.
 ## AI Agent Collaboration
 
 - **Agent-Relevant Files**: Keep all files relevant for AI agents within the `./vibes/` directory.
-- **Interaction Diary**: Proactively and autonomously maintain a time-stamped diary of our interactions in `./vibes/diary.md`.
 - **Knowledge Graph**: If the MCP server `memory` is available, proactively and autonomously read the graph at the beginning of each session and keep it updated and maintained as you go.
 
 ## Default Admin Login

@@ -1,25 +1,9 @@
-### 2025-10-02 (Continued)
-
-**Comprehensive Refactoring for Zod Validation and Shared Types**
-
-- **Backend API Updates (Roles Management):**
-    - Refactored `server/api/admin/roles.get.ts` to use `z.infer<typeof roleSchema>[]` for the return type, ensuring type consistency.
-    - Refactored `server/api/admin/roles.post.ts` to use auto-imported `createRoleSchema` and `RoleResponse` for request body validation and return type.
-    - Refactored `server/api/admin/roles/[id].delete.ts` to add Zod validation for the `id` parameter and use `RoleResponse` for the return type.
-    - Refactored `server/api/admin/roles/[id].get.ts` to add Zod validation for the `id` parameter and use `RoleResponse` for the return type.
-    - Refactored `server/api/admin/roles/[id].put.ts` to add Zod validation for the `id` parameter, use auto-imported `updateRoleSchema` for request body validation, and `RoleResponse` for the return type.
-
-- **Shared Types (New Files):**
-    - Created `shared/types/role.ts` to define `createRoleSchema`, `CreateRole`, `roleResponseSchema`, `RoleResponse`, `updateRoleSchema`, and `UpdateRole` for roles management.
-    - Created `shared/types/auth.ts` to define `loginCredentialsSchema` and `LoginCredentials` for authentication.
-
-- **Frontend Updates (Stores and Components):**
-    - Refactored `app/stores/auth.ts` to use `UserResponse` and `LoginCredentials` types from shared schemas, and adjusted the `isAdmin` computed property for consistency.
-    - Refactored `app/stores/admin/roles.ts` to use shared Zod-inferred types (`RoleResponse`, `CreateRole`, `UpdateRole`) for type consistency.
-    - Refactored `app/pages/admin/roles/[id].vue` to use shared Zod-inferred types (`RoleResponse`, `UpdateRole`).
-    - Refactored `app/pages/admin/roles/create.vue` to use shared Zod-inferred types (`CreateRole`).
-    - Refactored `app/pages/auth/login.vue` to use shared Zod-inferred types (`LoginCredentials`).
-
-- **Import Management:**
-    - Ensured all files leverage Nuxt 4's auto-import feature for types from `~/shared/types`.
-    - Confirmed that `import { z } from "zod";` is explicitly present in server-side files where `zod` is directly used, as `zod` is not auto-imported by Nuxt 4.
+2025-10-02: Reviewed AGENTS.md and PROJECT.md to understand project guidelines and context.
+2025-10-02: Read PROJECT.md to get a full understanding of the project.
+2025-10-02: Removed all references to the Klankern diary from the graph.
+2025-10-02: Fixed bug in `app/components/admin/user-form.vue` where roles fieldset showed an empty checkbox by awaiting `fetchRoles` in `onMounted`.
+2025-10-02: Corrected `app/components/admin/user-form.vue` by making the `onMounted` callback `async` to allow the use of `await`.
+2025-10-02: Added logging to `fetchRoles` action in `app/stores/admin/users.ts` to debug why roles are not appearing in the frontend.
+2025-10-02: Added logging to `app/components/admin/user-form.vue` to inspect `availableRoles` before and after fetching.
+2025-10-02: Fixed the empty checkbox issue in `app/components/admin/user-form.vue` by iterating over `availableRoles.roles` in the `v-for` loop.
+2025-10-02: Removed debugging logs from `app/components/admin/user-form.vue` and `app/stores/admin/users.ts`.
