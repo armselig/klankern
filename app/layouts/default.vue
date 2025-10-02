@@ -9,7 +9,10 @@
             </template>
 
             <nav v-if="isLoggedIn && isAdmin">
-                <nuxt-link to="/admin/users">Users</nuxt-link>
+                <ul>
+                    <li><nuxt-link to="/admin/users">Users</nuxt-link></li>
+                    <li><nuxt-link to="/admin/roles">Roles</nuxt-link></li>
+                </ul>
             </nav>
 
             <client-only>
@@ -66,7 +69,8 @@ function handleLogin() {
     }
 
     footer {
-        margin-top: auto; /* and STAY down! */
+        margin-top: auto;
+        /* and STAY down! */
     }
 }
 </style>
