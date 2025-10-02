@@ -1,7 +1,7 @@
 <template>
     <div>
         <h1>Create New User</h1>
-        <user-form @submit="handleSubmit" />
+        <form-user-create @submit="handleSubmit" @cancel="handleCancel" />
         <p v-if="isSubmitting">Creating user...</p>
         <p v-if="error" class="error">
             Error creating user: {{ error.message }}
@@ -12,7 +12,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useAdminUserStore } from "~/stores/admin/users";
-import UserForm from "~/components/admin/user-form.vue";
+import FormUserCreate from "~/components/admin/form-user-create.vue";
 
 /**
  * @file Page for creating a new user.
@@ -42,6 +42,10 @@ async function handleSubmit(formData: NewUser) {
     } finally {
         isSubmitting.value = false;
     }
+}
+
+function handleCancel() {
+    navigateTo("/admin/users");
 }
 </script>
 

@@ -7,6 +7,7 @@ export const newUserSchema = z.object({
     display_name: z.string().optional(),
     first_name: z.string().optional(),
     last_name: z.string().optional(),
+    roleIds: z.array(z.string().uuid()).optional(),
 });
 
 export type NewUser = z.infer<typeof newUserSchema>;
@@ -47,6 +48,30 @@ export const passwordResetSchema = z.object({
 });
 
 export type PasswordReset = z.infer<typeof passwordResetSchema>;
+
+export const baseUserFormSchema = z.object({
+    email: z.string().email(),
+    username: z.string().min(3),
+    display_name: z.string().optional(),
+    first_name: z.string().optional(),
+    last_name: z.string().optional(),
+    roleIds: z.array(z.string().uuid()).optional(),
+});
+
+export const createUserFormSchema = baseUserFormSchema.extend({
+    password: z.string().min(8, "Password must be at least 8 characters long"),
+});
+
+export type CreateUserFormData = z.infer<typeof createUserFormSchema>;
+
+export const updateUserFormSchema = baseUserFormSchema.extend({
+    password: z
+        .string()
+        .min(8, "Password must be at least 8 characters long")
+        .optional(),
+});
+
+export type UpdateUserFormData = z.infer<typeof updateUserFormSchema>;
 
 export const statusUpdateSchema = z.object({
     is_active: z.boolean(),

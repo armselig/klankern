@@ -3,7 +3,11 @@
         <h1>Edit User</h1>
         <div v-if="loading">Loading user...</div>
         <div v-else-if="error">Error loading user: {{ error.message }}</div>
-        <user-form v-else-if="user" :user="user" @submit="handleSubmit" />
+        <form-user-update
+            v-else-if="user"
+            :user="user"
+            @submit="handleSubmit"
+        />
     </div>
 </template>
 
@@ -12,7 +16,7 @@ import { onMounted, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute } from "vue-router";
 import { useAdminUserStore } from "~/stores/admin/users";
-import UserForm from "~/components/admin/user-form.vue";
+import FormUserUpdate from "~/components/admin/form-user-update.vue";
 
 /**
  * @file Page for editing an existing user.
