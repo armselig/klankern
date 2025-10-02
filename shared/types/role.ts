@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const createRoleSchema = z.object({
-    name: z.enum(["admin", "parent", "child"]), // Assuming these are the only valid roles
+    name: z.string().min(1),
     description: z.string().optional(),
 });
 
@@ -16,7 +16,7 @@ export const roleResponseSchema = z.object({
 export type RoleResponse = z.infer<typeof roleResponseSchema>;
 
 export const updateRoleSchema = z.object({
-    name: z.enum(["admin", "parent", "child"]).optional(),
+    name: z.string().min(1).optional(),
     description: z.string().optional(),
 });
 

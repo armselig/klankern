@@ -21,7 +21,7 @@
                 </button-base>
                 <button-base v-else @click="handleLogin"> Login </button-base>
                 <template #placeholder>
-                    <button-base disabled>...</button-base>
+                    <button-base disabled>Logiut</button-base>
                 </template>
             </client-only>
         </header>

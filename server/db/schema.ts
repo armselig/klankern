@@ -11,7 +11,6 @@ import {
 import { relations, sql } from "drizzle-orm";
 
 // Enums
-export const userRoleEnum = pgEnum("user_role", ["admin", "user"]);
 export const corkboardPostTypeEnum = pgEnum("corkboard_post_type", [
     "note",
     "photo",
@@ -22,7 +21,7 @@ export const roles = pgTable("roles", {
     id: uuid("id")
         .primaryKey()
         .default(sql`uuidv7()`),
-    name: userRoleEnum("name").notNull().unique(),
+    name: text("name").notNull().unique(),
     description: text("description"),
 });
 
