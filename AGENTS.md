@@ -104,10 +104,13 @@ We use Prettier for formatting and ESLint for linting.
 ## Project-Specific Guidelines
 
 - For the Klankern project, always use the Winston logger instead of `console.log` for server-side logging. For client-side logging, `console.log` is permitted _only_ within the `useLogger` composable. ESLint should be configured to flag direct `console.log` usage in other files as an error.
+- **Nuxt Auto-Imports**: To ensure consistency and prevent build errors, adhere to the following auto-import rules:
+    - **NEVER** explicitly import from the `~/shared/types` directory. These types are automatically available globally in your application.
+    - For other auto-imported items (like composables from Nuxt modules), if you need to be explicit, **ALWAYS** use the `#imports` virtual alias (e.g., `import { useUserSession } from '#imports';`).
 
 ## Authentication
 
 - We are using `nuxt-security` and `nuxt-auth-utils` for authentication.
 - Server-side utilities from `nuxt-auth-utils` (like `setUserSession`) are auto-imported in the `server/` directory and should not be imported explicitly.
 - Password verification is done using `bcryptjs`.
-- The login logic is handled by the `useAuthStore` Pinia store.
+- The login and logout logic is handled by the `useAuth` composable.

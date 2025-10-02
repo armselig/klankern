@@ -97,6 +97,7 @@
 </template>
 
 <script setup lang="ts">
+/* eslint-disable vue/prop-name-casing */
 import { onMounted } from "vue";
 import { storeToRefs } from "pinia";
 import { useAdminUserStore } from "~/stores/admin/users";

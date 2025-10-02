@@ -34,19 +34,22 @@
 </template>
 
 <script setup lang="ts">
-import { storeToRefs } from "pinia";
-import { useAuthStore } from "~/stores/auth";
+import { useUserSession } from "#imports";
+import { useAuth } from "~/composables/useAuth";
+import { useAdmin } from "~/composables/useAdmin";
 
 const {
     public: { appName, appVersion },
 } = useRuntimeConfig();
 const logger = useLogger();
-const authStore = useAuthStore();
-const { isLoggedIn, isAdmin } = storeToRefs(authStore);
+
+const { loggedIn: isLoggedIn } = useUserSession();
+const { isAdmin } = useAdmin();
+const { logout } = useAuth();
 
 async function handleLogout() {
     logger.info("Logout");
-    await authStore.logout();
+    await logout();
 }
 
 function handleLogin() {

@@ -30,18 +30,18 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({
-    middleware: ["guest"],
-});
-
 import { ref } from "vue";
-import { useAuthStore } from "~/stores/auth";
+import { useAuth } from "~/composables/useAuth";
 import { useLogger } from "~/composables/useLogger";
+
+// definePageMeta({
+//     middleware: ["guest"],
+// });
 
 const email = ref("");
 const password = ref("");
 const errorMessage = ref("");
-const authStore = useAuthStore();
+const { login } = useAuth();
 const logger = useLogger();
 
 const submitLoginForm = async () => {
@@ -51,10 +51,10 @@ const submitLoginForm = async () => {
             email: email.value,
             password: password.value,
         };
-        await authStore.login(credentials);
+        await login(credentials);
     } catch (error: any) {
         errorMessage.value =
-            error.data?.message ||
+            error.data?.statusMessage ||
             "Login failed. Please check your credentials.";
         logger.error("Login error:", error);
     }

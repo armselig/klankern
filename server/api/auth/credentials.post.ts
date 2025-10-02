@@ -1,22 +1,20 @@
 import { defineEventHandler, readBody, createError } from "h3";
-
 import bcrypt from "bcryptjs";
-import { db } from "#server/db/index.ts";
-import { getUserWithRolesByEmail } from "#server/db/utils";
 import { z } from "zod";
+import { getUserWithRolesByEmail } from "#server/db/utils";
+import { logger } from "#server/utils/logger";
 
 export default defineEventHandler(async (event) => {
     try {
         const body = await readBody(event);
         const { email, password } = loginCredentialsSchema.parse(body);
 
-        // Find the user by email
         const userWithRoles = await getUserWithRolesByEmail(email);
 
         if (!userWithRoles || userWithRoles.length === 0) {
             throw createError({
                 statusCode: 401,
-                message: "Invalid credentials",
+                statusMessage: "Invalid credentials",
             });
         }
 
@@ -26,24 +24,15 @@ export default defineEventHandler(async (event) => {
                 ? user.roles
                 : [];
 
-        if (!user) {
-            throw createError({
-                statusCode: 401,
-                message: "Invalid credentials",
-            });
-        }
-
-        // Compare provided password with hashed password
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
         if (!isPasswordValid) {
             throw createError({
                 statusCode: 401,
-                message: "Invalid credentials",
+                statusMessage: "Invalid credentials",
             });
         }
 
-        // Set the user session
         await setUserSession(event, {
             user: {
                 id: user.id,
@@ -55,17 +44,25 @@ export default defineEventHandler(async (event) => {
 
         return { message: "Login successful" };
     } catch (error) {
-        logger.error("Login error:", error);
         if (error instanceof z.ZodError) {
+            logger.debug("Validation failed for login credentials", { error });
             throw createError({
                 statusCode: 400,
-                statusMessage: "Validation failed.",
+                statusMessage: "Invalid input. Please check your credentials.",
                 data: error.issues,
             });
         }
+
+        // If the error is a 401 error we created, just re-throw it
+        if ((error as any).statusCode === 401) {
+            throw error;
+        }
+
+        logger.error("An unexpected error occurred during login", { error });
         throw createError({
             statusCode: 500,
-            statusMessage: "Failed to log in.",
+            statusMessage:
+                "An unexpected error occurred. Please try again later.",
         });
     }
 });
