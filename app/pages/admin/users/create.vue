@@ -11,7 +11,7 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-import { useAdminUserStore, type User } from "~/stores/admin/users";
+import { useAdminUserStore } from "~/stores/admin/users";
 import UserForm from "~/components/admin/user-form.vue";
 
 /**
@@ -31,7 +31,7 @@ const error = ref<any | null>(null);
  * upon success.
  * @param formData The user data from the form.
  */
-async function handleSubmit(formData: Omit<User, "id" | "userRoles">) {
+async function handleSubmit(formData: NewUser) {
     isSubmitting.value = true;
     error.value = null;
     try {

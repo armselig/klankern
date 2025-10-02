@@ -8,32 +8,11 @@ import { useLogger } from "~/composables/useLogger";
  */
 
 // Type definitions
-interface Role {
-    id: string;
-    name: string;
-    description?: string;
-}
-
-export interface User {
-    id: string;
-    email: string;
-    username: string;
-    display_name?: string;
-    first_name?: string;
-    last_name?: string;
-    is_active?: boolean;
-    userRoles: {
-        role: Role;
-    }[];
-}
-
-export type UserUpdatePayload = Partial<
-    Omit<User, "id" | "userRoles"> & { roleIds: string[] }
->;
+type Role = z.infer<typeof roleSchema>;
 
 interface AdminUsersState {
-    users: User[];
-    currentUser: User | null;
+    users: UserResponse[];
+    currentUser: UserResponse | null;
     roles: Role[];
     loading: boolean;
     error: any | null;
@@ -57,7 +36,7 @@ export const useAdminUserStore = defineStore("admin-users", {
             this.loading = true;
             this.error = null;
             try {
-                const users = await $fetch<User[]>("/api/admin/users");
+                const users = await $fetch<UserResponse[]>("/api/admin/users");
                 this.users = users;
             } catch (error) {
                 this.error = error;
@@ -75,7 +54,9 @@ export const useAdminUserStore = defineStore("admin-users", {
             this.loading = true;
             this.error = null;
             try {
-                const user = await $fetch<User>(`/api/admin/users/${id}`);
+                const user = await $fetch<UserResponse>(
+                    `/api/admin/users/${id}`,
+                );
                 this.currentUser = user;
                 return user;
             } catch (error) {
@@ -103,12 +84,12 @@ export const useAdminUserStore = defineStore("admin-users", {
          * Creates a new user.
          * @param userData The data for the new user.
          */
-        async createUser(userData: Omit<User, "id" | "userRoles">) {
+        async createUser(userData: NewUser) {
             const logger = useLogger();
             this.loading = true;
             this.error = null;
             try {
-                const newUser = await $fetch<User>("/api/admin/users", {
+                const newUser = await $fetch<UserResponse>("/api/admin/users", {
                     method: "POST",
                     body: userData,
                 });
@@ -127,12 +108,12 @@ export const useAdminUserStore = defineStore("admin-users", {
          * @param id The ID of the user to update.
          * @param userData The new data for the user.
          */
-        async updateUser(id: string, userData: UserUpdatePayload) {
+        async updateUser(id: string, userData: UpdateUser) {
             const logger = useLogger();
             this.loading = true;
             this.error = null;
             try {
-                const updatedUser = await $fetch<User>(
+                const updatedUser = await $fetch<UserResponse>(
                     `/api/admin/users/${id}`,
                     {
                         method: "PUT",
@@ -180,11 +161,11 @@ export const useAdminUserStore = defineStore("admin-users", {
          * Toggles a user's active status.
          * @param user The user to update.
          */
-        async toggleUserStatus(user: User) {
+        async toggleUserStatus(user: UserResponse) {
             const logger = useLogger();
             const newStatus = !user.is_active;
             try {
-                const updatedUser = await $fetch<User>(
+                const updatedUser = await $fetch<UserResponse>(
                     `/api/admin/users/${user.id}/status`,
                     {
                         method: "PUT",

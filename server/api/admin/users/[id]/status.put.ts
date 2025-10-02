@@ -1,9 +1,11 @@
-import { defineEventHandler, readBody } from "h3";
+import { defineEventHandler, readBody, createError } from "h3";
 import { z } from "zod";
 import { db } from "#server/db";
 import { users } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
 import { eq } from "drizzle-orm";
+
+const userIdSchema = z.string().uuid();
 
 /**
  * @file API endpoint to update a user's active status.
@@ -11,24 +13,19 @@ import { eq } from "drizzle-orm";
  * Separating this from the main update endpoint allows for more granular control and logging.
  */
 
-const statusUpdateSchema = z.object({
-    is_active: z.boolean(),
-});
-
-interface StatusUpdatePayload {
-    is_active: boolean;
-}
-
 export default defineEventHandler(async (event) => {
     const userId = event.context.params?.id;
-    if (!userId) {
+    const parsedUserId = userIdSchema.safeParse(userId);
+
+    if (!parsedUserId.success) {
         throw createError({
             statusCode: 400,
-            statusMessage: "User ID is required",
+            statusMessage: "Invalid User ID",
+            data: parsedUserId.error.errors,
         });
     }
 
-    const body: StatusUpdatePayload = await readBody(event);
+    const body = await readBody(event);
 
     const validation = statusUpdateSchema.safeParse(body);
     if (!validation.success) {
@@ -43,7 +40,7 @@ export default defineEventHandler(async (event) => {
         const [updatedUser] = await db
             .update(users)
             .set({ is_active: validation.data.is_active })
-            .where(eq(users.id, userId))
+            .where(eq(users.id, parsedUserId.data))
             .returning();
 
         if (!updatedUser) {

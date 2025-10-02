@@ -11,10 +11,7 @@
 import { onMounted, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute } from "vue-router";
-import {
-    useAdminUserStore,
-    type UserUpdatePayload,
-} from "~/stores/admin/users";
+import { useAdminUserStore } from "~/stores/admin/users";
 import UserForm from "~/components/admin/user-form.vue";
 
 /**
@@ -33,7 +30,7 @@ const userId = route.params.id as string;
  * Handles the form submission event from the user-form component.
  * @param formData The updated user data from the form.
  */
-async function handleSubmit(formData: UserUpdatePayload) {
+async function handleSubmit(formData: UpdateUser) {
     try {
         await userStore.updateUser(userId, formData);
         await navigateTo("/admin/users");

@@ -1,18 +1,8 @@
 import { defineEventHandler, readBody } from "h3";
-import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { db } from "#server/db";
 import { users, userRoles } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
-
-const newUserSchema = z.object({
-    email: z.string().email(),
-    username: z.string().min(3),
-    password: z.string().min(8),
-    display_name: z.string().optional(),
-    first_name: z.string().optional(),
-    last_name: z.string().optional(),
-});
 
 export default defineEventHandler(async (event) => {
     const body = await readBody(event);

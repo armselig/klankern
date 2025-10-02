@@ -1,4 +1,4 @@
-import { defineEventHandler, readBody } from "h3";
+import { defineEventHandler, readBody, createError } from "h3";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { db } from "#server/db";
@@ -6,30 +6,27 @@ import { users } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
 import { eq } from "drizzle-orm";
 
+const userIdSchema = z.string().uuid();
+
 /**
  * @file API endpoint for an admin to reset a user's password.
  * @description This endpoint allows an administrator to set a new password for a user.
  * It's a critical administrative function that requires appropriate authorization.
  */
 
-const passwordResetSchema = z.object({
-    password: z.string().min(8, "Password must be at least 8 characters long"),
-});
-
-interface PasswordResetPayload {
-    password: string;
-}
-
 export default defineEventHandler(async (event) => {
     const userId = event.context.params?.id;
-    if (!userId) {
+    const parsedUserId = userIdSchema.safeParse(userId);
+
+    if (!parsedUserId.success) {
         throw createError({
             statusCode: 400,
-            statusMessage: "User ID is required",
+            statusMessage: "Invalid User ID",
+            data: parsedUserId.error.errors,
         });
     }
 
-    const body: PasswordResetPayload = await readBody(event);
+    const body = await readBody(event);
 
     const validation = passwordResetSchema.safeParse(body);
     if (!validation.success) {
@@ -46,7 +43,7 @@ export default defineEventHandler(async (event) => {
         const [updatedUser] = await db
             .update(users)
             .set({ password: hashedPassword })
-            .where(eq(users.id, userId))
+            .where(eq(users.id, parsedUserId.data))
             .returning();
 
         if (!updatedUser) {

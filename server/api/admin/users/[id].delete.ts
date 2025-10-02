@@ -1,8 +1,11 @@
-import { defineEventHandler } from "h3";
+import { defineEventHandler, createError } from "h3";
+import { z } from "zod";
 import { db } from "#server/db";
 import { users } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
 import { eq } from "drizzle-orm";
+
+const userIdSchema = z.string().uuid();
 
 /**
  * @file API endpoint to delete a user.
@@ -13,17 +16,20 @@ import { eq } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
     const userId = event.context.params?.id;
-    if (!userId) {
+    const parsedUserId = userIdSchema.safeParse(userId);
+
+    if (!parsedUserId.success) {
         throw createError({
             statusCode: 400,
-            statusMessage: "User ID is required",
+            statusMessage: "Invalid User ID",
+            data: parsedUserId.error.errors,
         });
     }
 
     try {
         const [deletedUser] = await db
             .delete(users)
-            .where(eq(users.id, userId))
+            .where(eq(users.id, parsedUserId.data))
             .returning();
 
         if (!deletedUser) {

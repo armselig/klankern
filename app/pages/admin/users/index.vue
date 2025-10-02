@@ -21,9 +21,7 @@
                     <td>{{ user.username }}</td>
                     <td>{{ user.email }}</td>
                     <td>
-                        {{
-                            user.userRoles.map((ur) => ur.role.name).join(", ")
-                        }}
+                        {{ user.roles.map((role) => role.name).join(", ") }}
                     </td>
                     <td>{{ user.is_active ? "Active" : "Inactive" }}</td>
                     <td>

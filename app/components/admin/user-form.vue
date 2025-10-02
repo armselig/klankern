@@ -90,7 +90,7 @@ import { useAdminUserStore } from "~/stores/admin/users";
 
 const props = defineProps({
     user: {
-        type: Object,
+        type: Object as PropType<UserResponse | null>,
         default: null,
     },
 });
@@ -103,7 +103,7 @@ const { roles: availableRoles } = storeToRefs(userStore);
 const isEditMode = computed(() => !!props.user);
 
 // The formData is a reactive object that holds the state of the form.
-const formData = ref({
+const formData = ref<NewUser | UpdateUser>({
     username: "",
     email: "",
     password: "",
@@ -125,10 +125,10 @@ watch(
         if (newUser) {
             formData.value.username = newUser.username;
             formData.value.email = newUser.email;
-            formData.value.display_name = newUser.display_name || "";
+            formData.value.display_name = newUser.displayName || "";
             formData.value.first_name = newUser.first_name || "";
             formData.value.last_name = newUser.last_name || "";
-            formData.value.roleIds = newUser.userRoles.map((ur) => ur.role.id);
+            formData.value.roleIds = newUser.roles.map((role) => role.id);
         }
     },
     { immediate: true },

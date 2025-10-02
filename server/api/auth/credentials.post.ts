@@ -32,10 +32,7 @@ export default defineEventHandler(async (event) => {
         }
 
         // Compare provided password with hashed password
-        const isPasswordValid = await bcrypt.compare(
-            password,
-            user.passwordHash,
-        );
+        const isPasswordValid = await bcrypt.compare(password, user.password);
 
         if (!isPasswordValid) {
             throw createError({

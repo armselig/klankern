@@ -1,42 +1,21 @@
-import { defineEventHandler, readBody } from "h3";
+import { defineEventHandler, readBody, createError } from "h3";
 import { z } from "zod";
 import { db } from "#server/db";
-import { users, userRoles } from "#server/db/schema";
+import { users, userRoles, roles } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
-/**
- * @file API endpoint to update a user's details.
- * @description This endpoint handles updating user information, including their roles.
- * It uses a transaction to ensure that user details and role assignments are updated atomically.
- */
-
-const updateUserSchema = z.object({
-    email: z.string().email().optional(),
-    username: z.string().min(3).optional(),
-    display_name: z.string().optional(),
-    first_name: z.string().optional(),
-    last_name: z.string().optional(),
-    is_active: z.boolean().optional(),
-    roleIds: z.array(z.string().uuid()).optional(),
-});
-
-interface UserUpdatePayload {
-    email?: string;
-    username?: string;
-    display_name?: string;
-    first_name?: string;
-    last_name?: string;
-    is_active?: boolean;
-    roleIds?: string[];
-}
+const userIdSchema = z.string().uuid();
 
 export default defineEventHandler(async (event) => {
     const userId = event.context.params?.id;
-    if (!userId) {
+    const parsedUserId = userIdSchema.safeParse(userId);
+
+    if (!parsedUserId.success) {
         throw createError({
             statusCode: 400,
-            statusMessage: "User ID is required",
+            statusMessage: "Invalid User ID",
+            data: parsedUserId.error.errors,
         });
     }
 
@@ -64,17 +43,19 @@ export default defineEventHandler(async (event) => {
                 await tx
                     .update(users)
                     .set(userDetails)
-                    .where(eq(users.id, userId));
+                    .where(eq(users.id, parsedUserId.data));
             }
 
             if (roleIds) {
                 // This is a full replacement of roles. We first delete all existing roles
                 // for the user and then insert the new ones.
-                await tx.delete(userRoles).where(eq(userRoles.userId, userId));
+                await tx
+                    .delete(userRoles)
+                    .where(eq(userRoles.userId, parsedUserId.data));
                 if (roleIds.length > 0) {
                     await tx.insert(userRoles).values(
                         roleIds.map((roleId) => ({
-                            userId: userId,
+                            userId: parsedUserId.data,
                             roleId: roleId,
                         })),
                     );
@@ -82,23 +63,36 @@ export default defineEventHandler(async (event) => {
             }
 
             // Fetch the user again to return the updated data, including relations.
-            const user = await tx.query.users.findFirst({
-                where: eq(users.id, userId),
-                with: {
-                    userRoles: {
-                        with: {
-                            role: true,
-                        },
-                    },
-                },
-            });
+            const user = await tx
+                .select({
+                    id: users.id,
+                    email: users.email,
+                    username: users.username,
+                    displayName: users.display_name,
+                    isActive: users.is_active,
+                    createdAt: users.createdAt,
+                    updatedAt: users.updatedAt,
+                    roles: sql<
+                        {
+                            id: string;
+                            name: string;
+                            description: string | null;
+                        }[]
+                    >`json_agg(json_build_object('id', ${roles.id}, 'name', ${roles.name}, 'description', ${roles.description}))`,
+                })
+                .from(users)
+                .leftJoin(userRoles, eq(users.id, userRoles.userId))
+                .leftJoin(roles, eq(userRoles.roleId, roles.id))
+                .where(eq(users.id, parsedUserId.data))
+                .groupBy(users.id)
+                .execute();
 
-            if (!user) {
+            if (!user || user.length === 0) {
                 // This should theoretically not happen if the initial user ID was valid.
                 throw new Error("User not found after update.");
             }
 
-            return user;
+            return user[0];
         });
 
         const { password, ...userWithoutPassword } = updatedUser;
