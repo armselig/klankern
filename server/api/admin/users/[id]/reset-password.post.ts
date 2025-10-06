@@ -1,6 +1,7 @@
+import { passwordResetSchema } from "#imports";
+import { customHashPassword } from "#server/utils/password";
 import { defineEventHandler, readBody, createError } from "h3";
 import { z } from "zod";
-import { hashPassword } from "#imports";
 import { db } from "#server/db";
 import { users } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
@@ -38,7 +39,9 @@ export default defineEventHandler(async (event) => {
     }
 
     try {
-        const hashedPassword = await hashPassword(validation.data.password);
+        const hashedPassword = await customHashPassword(
+            validation.data.password,
+        );
 
         const [updatedUser] = await db
             .update(users)
