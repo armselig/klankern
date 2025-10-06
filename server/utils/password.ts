@@ -4,7 +4,7 @@ import { logger } from "../utils/logger";
 
 const scryptAsync = promisify(scrypt);
 
-export async function verifyPassword(
+export async function customVerifyPassword(
     password: string,
     hash: string,
 ): Promise<boolean> {
@@ -36,7 +36,7 @@ export async function verifyPassword(
     }
 }
 
-export async function hashPassword(password: string): Promise<string> {
+export async function customHashPassword(password: string): Promise<string> {
     const salt = randomBytes(16).toString("base64");
     const n = 16384;
     const r = 8;

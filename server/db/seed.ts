@@ -1,7 +1,7 @@
 import { db } from "./index";
 import { users, roles, userRoles } from "./schema";
 import { logger } from "../utils/logger";
-import { hashPassword } from "#imports";
+import { customHashPassword } from "#server/utils/password";
 
 async function seed() {
     logger.info("Starting database seeding...");
@@ -9,7 +9,7 @@ async function seed() {
     const email = "test@example.com";
     const username = "admin";
     const password = "password123";
-    const hashedPassword = await hashPassword(password);
+    const hashedPassword = await customHashPassword(password);
 
     try {
         // 1. Seed roles

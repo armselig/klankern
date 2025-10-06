@@ -23,8 +23,8 @@ vi.mock("#server/db", () => ({
 }));
 
 vi.mock("#imports", () => ({
-    hashPassword: vi.fn().mockResolvedValue("hashed_password"),
-    verifyPassword: vi.fn().mockResolvedValue(true),
+    customHashPassword: vi.fn().mockResolvedValue("hashed_password"),
+    customVerifyPassword: vi.fn().mockResolvedValue(true),
     defineEventHandler: vi.fn((handler) => handler),
     readBody: vi.fn(),
     createError: vi.fn(),

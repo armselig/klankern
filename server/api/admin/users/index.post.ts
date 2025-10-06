@@ -3,6 +3,8 @@ import { db } from "#server/db";
 import { users, userRoles } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
 
+import { customHashPassword } from "#server/utils/password";
+
 export default defineEventHandler(async (event) => {
     const body = await readBody(event);
 
@@ -19,7 +21,7 @@ export default defineEventHandler(async (event) => {
         validation.data;
 
     try {
-        const hashedPassword = await hashPassword(password);
+        const hashedPassword = await customHashPassword(password);
 
         const newUser = await db.transaction(async (tx) => {
             const [createdUser] = await tx
