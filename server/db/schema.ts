@@ -7,6 +7,7 @@ import {
     jsonb,
     boolean,
     primaryKey,
+    varchar,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
 
@@ -32,7 +33,7 @@ export const users = pgTable("users", {
     email: text("email").notNull().unique(),
     username: text("username").notNull().unique(),
     display_name: text("display_name"),
-    password: text("password").notNull(),
+    password: varchar("password", { length: 255 }).notNull(),
     first_name: text("first_name"),
     last_name: text("last_name"),
     is_active: boolean("is_active").default(true),
