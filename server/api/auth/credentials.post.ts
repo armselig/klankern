@@ -1,8 +1,8 @@
 import { defineEventHandler, readBody, createError } from "h3";
-import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { getUserWithRolesByEmail } from "#server/db/utils";
 import { logger } from "#server/utils/logger";
+import { verifyPassword } from "#imports";
 
 export default defineEventHandler(async (event) => {
     try {
@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
                 ? user.roles
                 : [];
 
-        const isPasswordValid = await bcrypt.compare(password, user.password);
+        const isPasswordValid = await verifyPassword(password, user.password);
 
         if (!isPasswordValid) {
             throw createError({

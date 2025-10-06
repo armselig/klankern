@@ -8,7 +8,7 @@
                 <nuxt-link to="/">{{ appName }} v{{ appVersion }}</nuxt-link>
             </template>
 
-            <nav v-if="isLoggedIn && isAdmin">
+            <nav v-if="loggedIn && isAdmin">
                 <ul>
                     <li><nuxt-link to="/admin/users">Users</nuxt-link></li>
                     <li><nuxt-link to="/admin/roles">Roles</nuxt-link></li>
@@ -16,7 +16,10 @@
             </nav>
 
             <client-only>
-                <button-base v-if="isLoggedIn" @click="handleLogout">
+                <span v-if="loggedIn" class="user-name"
+                    >hallo, {{ user.name }}</span
+                >
+                <button-base v-if="loggedIn" @click="handleLogout">
                     Logout
                 </button-base>
                 <button-base v-else @click="handleLogin"> Login </button-base>
@@ -43,7 +46,7 @@ const {
 } = useRuntimeConfig();
 const logger = useLogger();
 
-const { loggedIn: isLoggedIn } = useUserSession();
+const { loggedIn, user } = useUserSession();
 const { isAdmin } = useAdmin();
 const { logout } = useAuth();
 

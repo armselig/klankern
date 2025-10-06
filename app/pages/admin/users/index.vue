@@ -55,6 +55,10 @@ import { useAdminUserStore, type User } from "~/stores/admin/users";
  * in the system. It fetches the user list from the store on mount.
  */
 
+definePageMeta({
+    middleware: "auth",
+});
+
 const userStore = useAdminUserStore();
 const { users, loading, error } = storeToRefs(userStore);
 

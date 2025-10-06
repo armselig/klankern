@@ -1,6 +1,6 @@
 import { defineEventHandler, readBody, createError } from "h3";
 import { z } from "zod";
-import bcrypt from "bcryptjs";
+import { hashPassword } from "#imports";
 import { db } from "#server/db";
 import { users } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
@@ -38,7 +38,7 @@ export default defineEventHandler(async (event) => {
     }
 
     try {
-        const hashedPassword = await bcrypt.hash(validation.data.password, 10);
+        const hashedPassword = await hashPassword(validation.data.password);
 
         const [updatedUser] = await db
             .update(users)

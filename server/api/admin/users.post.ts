@@ -1,8 +1,7 @@
 import { db } from "#server/db";
 import { users, userRoles } from "#server/db/schema";
-import { createUserFormSchema } from "#imports";
+import { createUserFormSchema, hashPassword } from "#imports";
 import { logger } from "#server/utils/logger";
-import { hash } from "bcryptjs";
 
 export default defineEventHandler(async (event) => {
     try {
@@ -10,7 +9,7 @@ export default defineEventHandler(async (event) => {
             createUserFormSchema.parse(body),
         );
 
-        const hashedPassword = await hash(body.password, 12);
+        const hashedPassword = await hashPassword(body.password);
 
         const newUser = await db.transaction(async (tx) => {
             const [createdUser] = await tx
