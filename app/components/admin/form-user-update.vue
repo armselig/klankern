@@ -1,12 +1,8 @@
 <template>
     <form @submit.prevent="handleSubmit">
         <form-user-base
-            v-model:username="formData.username"
-            v-model:email="formData.email"
-            v-model:display_name="formData.display_name"
-            v-model:first_name="formData.first_name"
-            v-model:last_name="formData.last_name"
-            v-model:role-ids="formData.roleIds"
+            :user="formData"
+            @update:user="(updatedUser) => (formData = updatedUser)"
         />
 
         <div>

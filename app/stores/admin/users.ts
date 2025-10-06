@@ -63,8 +63,9 @@ export const useAdminUserStore = defineStore("admin-users", {
                 this.error = error;
                 logger.error(`Error fetching user with ID ${id}:`, error);
                 throw error;
+            } finally {
+                this.loading = false;
             }
-            this.loading = false;
         },
 
         /**

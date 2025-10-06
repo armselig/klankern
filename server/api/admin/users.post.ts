@@ -1,6 +1,7 @@
 import { db } from "#server/db";
 import { users, userRoles } from "#server/db/schema";
-import { createUserFormSchema, hashPassword } from "#imports";
+import { createUserFormSchema } from "#imports";
+import { customHashPassword } from "#server/utils/password";
 import { logger } from "#server/utils/logger";
 
 export default defineEventHandler(async (event) => {
@@ -9,7 +10,7 @@ export default defineEventHandler(async (event) => {
             createUserFormSchema.parse(body),
         );
 
-        const hashedPassword = await hashPassword(body.password);
+        const hashedPassword = await customHashPassword(body.password);
 
         const newUser = await db.transaction(async (tx) => {
             const [createdUser] = await tx
@@ -45,7 +46,6 @@ export default defineEventHandler(async (event) => {
         });
 
         if (error.code === "23505") {
-            // Unique constraint violation for email or username
             throw createError({
                 statusCode: 409,
                 statusMessage:
