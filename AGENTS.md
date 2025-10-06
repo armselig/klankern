@@ -38,10 +38,10 @@ To set up the development environment, follow these steps:
 
 The following scripts are available for development:
 
-- `pnpm dev`: Starts the development server with hot-reloading.
-- `pnpm build`: Builds the application for production.
-- `pnpm generate`: Generates a static version of the site.
-- `pnpm preview`: Previews the production build locally.
+- `pnpm run dev`: Starts the development server with hot-reloading.
+- `pnpm run build`: Builds the application for production.
+- `pnpm run db:generate`: Generates a static version of the site.
+- `pnpm run preview`: Previews the production build locally.
 
 ## Testing
 
@@ -56,24 +56,24 @@ The configuration in `vitest.config.ts` sets up two distinct test projects:
 
 ### Running Tests
 
-- `pnpm test`: Runs all tests and exits.
-- `pnpm test:nuxt`: Runs only the tests in the `nuxt` environment.
-- `pnpm test:ui`: Starts the Vitest UI for interactive testing.
+- `pnpm run test`: Runs all tests and exits.
+- `pnpm run test:nuxt`: Runs only the tests in the `nuxt` environment.
+- `pnpm run test:ui`: Starts the Vitest UI for interactive testing.
 
 ## Database
 
 The database schema is managed by Drizzle ORM.
 
 - **Schema Definition**: The database schema is defined in `server/db/schema.ts`.
-- **Run Migrations**: To apply migrations, run `pnpm db:migrate`.
-- **Generate Migrations**: After making changes to the schema in `server/db/schema.ts`, generate a new migration by running `pnpm db:generate`.
+- **Run Migrations**: To apply migrations, run `pnpm run db:migrate`.
+- **Generate Migrations**: After making changes to the schema in `server/db/schema.ts`, generate a new migration by running `pnpm run db:generate`.
 
 ## Linting and Formatting
 
 We use Prettier for formatting and ESLint for linting.
 
-- `pnpm lint`: Lints the entire codebase.
-- `pnpm format`: Formats the entire codebase.
+- `pnpm run lint`: Lints the entire codebase.
+- `pnpm run format`: Formats the entire codebase.
 
 ## Version Control
 

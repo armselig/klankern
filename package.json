@@ -69,5 +69,8 @@
         "typescript": "5.9.2",
         "vitest": "3.2.4",
         "vue-eslint-parser": "10.2.0"
-    }
+    },
+    "browserslist": [
+        "defaults, > 0.2% in de"
+    ]
 }
