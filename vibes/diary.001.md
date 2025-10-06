@@ -261,8 +261,8 @@
 - User reported 401 error when accessing `/admin/roles`.
 - Identified the need to implement login functionality.
 - Proposed Backend Login Endpoint (`server/api/auth/login.post.ts`).
-- Discussed validation aspects and recommended `bcryptjs` for password hashing.
-- Installed `bcryptjs`.
+- Discussed validation aspects and recommended `nuxt-auth-utils` for password hashing.
+
 - Created `server/api/auth/login.post.ts`.
 
 ## 2025-09-25 16:40:00

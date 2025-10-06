@@ -2,7 +2,7 @@ import { defineEventHandler, readBody, createError } from "h3";
 import { z } from "zod";
 import { getUserWithRolesByEmail } from "#server/db/utils";
 import { logger } from "#server/utils/logger";
-import { verifyPassword } from "#imports";
+import { verifyPassword } from "../../utils/password";
 
 export default defineEventHandler(async (event) => {
     try {
@@ -23,6 +23,8 @@ export default defineEventHandler(async (event) => {
             user.roles && user.roles.length > 0 && user.roles[0].id !== null
                 ? user.roles
                 : [];
+
+        logger.info(`Verifying password for user: ${user.email}`);
 
         const isPasswordValid = await verifyPassword(password, user.password);
 

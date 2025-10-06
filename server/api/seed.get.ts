@@ -1,9 +1,10 @@
-import { db } from "./index";
-import { users, roles, userRoles } from "./schema";
-import { logger } from "../utils/logger";
+import { defineEventHandler } from "h3";
+import { db } from "#server/db";
+import { users, roles, userRoles } from "#server/db/schema";
+import { logger } from "#server/utils/logger";
 import { hashPassword } from "#imports";
 
-async function seed() {
+export default defineEventHandler(async () => {
     logger.info("Starting database seeding...");
 
     const email = "test@example.com";
@@ -38,7 +39,7 @@ async function seed() {
 
         if (!adminRole) {
             logger.error("Admin role not found after seeding. Exiting.");
-            process.exit(1);
+            return { success: false, message: "Admin role not found" };
         }
 
         // 2. Check if the admin user already exists
@@ -50,7 +51,7 @@ async function seed() {
             logger.info(
                 `User with email ${email} already exists. Skipping insertion.`,
             );
-            return;
+            return { success: true, message: "User already exists" };
         }
 
         // 3. Insert the test user
@@ -75,12 +76,11 @@ async function seed() {
         });
 
         logger.info(`Assigned 'admin' role to user ${newUser.email}`);
+        return { success: true, message: "Database seeded successfully" };
     } catch (error) {
         logger.error("Error during database seeding:", error);
-        process.exit(1);
+        return { success: false, message: "Error during database seeding" };
     } finally {
         logger.info("Database seeding finished.");
     }
-}
-
-seed();
+});

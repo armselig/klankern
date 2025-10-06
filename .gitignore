@@ -22,3 +22,9 @@ logs
 .env
 .env.*
 !.env.example
+
+# Drizzle temporary migrations
+server/db/migrations_temp/
+
+# AI agent internal memory
+.ai/

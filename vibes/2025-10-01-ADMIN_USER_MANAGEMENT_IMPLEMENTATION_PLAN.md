@@ -38,7 +38,7 @@ This plan breaks down the development of the Admin User Management feature into 
     - **Cons**: Lacks full functionality, but that's addressed in later steps.
 
 - **Step 2.2: Implement User Creation API (`POST /api/admin/users`).**
-    - **Task**: Create `server/api/admin/users/index.post.ts`. Implement Zod validation for new user data (email, username, display_name, password, first_name, last_name). Hash the provided password using `bcryptjs`. Insert the new user into the database and assign the 'user' role by default.
+    - **Task**: Create `server/api/admin/users/index.post.ts`. Implement Zod validation for new user data (email, username, display_name, password, first_name, last_name). Hash the provided password using `nuxt-auth-utils`. Insert the new user into the database and assign the 'user' role by default.
     - **Reasoning**: Adds core functionality for creating new users. Includes essential validation and secure password handling from the outset. Assigning a default role is a critical part of user creation.
     - **Pros**: Enables adding new users securely and with validation.
     - **Cons**: None.
@@ -62,7 +62,7 @@ This plan breaks down the development of the Admin User Management feature into 
     - **Cons**: None.
 
 - **Step 2.6: Implement User Password Reset API (`POST /api/admin/users/[id]/reset-password.post.ts`).**
-    - **Task**: Create `server/api/admin/users/[id]/reset-password.post.ts`. This endpoint will accept a new password from the admin, hash it using `bcryptjs`, and update the user's password in the database.
+    - **Task**: Create `server/api/admin/users/[id]/reset-password.post.ts`. This endpoint will accept a new password from the admin, hash it using `nuxt-auth-utils`, and update the user's password in the database.
     - **Reasoning**: Implements the MVP password reset functionality as clarified by the user.
     - **Pros**: Admin can manually reset user passwords for immediate support.
     - **Cons**: Lacks a proper user-facing password reset flow, but this is noted as a future to-do.

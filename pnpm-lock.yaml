@@ -11,9 +11,6 @@ importers:
       '@pinia/nuxt':
         specifier: 0.11.2
         version: 0.11.2(magicast@0.3.5)(pinia@3.0.3(typescript@5.9.2)(vue@3.5.22(typescript@5.9.2)))
-      bcryptjs:
-        specifier: 3.0.2
-        version: 3.0.2
       nuxt:
         specifier: ^4.1.2
         version: 4.1.2(@parcel/watcher@2.5.1)(@types/node@24.6.0)(@vue/compiler-sfc@3.5.22)(db0@0.3.2(drizzle-orm@0.44.5(@types/pg@8.15.5)(pg@8.16.3)))(drizzle-orm@0.44.5(@types/pg@8.15.5)(pg@8.16.3))(eslint@9.36.0(jiti@2.6.0))(ioredis@5.8.0)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.52.3)(terser@5.44.0)(tsx@4.20.6)(typescript@5.9.2)(vite@7.1.7(@types/node@24.6.0)(jiti@2.6.0)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1)
@@ -2003,10 +2000,6 @@ packages:
   basic-auth@2.0.1:
     resolution: {integrity: sha512-NF+epuEdnUYVlGuhaxbbq+dvJttwLnGY+YixlXlME5KpQ5W3CnXA5cVTneY3SPbPDRkcjMbifrwmFYcClgOZeg==}
     engines: {node: '>= 0.8'}
-
-  bcryptjs@3.0.2:
-    resolution: {integrity: sha512-k38b3XOZKv60C4E2hVsXTolJWfkGRMbILBIe2IBITXciy5bOsTKot5kDrf3ZfufQtQOUN5mXceUEpU1rTl9Uog==}
-    hasBin: true
 
   bindings@1.5.0:
     resolution: {integrity: sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==}
@@ -7296,8 +7289,6 @@ snapshots:
   basic-auth@2.0.1:
     dependencies:
       safe-buffer: 5.1.2
-
-  bcryptjs@3.0.2: {}
 
   bindings@1.5.0:
     dependencies:

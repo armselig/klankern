@@ -1,5 +1,4 @@
 import { defineEventHandler, readBody } from "h3";
-import bcrypt from "bcryptjs";
 import { db } from "#server/db";
 import { users, userRoles } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
@@ -20,7 +19,7 @@ export default defineEventHandler(async (event) => {
         validation.data;
 
     try {
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await hashPassword(password);
 
         const newUser = await db.transaction(async (tx) => {
             const [createdUser] = await tx

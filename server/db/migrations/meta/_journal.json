@@ -5,36 +5,8 @@
         {
             "idx": 0,
             "version": "7",
-            "when": 1758980723058,
-            "tag": "0000_first_dreadnoughts",
-            "breakpoints": true
-        },
-        {
-            "idx": 1,
-            "version": "7",
-            "when": 1759323389418,
-            "tag": "0001_ambitious_ozymandias",
-            "breakpoints": true
-        },
-        {
-            "idx": 2,
-            "version": "7",
-            "when": 1759328380932,
-            "tag": "0002_left_songbird",
-            "breakpoints": true
-        },
-        {
-            "idx": 3,
-            "version": "7",
-            "when": 1759330191433,
-            "tag": "0003_dizzy_cannonball",
-            "breakpoints": true
-        },
-        {
-            "idx": 4,
-            "version": "7",
-            "when": 1759435297888,
-            "tag": "0004_grey_logan",
+            "when": 1759778404604,
+            "tag": "0000_plain_the_fury",
             "breakpoints": true
         }
     ]

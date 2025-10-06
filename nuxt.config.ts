@@ -39,4 +39,13 @@ export default defineNuxtConfig({
             appDescription: pkg.description,
         },
     },
+    auth: {
+        hash: {
+            scrypt: {
+                n: 16384,
+                r: 8,
+                p: 1,
+            },
+        },
+    },
 });

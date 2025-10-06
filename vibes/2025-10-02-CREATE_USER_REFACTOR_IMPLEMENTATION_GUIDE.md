@@ -49,7 +49,6 @@ Our goal here is to make the API endpoint more robust, secure, and aligned with 
     import { users } from "#/server/db/schema";
     import { userCreationSchema } from "#/server/db/schemas/user";
     import { logger } from "#/server/utils/logger";
-    import { hash } from "bcryptjs";
 
     export default defineEventHandler(async (event) => {
         try {
@@ -58,7 +57,7 @@ Our goal here is to make the API endpoint more robust, secure, and aligned with 
                 userCreationSchema.parse,
             );
 
-            const hashedPassword = await hash(body.password, 12);
+            const hashedPassword = await hashPassword(body.password);
 
             const newUser = await db
                 .insert(users)

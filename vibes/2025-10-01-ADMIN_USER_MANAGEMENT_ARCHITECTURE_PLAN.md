@@ -53,7 +53,7 @@ This feature will integrate seamlessly into the existing Nuxt.js project structu
 - **Validation**: Zod will be used extensively for input validation on all `POST` and `PUT` requests to ensure data integrity and security.
 - **Authorization**: Server middleware or route-specific checks will be implemented using `nuxt-security` and `nuxt-auth-utils` to ensure only authenticated 'admin' users can access any endpoint under `/api/admin/*`.
 - **Database Interaction**: Drizzle ORM will be used for all database operations. Queries for `index.get.ts` will dynamically apply search, filter, sort, and pagination parameters.
-- **Password Handling**: `bcryptjs` will be used for hashing new passwords before storage and for secure comparison during password resets. Plaintext passwords will never be stored or transmitted.
+- **Password Handling**: `nuxt-auth-utils` will be used for hashing new passwords before storage and for secure comparison during password resets. Plaintext passwords will never be stored or transmitted.
 - **Logging**: Winston will log all significant server-side actions (user creation, modification, deletion, password resets, authorization failures) for auditing and debugging purposes.
 
 **5. Database Schema Considerations (PostgreSQL with Drizzle ORM):**
@@ -81,7 +81,7 @@ This feature will integrate seamlessly into the existing Nuxt.js project structu
 - **Authentication**: Ensure admin user is properly authenticated via `nuxt-auth-utils`.
 - **Authorization**: Strict role-based access control on all admin API endpoints, specifically checking for the 'admin' role.
 - **Input Validation**: Comprehensive Zod validation on all incoming API data.
-- **Password Security**: `bcryptjs` for hashing; never expose plaintext passwords.
+- **Password Security**: `nuxt-auth-utils` for hashing; never expose plaintext passwords.
 - **Rate Limiting**: Consider implementing rate limiting on sensitive endpoints (e.g., password reset) to mitigate brute-force attacks.
 - **Sensitive Data Exposure**: Carefully control which user data is exposed to the frontend, especially for non-admin contexts.
 

@@ -112,5 +112,4 @@ We use Prettier for formatting and ESLint for linting.
 
 - We are using `nuxt-security` and `nuxt-auth-utils` for authentication.
 - Server-side utilities from `nuxt-auth-utils` (like `setUserSession`) are auto-imported in the `server/` directory and should not be imported explicitly.
-- Password verification is done using `bcryptjs`.
 - The login and logout logic is handled by the `useAuth` composable.

@@ -22,7 +22,7 @@ Here's the refined sequential plan:
     - **Action:** I will create a new TypeScript file, `server/db/seed.ts`, which will contain logic to:
         - Connect to the database using Drizzle ORM.
         - Define a default test user (e.g., `email: 'test@example.com'`, `password: 'password123'`).
-        - Hash the password using `bcryptjs`.
+        - Hash the password using `nuxt-auth-utils`.
         - Insert the user into the `users` table.
         - Log the outcome using the Winston logger.
     - **Reasoning:** This automates the creation of a test user, making the setup repeatable and less error-prone than manual database interaction. It also ensures password hashing is handled correctly within the project's environment.
