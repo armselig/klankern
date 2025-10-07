@@ -4,7 +4,7 @@
  */
 
 import type { H3Event } from "h3";
-import { createError, getHeader, setHeader, getRequestIP } from "h3";
+import { createError, getHeader, getRequestIP, setHeader } from "h3";
 import { logger } from "./logger";
 
 /**
