@@ -23,7 +23,7 @@ export const useAdmin = () => {
     });
 
     const createUser = async (userData: UserCreation) => {
-        return useFetch("/api/admin/users", {
+        return await useFetch("/api/admin/users", {
             method: "POST",
             body: userData,
         });
