@@ -37,7 +37,7 @@ export default withNuxt([
         rules: {
             "vue/multi-word-component-names": "off",
             "no-console": "error", // Default to error for all files
-            "@typescript-eslint/prefer-nullish-coalescing": "off", // Disabled for now
+            // "@typescript-eslint/prefer-nullish-coalescing": "off", // Disabled for now
             // Temporarily disable unsafe TypeScript ESLint rules
             "@typescript-eslint/no-unsafe-assignment": "off",
             "@typescript-eslint/no-unsafe-call": "off",
