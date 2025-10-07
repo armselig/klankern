@@ -1,6 +1,6 @@
 import { computed } from "vue";
-import type { UserCreation } from "#/shared/types/user";
 import { useUserSession } from "#imports";
+import type { UserCreation } from "#/shared/types/user";
 
 /**
  * @file Composable for admin-related checks.

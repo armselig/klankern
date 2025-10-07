@@ -1,9 +1,9 @@
-import { eq, sql } from "drizzle-orm";
-import { defineEventHandler, readBody } from "h3";
+import { defineEventHandler, readBody, createError } from "h3";
 import { z } from "zod";
 import { db } from "#server/db";
-import { roles, userRoles, users } from "#server/db/schema";
+import { users, userRoles, roles } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
+import { eq, sql } from "drizzle-orm";
 import { customHashPassword } from "#server/utils/password";
 
 const userIdSchema = z.string().uuid();

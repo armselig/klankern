@@ -112,9 +112,8 @@ export const useAdminUserStore = defineStore("admin-users", {
                 this.error = errorToLog;
                 logger.error("Error creating user:", errorToLog);
                 throw errorToLog;
-            } finally {
-                this.loading = false;
             }
+            this.loading = false;
         },
 
         /**
@@ -150,9 +149,8 @@ export const useAdminUserStore = defineStore("admin-users", {
                 this.error = errorToLog;
                 logger.error(`Error updating user with ID ${id}:`, errorToLog);
                 throw errorToLog;
-            } finally {
-                this.loading = false;
             }
+            this.loading = false;
         },
 
         /**
