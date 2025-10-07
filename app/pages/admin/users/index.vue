@@ -26,15 +26,22 @@
                             "N/A"
                         }}
                     </td>
-                    <td>{{ user.is_active ? "Active" : "Inactive" }}</td>
+                    <td>{{ user.isActive ? "Active" : "Inactive" }}</td>
                     <td>
-                        <nuxt-link :to="`/admin/users/${user.id}`"
+                        <nuxt-link
+                            class="button"
+                            :to="`/admin/users/${user.id}`"
                             >Edit</nuxt-link
                         >
-                        <button-base @click="handleToggleStatus(user)">
-                            {{ user.is_active ? "Deactivate" : "Activate" }}
+                        <button-base
+                            class="button"
+                            @click="handleToggleStatus(user)"
+                        >
+                            {{ user.isActive ? "Deactivate" : "Activate" }}
                         </button-base>
-                        <button-base @click="handleDelete(user.id)"
+                        <button-base
+                            class="button"
+                            @click="handleDelete(user.id)"
                             >Delete</button-base
                         >
                     </td>

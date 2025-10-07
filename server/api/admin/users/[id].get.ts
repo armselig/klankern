@@ -26,6 +26,8 @@ export default defineEventHandler(async (event) => {
                 email: users.email,
                 username: users.username,
                 displayName: users.display_name,
+                first_name: users.first_name,
+                last_name: users.last_name,
                 isActive: users.is_active,
                 createdAt: users.createdAt,
                 updatedAt: users.updatedAt,
@@ -51,7 +53,7 @@ export default defineEventHandler(async (event) => {
             });
         }
 
-        return user;
+        return user as UserResponse;
     } catch (error: unknown) {
         // Type guard to check if the error is a 404 H3Error
         if (

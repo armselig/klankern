@@ -38,7 +38,9 @@ export const users = pgTable("users", {
     is_active: boolean("is_active").default(true),
     dashboardConfig: jsonb("dashboard_config"), // JSONB for dashboard preferences
     createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at")
+        .notNull()
+        .default(sql`now()`),
 });
 
 export const userRoles = pgTable(

@@ -23,6 +23,8 @@ export const userResponseSchema = z.object({
     email: z.string().email(),
     username: z.string(),
     displayName: z.string().nullable(),
+    first_name: z.string().nullable(),
+    last_name: z.string().nullable(),
     isActive: z.boolean(),
     createdAt: z.date(),
     updatedAt: z.date(),
@@ -34,6 +36,10 @@ export type UserResponse = z.infer<typeof userResponseSchema>;
 export const updateUserSchema = z.object({
     email: z.string().email().optional(),
     username: z.string().min(3).optional(),
+    password: z
+        .string()
+        .min(8, "Password must be at least 8 characters long")
+        .optional(),
     display_name: z.string().optional(),
     first_name: z.string().optional(),
     last_name: z.string().optional(),
@@ -68,7 +74,9 @@ export const updateUserFormSchema = baseUserFormSchema.extend({
     password: z
         .string()
         .min(8, "Password must be at least 8 characters long")
-        .optional(),
+        .optional()
+        .or(z.literal(""))
+        .transform((e) => (e === "" ? undefined : e)),
 });
 
 export type UpdateUserFormData = z.infer<typeof updateUserFormSchema>;

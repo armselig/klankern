@@ -4,6 +4,7 @@ import { db } from "#server/db";
 import { users, userRoles, roles } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
 import { eq, sql } from "drizzle-orm";
+import { customHashPassword } from "#server/utils/password";
 
 const userIdSchema = z.string().uuid();
 
@@ -30,7 +31,12 @@ export default defineEventHandler(async (event) => {
         });
     }
 
-    const { roleIds, ...userDetails } = validation.data;
+    const { roleIds, password, ...userDetails } = validation.data;
+
+    if (password) {
+        // Hash the new password before storing it
+        (userDetails as any).password = await customHashPassword(password);
+    }
 
     /**
      * The reason for using a transaction here is to ensure data integrity.

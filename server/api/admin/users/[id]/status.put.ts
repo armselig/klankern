@@ -1,9 +1,9 @@
 import { defineEventHandler, readBody, createError } from "h3";
 import { z } from "zod";
 import { db } from "#server/db";
-import { users } from "#server/db/schema";
+import { users, userRoles, roles } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 const userIdSchema = z.string().uuid();
 
@@ -37,21 +37,57 @@ export default defineEventHandler(async (event) => {
     }
 
     try {
-        const [updatedUser] = await db
+        const [updatedUserResult] = await db
             .update(users)
-            .set({ is_active: validation.data.is_active })
+            .set({
+                is_active: validation.data.is_active,
+                updatedAt: new Date(),
+            })
             .where(eq(users.id, parsedUserId.data))
-            .returning();
+            .returning({ id: users.id }); // Only return ID for subsequent fetch
 
-        if (!updatedUser) {
+        if (!updatedUserResult) {
             throw createError({
                 statusCode: 404,
                 statusMessage: "User not found",
             });
         }
 
-        const { password, ...userWithoutPassword } = updatedUser;
-        return userWithoutPassword;
+        // Fetch the complete user object with roles
+        const [userWithRoles] = await db
+            .select({
+                id: users.id,
+                email: users.email,
+                username: users.username,
+                displayName: users.display_name,
+                first_name: users.first_name,
+                last_name: users.last_name,
+                isActive: users.is_active,
+                createdAt: users.createdAt,
+                updatedAt: users.updatedAt,
+                roles: sql<
+                    {
+                        id: string;
+                        name: string;
+                        description: string | null;
+                    }[]
+                >`json_agg(json_build_object('id', ${roles.id}, 'name', ${roles.name}, 'description', ${roles.description}))`,
+            })
+            .from(users)
+            .leftJoin(userRoles, eq(users.id, userRoles.userId))
+            .leftJoin(roles, eq(userRoles.roleId, roles.id))
+            .where(eq(users.id, updatedUserResult.id))
+            .groupBy(users.id)
+            .execute();
+
+        if (!userWithRoles) {
+            throw createError({
+                statusCode: 404,
+                statusMessage: "User not found after status update.",
+            });
+        }
+
+        return userWithRoles;
     } catch (error: unknown) {
         // Type guard to check if the error is a 404 H3Error
         if (
