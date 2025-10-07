@@ -11,9 +11,7 @@ const props = withDefaults(
     },
 );
 
-const emit = defineEmits<{
-    (e: "click"): void;
-}>();
+const emit = defineEmits<(e: "click") => void>();
 
 function emitEvent() {
     emit("click");

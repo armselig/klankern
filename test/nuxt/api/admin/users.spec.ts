@@ -7,7 +7,7 @@ describe("Admin Users API Access Control", () => {
         it("should return 401 Unauthorized for unauthenticated requests", async () => {
             registerEndpoint("/api/admin/users", {
                 method: "GET",
-                handler: async (event) => {
+                handler: (event) => {
                     if (!event.context.user) {
                         throw createError({
                             statusCode: 401,
@@ -27,7 +27,7 @@ describe("Admin Users API Access Control", () => {
         it("should return 403 Forbidden for authenticated but unauthorized requests", async () => {
             registerEndpoint("/api/admin/users", {
                 method: "GET",
-                handler: async (event) => {
+                handler: (event) => {
                     event.context.user = {
                         id: "user-id-123",
                         email: "user@example.com",
@@ -96,7 +96,7 @@ describe("Admin Users API Access Control", () => {
 
             registerEndpoint("/api/admin/users", {
                 method: "GET",
-                handler: async (event) => {
+                handler: (event) => {
                     event.context.user = {
                         id: "admin-user-id-456",
                         email: "admin@example.com",
@@ -149,7 +149,7 @@ describe("Admin Users API Access Control", () => {
         it("should return 401 Unauthorized for unauthenticated requests", async () => {
             registerEndpoint("/api/admin/users", {
                 method: "POST",
-                handler: async (event) => {
+                handler: (event) => {
                     if (!event.context.user) {
                         throw createError({
                             statusCode: 401,
@@ -173,7 +173,7 @@ describe("Admin Users API Access Control", () => {
         it("should return 403 Forbidden for authenticated but unauthorized requests", async () => {
             registerEndpoint("/api/admin/users", {
                 method: "POST",
-                handler: async (event) => {
+                handler: (event) => {
                     event.context.user = {
                         id: "user-id-123",
                         roles: [{ name: "user" }],
@@ -236,12 +236,12 @@ describe("Admin Users API Access Control", () => {
                 id: "new-user-id",
                 ...validUserData,
             };
-            // @ts-ignore
+            // @ts-expect-error: password is not part of the UserResponse type
             delete newUserResponse.password;
 
             registerEndpoint("/api/admin/users", {
                 method: "POST",
-                handler: async (event) => {
+                handler: (event) => {
                     event.context.user = {
                         id: "admin-user-id-456",
                         roles: [{ name: "admin" }],

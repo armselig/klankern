@@ -22,10 +22,12 @@ vi.mock("#server/db", () => ({
     },
 }));
 
+import type { EventHandler } from "h3"; // Added import for EventHandler
+
 vi.mock("#imports", () => ({
     customHashPassword: vi.fn().mockResolvedValue("hashed_password"),
     customVerifyPassword: vi.fn().mockResolvedValue(true),
-    defineEventHandler: vi.fn((handler) => handler),
+    defineEventHandler: vi.fn((handler: EventHandler): EventHandler => handler), // Explicitly typed handler and return type
     readBody: vi.fn(),
     createError: vi.fn(),
     setUserSession: vi.fn(),

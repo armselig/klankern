@@ -52,9 +52,10 @@ const submitLoginForm = async () => {
             password: password.value,
         };
         await login(credentials);
-    } catch (error: any) {
+    } catch (error: unknown) {
         errorMessage.value =
-            error.data?.statusMessage ||
+            (error as { data?: { statusMessage?: string } })?.data
+                ?.statusMessage ||
             "Login failed. Please check your credentials.";
         logger.error("Login error:", error);
     }

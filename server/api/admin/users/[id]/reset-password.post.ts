@@ -1,6 +1,6 @@
 import { passwordResetSchema } from "#imports";
 import { customHashPassword } from "#server/utils/password";
-import { defineEventHandler, readBody, createError } from "h3";
+import { defineEventHandler, readBody, createError, H3Error } from "h3";
 import { z } from "zod";
 import { db } from "#server/db";
 import { users } from "#server/db/schema";
@@ -59,12 +59,7 @@ export default defineEventHandler(async (event) => {
         return { success: true, message: "Password updated successfully." };
     } catch (error: unknown) {
         // Type guard to check if the error is a 404 H3Error
-        if (
-            typeof error === "object" &&
-            error !== null &&
-            "statusCode" in error &&
-            (error as any).statusCode === 404
-        ) {
+        if (error instanceof H3Error && error.statusCode === 404) {
             throw error; // Re-throw the original 404 error
         }
 

@@ -71,7 +71,7 @@ const handleCreateRole = async () => {
             description: roleDescription.value,
         };
         await rolesStore.createRole(createPayload);
-        router.push("/admin/roles"); // Navigate only on success
+        void router.push("/admin/roles"); // Navigate only on success
     } catch {
         // Error is handled and displayed by the store, no need to re-handle here
         // The component can react to rolesStore.error
@@ -83,7 +83,7 @@ const handleCreateRole = async () => {
  * Navigates back to the roles list page.
  */
 const goBack = () => {
-    router.push("/admin/roles");
+    void router.push("/admin/roles");
 };
 </script>
 

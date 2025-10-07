@@ -33,9 +33,16 @@ export default defineEventHandler(async (event) => {
 
     const { roleIds, password, ...userDetails } = validation.data;
 
+    // Define a type for userDetails that includes an optional password
+    type UserDetailsWithOptionalPassword = typeof userDetails & {
+        password?: string;
+    };
+    const userDetailsWithPassword: UserDetailsWithOptionalPassword =
+        userDetails;
+
     if (password) {
         // Hash the new password before storing it
-        (userDetails as any).password = await customHashPassword(password);
+        userDetailsWithPassword.password = await customHashPassword(password);
     }
 
     /**
@@ -101,11 +108,10 @@ export default defineEventHandler(async (event) => {
             return user[0];
         });
 
-        const { password, ...userWithoutPassword } = updatedUser;
-        return userWithoutPassword;
+        return updatedUser;
     } catch (error) {
         logger.error(`Error updating user with ID ${userId}:`, error);
-        // @ts-ignore
+        // @ts-expect-error h3 createError type mismatch
         throw createError({
             statusCode: 500,
             statusMessage: "Internal Server Error",

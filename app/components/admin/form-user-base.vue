@@ -97,9 +97,11 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { computed, onMounted, type Ref } from "vue"; // Added computed
 import { storeToRefs } from "pinia";
 import { useAdminUserStore } from "~/stores/admin/users";
+import { z } from "zod";
+import { roleSchema } from "#imports";
 
 /**
  * @file Base form component for user details.
@@ -109,14 +111,18 @@ import { useAdminUserStore } from "~/stores/admin/users";
 
 import type { CreateUserFormData } from "#imports";
 
+type Role = z.infer<typeof roleSchema>;
+
 const props = defineProps<{
     user: CreateUserFormData;
 }>();
 
 const emit = defineEmits(["update:user"]);
 
-const userStore = useAdminUserStore();
-const { roles: availableRoles } = storeToRefs(userStore);
+const userStore: ReturnType<typeof useAdminUserStore> = useAdminUserStore(); // Explicitly typed userStore
+const availableRoles = computed<Ref<Role[]>>(
+    () => storeToRefs(userStore).roles,
+); // Using computed property
 
 function handleRoleChange(roleId: string, isChecked: boolean) {
     const newRoleIds = isChecked

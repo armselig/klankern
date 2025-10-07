@@ -1,6 +1,6 @@
 import { it, expect, describe } from "vitest";
 import { registerEndpoint } from "@nuxt/test-utils/runtime";
-import { createError } from "h3";
+import { createError, type H3Error } from "h3"; // Added type H3Error
 
 describe("Admin Roles API", () => {
     it("should return a list of roles", async () => {
@@ -48,9 +48,12 @@ describe("Admin Roles API", () => {
         });
 
         // Make a request to the mocked endpoint and expect it to throw an error
-        await expect($fetch("/api/admin/roles")).rejects.toMatchObject({
-            statusCode: 500,
-            statusMessage: "Failed to fetch roles.",
-        });
+        await expect($fetch("/api/admin/roles")).rejects.toSatisfy(
+            (error: H3Error) => {
+                expect(error.statusCode).toBe(500);
+                expect(error.statusMessage).toBe("Failed to fetch roles.");
+                return true;
+            },
+        );
     });
 });

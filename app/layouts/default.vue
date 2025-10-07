@@ -56,7 +56,7 @@ async function handleLogout() {
 }
 
 function handleLogin() {
-    navigateTo("/auth/login");
+    void navigateTo("/auth/login");
 }
 </script>
 

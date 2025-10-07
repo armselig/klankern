@@ -113,7 +113,7 @@ function handleSubmit() {
 }
 
 function handleCancel() {
-    navigateTo("/admin/users");
+    void navigateTo("/admin/users");
 }
 </script>
 

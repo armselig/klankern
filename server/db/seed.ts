@@ -9,7 +9,7 @@ async function seed() {
     const email = "test@example.com";
     const username = "admin";
     const password = "password123";
-    const hashedPassword = await customHashPassword(password);
+    const hashedPassword: string = await customHashPassword(password);
 
     try {
         // 1. Seed roles
@@ -83,4 +83,4 @@ async function seed() {
     }
 }
 
-seed();
+void seed();

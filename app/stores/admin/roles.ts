@@ -18,9 +18,11 @@ export const useRolesStore = defineStore("roles", () => {
                 `${config.public.apiBase}/admin/roles`,
             );
             roles.value = response.roles;
-        } catch (err: any) {
-            logger.error("Failed to fetch roles:", err); // Use logger
-            error.value = err;
+        } catch (err: unknown) {
+            const errorToLog =
+                err instanceof Error ? err : new Error(String(err));
+            logger.error("Failed to fetch roles:", errorToLog); // Use logger
+            error.value = errorToLog;
         } finally {
             loading.value = false;
         }
@@ -42,9 +44,11 @@ export const useRolesStore = defineStore("roles", () => {
                 name: newRoleData.name,
             }); // Use logger
             await fetchRoles(); // Refresh the list of roles
-        } catch (err: any) {
-            logger.error("Failed to create role:", err); // Use logger
-            error.value = err;
+        } catch (err: unknown) {
+            const errorToLog =
+                err instanceof Error ? err : new Error(String(err));
+            logger.error("Failed to create role:", errorToLog); // Use logger
+            error.value = errorToLog;
             throw err; // Re-throw to allow component to handle navigation if needed
         } finally {
             loading.value = false;
@@ -65,9 +69,11 @@ export const useRolesStore = defineStore("roles", () => {
             );
             logger.info("Role fetched successfully", { id });
             return role;
-        } catch (err: any) {
-            logger.error(`Failed to fetch role with ID ${id}:`, err);
-            error.value = err;
+        } catch (err: unknown) {
+            const errorToLog =
+                err instanceof Error ? err : new Error(String(err));
+            logger.error(`Failed to fetch role with ID ${id}:`, errorToLog);
+            error.value = errorToLog;
             return null;
         } finally {
             loading.value = false;
@@ -92,9 +98,11 @@ export const useRolesStore = defineStore("roles", () => {
                 name: updatedRoleData.name,
             });
             await fetchRoles(); // Refresh the list of roles
-        } catch (err: any) {
-            logger.error(`Failed to update role with ID ${id}:`, err);
-            error.value = err;
+        } catch (err: unknown) {
+            const errorToLog =
+                err instanceof Error ? err : new Error(String(err));
+            logger.error(`Failed to update role with ID ${id}:`, errorToLog);
+            error.value = errorToLog;
             throw err;
         } finally {
             loading.value = false;
@@ -114,9 +122,11 @@ export const useRolesStore = defineStore("roles", () => {
             });
             logger.info("Role deleted successfully", { id });
             await fetchRoles(); // Refresh the list of roles
-        } catch (err: any) {
-            logger.error(`Failed to delete role with ID ${id}:`, err);
-            error.value = err;
+        } catch (err: unknown) {
+            const errorToLog =
+                err instanceof Error ? err : new Error(String(err));
+            logger.error(`Failed to delete role with ID ${id}:`, errorToLog);
+            error.value = errorToLog;
             throw err;
         } finally {
             loading.value = false;

@@ -38,15 +38,42 @@ export default defineEventHandler(async (event) => {
         });
 
         logger.info(`User created: ${newUser.email}`);
-        const { password: _, ...userWithoutPassword } = newUser;
+        const userWithoutPassword = { ...newUser };
+        delete userWithoutPassword.password;
         return userWithoutPassword;
-    } catch (error: any) {
+    } catch (error: unknown) {
+        let errorToLog: Error;
+        if (error instanceof Error) {
+            errorToLog = error;
+        } else if (
+            typeof error === "object" &&
+            error !== null &&
+            "message" in error &&
+            typeof (error as { message: unknown }).message === "string"
+        ) {
+            errorToLog = new Error((error as { message: string }).message);
+        } else {
+            errorToLog = new Error("An unknown error occurred.");
+        }
         logger.error("Error creating user:", {
-            error: error.message,
-            stack: error.stack,
+            message: errorToLog.message,
+            stack: errorToLog.stack,
         });
 
-        if (error.code === "23505") {
+        interface DatabaseError {
+            code: string;
+        }
+
+        function isDatabaseError(error: unknown): error is DatabaseError {
+            return (
+                typeof error === "object" &&
+                error !== null &&
+                "code" in error &&
+                typeof (error as DatabaseError).code === "string"
+            );
+        }
+
+        if (isDatabaseError(error) && error.code === "23505") {
             throw createError({
                 statusCode: 409,
                 statusMessage:
@@ -54,7 +81,7 @@ export default defineEventHandler(async (event) => {
             });
         }
 
-        if (error.name === "ZodError") {
+        if (error instanceof z.ZodError) {
             throw createError({
                 statusCode: 400,
                 statusMessage: "Validation failed",

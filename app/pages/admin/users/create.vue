@@ -20,7 +20,7 @@ const handleCreateUser = async (formData: CreateUserFormData) => {
     try {
         await userStore.createUser(formData);
         await navigateTo("/admin/users");
-    } catch (error) {
+    } catch {
         // Error is already handled and logged in the store
         // We just need to prevent navigation
     }

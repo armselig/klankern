@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute } from "vue-router";
 import { useAdminUserStore } from "~/stores/admin/users";
@@ -42,7 +42,7 @@ async function handleSubmit(formData: UpdateUser) {
     try {
         await userStore.updateUser(userId, formData);
         await navigateTo("/admin/users");
-    } catch (err) {
+    } catch {
         // The store action will set the error state
     }
 }

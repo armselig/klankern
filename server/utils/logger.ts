@@ -1,10 +1,29 @@
-import { createLogger, format, transports } from "winston";
+import { createLogger, format, transports, Logform } from "winston";
 
 const { combine, timestamp, printf, colorize } = format;
 
 // Custom log format
-const logFormat = printf(({ level, message, timestamp, stack }) => {
-    return `${timestamp} ${level}: ${stack || message}`;
+const logFormat = printf((info: Logform.TransformableInfo) => {
+    const { level, message, timestamp, stack } = info;
+    const formattedTimestamp = String(timestamp);
+    const formattedLevel = String(level);
+
+    let formattedMessage: string;
+    if (stack) {
+        formattedMessage =
+            stack instanceof Error
+                ? stack.stack || String(stack)
+                : String(stack);
+    } else if (message) {
+        formattedMessage =
+            message instanceof Error
+                ? message.message || String(message)
+                : String(message);
+    } else {
+        formattedMessage = "";
+    }
+
+    return `${formattedTimestamp} ${formattedLevel}: ${formattedMessage}`;
 });
 
 export const logger = createLogger({

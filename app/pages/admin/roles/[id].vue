@@ -90,7 +90,7 @@ const handleUpdateRole = async () => {
             description: role.value.description,
         };
         await rolesStore.updateRole(role.value.id, updatePayload);
-        router.push("/admin/roles"); // Navigate only on success
+        void router.push("/admin/roles"); // Navigate only on success
     } catch {
         // Error is handled and displayed by the store, no need to re-handle here
         // The component can react to rolesStore.error
@@ -101,7 +101,7 @@ const handleUpdateRole = async () => {
  * Navigates back to the roles list page.
  */
 const goBack = () => {
-    router.push("/admin/roles");
+    void router.push("/admin/roles");
 };
 </script>
 

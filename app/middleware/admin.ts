@@ -5,15 +5,15 @@ import {
 } from "#imports";
 
 export default defineNuxtRouteMiddleware(async () => {
-    const { loggedIn, user } = useUserSession();
+    const { loggedIn, user } = await useUserSession(); // Await useUserSession
 
     if (!loggedIn.value) {
-        return navigateTo("/auth/login");
+        return void navigateTo("/auth/login");
     }
 
     const isAdmin = user.value?.roles.some((role) => role.name === "admin");
 
     if (!isAdmin) {
-        return navigateTo("/"); // Or a dedicated /forbidden page
+        return void navigateTo("/"); // Or a dedicated /forbidden page
     }
 });

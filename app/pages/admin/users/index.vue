@@ -96,7 +96,7 @@ async function handleToggleStatus(user: User) {
  * is always up-to-date when the administrator navigates to this page.
  */
 onMounted(() => {
-    userStore.fetchUsers();
+    void userStore.fetchUsers();
 });
 </script>
 

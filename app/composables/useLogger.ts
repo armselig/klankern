@@ -4,30 +4,38 @@
  * or integrate with a client-side logging library.
  */
 export const useLogger = () => {
-    const log = (level: string, ...args: any[]) => {
+    const log = (level: string, ...args: unknown[]) => {
+        // Changed any[] to unknown[]
         if (import.meta.client) {
             // For now, just use console.log on the client side.
             // This can be replaced with a more sophisticated client-side logger later.
+            const formattedArgs = args.map((arg) => {
+                if (arg instanceof Error) {
+                    return `${arg.message}\n${arg.stack}`;
+                }
+                return arg;
+            });
+
             switch (level) {
                 case "info":
-                    console.info(`[${level.toUpperCase()}]`, ...args);
+                    console.info(`[${level.toUpperCase()}]`, ...formattedArgs);
                     break;
                 case "error":
-                    console.error(`[${level.toUpperCase()}]`, ...args);
+                    console.error(`[${level.toUpperCase()}]`, ...formattedArgs);
                     break;
                 case "warn":
-                    console.warn(`[${level.toUpperCase()}]`, ...args);
+                    console.warn(`[${level.toUpperCase()}]`, ...formattedArgs);
                     break;
                 default:
-                    console.log(`[${level.toUpperCase()}]`, ...args);
+                    console.log(`[${level.toUpperCase()}]`, ...formattedArgs);
             }
         }
     };
 
     return {
-        info: (...args: any[]) => log("info", ...args),
-        error: (...args: any[]) => log("error", ...args),
-        warn: (...args: any[]) => log("warn", ...args),
-        log: (...args: any[]) => log("log", ...args),
+        info: (...args: unknown[]) => log("info", ...args),
+        error: (...args: unknown[]) => log("error", ...args),
+        warn: (...args: unknown[]) => log("warn", ...args),
+        log: (...args: unknown[]) => log("log", ...args),
     };
 };

@@ -8,14 +8,14 @@ import { useLogger } from "~/composables/useLogger";
  */
 
 // Type definitions
-type Role = z.infer<typeof roleSchema>;
+type Role = RoleResponse;
 
 interface AdminUsersState {
     users: UserResponse[];
     currentUser: UserResponse | null;
     roles: Role[];
     loading: boolean;
-    error: any | null;
+    error: unknown;
 }
 
 export const useAdminUserStore = defineStore("admin-users", {
@@ -38,9 +38,11 @@ export const useAdminUserStore = defineStore("admin-users", {
             try {
                 const users = await $fetch<UserResponse[]>("/api/admin/users");
                 this.users = users;
-            } catch (error) {
-                this.error = error;
-                logger.error("Error fetching users:", error);
+            } catch (error: unknown) {
+                const errorToLog =
+                    error instanceof Error ? error : new Error(String(error));
+                this.error = errorToLog;
+                logger.error("Error fetching users:", errorToLog);
             }
             this.loading = false;
         },
@@ -59,10 +61,12 @@ export const useAdminUserStore = defineStore("admin-users", {
                 );
                 this.currentUser = user;
                 return user;
-            } catch (error) {
-                this.error = error;
-                logger.error(`Error fetching user with ID ${id}:`, error);
-                throw error;
+            } catch (error: unknown) {
+                const errorToLog =
+                    error instanceof Error ? error : new Error(String(error));
+                this.error = errorToLog;
+                logger.error(`Error fetching user with ID ${id}:`, errorToLog);
+                throw errorToLog;
             } finally {
                 this.loading = false;
             }
@@ -76,7 +80,13 @@ export const useAdminUserStore = defineStore("admin-users", {
             try {
                 const roles = await $fetch<Role[]>("/api/admin/roles");
                 this.roles = roles;
-            } catch (error) {
+            } catch (error: unknown) {
+                // Explicitly type error as unknown
+                if (error instanceof Error) {
+                    this.error = error;
+                } else {
+                    this.error = new Error(String(error)); // Wrap unknown errors in an Error object
+                }
                 logger.error("Error fetching roles:", error);
             }
         },
@@ -96,10 +106,12 @@ export const useAdminUserStore = defineStore("admin-users", {
                 });
                 this.users.push(newUser);
                 return newUser;
-            } catch (error) {
-                this.error = error;
-                logger.error("Error creating user:", error);
-                throw error;
+            } catch (error: unknown) {
+                const errorToLog =
+                    error instanceof Error ? error : new Error(String(error));
+                this.error = errorToLog;
+                logger.error("Error creating user:", errorToLog);
+                throw errorToLog;
             }
             this.loading = false;
         },
@@ -131,10 +143,12 @@ export const useAdminUserStore = defineStore("admin-users", {
                     this.currentUser = updatedUser;
                 }
                 return updatedUser;
-            } catch (error) {
-                this.error = error;
-                logger.error(`Error updating user with ID ${id}:`, error);
-                throw error;
+            } catch (error: unknown) {
+                const errorToLog =
+                    error instanceof Error ? error : new Error(String(error));
+                this.error = errorToLog;
+                logger.error(`Error updating user with ID ${id}:`, errorToLog);
+                throw errorToLog;
             }
             this.loading = false;
         },
@@ -150,10 +164,12 @@ export const useAdminUserStore = defineStore("admin-users", {
             try {
                 await $fetch(`/api/admin/users/${id}`, { method: "DELETE" });
                 this.users = this.users.filter((u) => u.id !== id);
-            } catch (error) {
-                this.error = error;
-                logger.error(`Error deleting user with ID ${id}:`, error);
-                throw error;
+            } catch (error: unknown) {
+                const errorToLog =
+                    error instanceof Error ? error : new Error(String(error));
+                this.error = errorToLog;
+                logger.error(`Error deleting user with ID ${id}:`, errorToLog);
+                throw errorToLog;
             }
             this.loading = false;
         },
@@ -177,10 +193,12 @@ export const useAdminUserStore = defineStore("admin-users", {
                 if (index !== -1) {
                     this.users[index] = updatedUser;
                 }
-            } catch (error) {
+            } catch (error: unknown) {
+                const errorToLog =
+                    error instanceof Error ? error : new Error(String(error));
                 logger.error(
                     `Error toggling status for user with ID ${user.id}:`,
-                    error,
+                    errorToLog,
                 );
                 // Optionally revert state on failure, or show an error message
             }

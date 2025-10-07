@@ -4,7 +4,7 @@ import { logger } from "#server/utils/logger";
 import { users, userRoles, roles } from "#server/db/schema";
 import { eq, sql } from "drizzle-orm";
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async () => {
     try {
         const usersWithRoles = await db
             .select({

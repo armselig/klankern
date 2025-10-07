@@ -1,4 +1,4 @@
-import { defineEventHandler, createError } from "h3";
+import { defineEventHandler, createError, H3Error } from "h3";
 import { z } from "zod";
 import { db } from "#server/db";
 import { logger } from "#server/utils/logger";
@@ -56,12 +56,7 @@ export default defineEventHandler(async (event) => {
         return user as UserResponse;
     } catch (error: unknown) {
         // Type guard to check if the error is a 404 H3Error
-        if (
-            typeof error === "object" &&
-            error !== null &&
-            "statusCode" in error &&
-            (error as any).statusCode === 404
-        ) {
+        if (error instanceof H3Error && error.statusCode === 404) {
             throw error; // Re-throw the original 404 error
         }
 

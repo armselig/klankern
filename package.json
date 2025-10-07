@@ -66,6 +66,7 @@
         "prettier-plugin-vue": "^1.1.6",
         "tsx": "4.20.6",
         "typescript": "5.9.2",
+        "typescript-eslint": "8.46.0",
         "vitest": "3.2.4",
         "vue-eslint-parser": "10.2.0"
     },
