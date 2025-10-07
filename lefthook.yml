@@ -4,16 +4,16 @@
 pre-commit:
     parallel: true
     commands:
-        prettier:
-            glob: "*.{json,css,html,scss,md,yaml,yml}"
+        biome:
+            glob: "*.{js,ts,jsx,tsx,json}"
+            run: pnpm exec biome check --write {staged_files}
+            stage_fixed: true
+        prettier-vue:
+            glob: "*.{vue,md,yaml,yml,css,html,scss}"
             run: pnpm exec prettier --write {staged_files}
             stage_fixed: true
             exclude:
                 - pnpm-lock.yaml
-        eslint:
-            glob: "*.{js,ts,jsx,tsx,vue}"
-            run: pnpm exec eslint --fix {staged_files}
-            stage_fixed: true
 
 pre-push:
     commands:

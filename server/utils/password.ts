@@ -1,4 +1,4 @@
-import { scrypt, randomBytes, timingSafeEqual } from "node:crypto";
+import { randomBytes, scrypt, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
 import { logger } from "../utils/logger";
 
@@ -15,9 +15,9 @@ export async function customVerifyPassword(
         }
 
         const params = parts[2].split(",");
-        const n = parseInt(params[0].split("=")[1]);
-        const r = parseInt(params[1].split("=")[1]);
-        const p = parseInt(params[2].split("=")[1]);
+        const n = parseInt(params[0].split("=")[1], 10);
+        const r = parseInt(params[1].split("=")[1], 10);
+        const p = parseInt(params[2].split("=")[1], 10);
         const salt = Buffer.from(parts[3], "base64");
         const storedKey = Buffer.from(parts[4], "base64");
 

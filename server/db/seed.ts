@@ -1,7 +1,7 @@
-import { db } from "./index";
-import { users, roles, userRoles } from "./schema";
-import { logger } from "../utils/logger";
 import { customHashPassword } from "#server/utils/password";
+import { logger } from "../utils/logger";
+import { db } from "./index";
+import { roles, userRoles, users } from "./schema";
 
 async function seed() {
     logger.info("Starting database seeding...");

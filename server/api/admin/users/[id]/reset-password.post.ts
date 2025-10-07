@@ -1,11 +1,11 @@
-import { passwordResetSchema } from "#imports";
-import { customHashPassword } from "#server/utils/password";
-import { defineEventHandler, readBody, createError, H3Error } from "h3";
+import { eq } from "drizzle-orm";
+import { createError, defineEventHandler, H3Error, readBody } from "h3";
 import { z } from "zod";
+import { passwordResetSchema } from "#imports";
 import { db } from "#server/db";
 import { users } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
-import { eq } from "drizzle-orm";
+import { customHashPassword } from "#server/utils/password";
 
 const userIdSchema = z.string().uuid();
 

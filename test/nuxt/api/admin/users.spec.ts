@@ -1,6 +1,6 @@
-import { it, expect, describe } from "vitest";
 import { registerEndpoint } from "@nuxt/test-utils/runtime";
 import { createError, readBody } from "h3";
+import { describe, expect, it } from "vitest";
 
 describe("Admin Users API Access Control", () => {
     describe("GET /api/admin/users", () => {

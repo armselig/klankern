@@ -18,9 +18,11 @@
         "db:seed": "tsx server/db/seed.ts",
         "db:start": "podman-compose up -d",
         "db:stop": "podman-compose down",
-        "lint": "eslint .",
-        "lint:fix": "eslint --fix .",
-        "format": "prettier --write ."
+        "lint": "biome lint .",
+        "lint:fix": "biome lint --write .",
+        "format": "biome format --write .",
+        "check": "biome check .",
+        "check:fix": "biome check --write ."
     },
     "dependencies": {
         "@pinia/nuxt": "0.11.2",
@@ -46,6 +48,7 @@
     },
     "packageManager": "pnpm@10.13.1",
     "devDependencies": {
+        "@biomejs/biome": "^2.2.5",
         "@nuxt/eslint": "^1.9.0",
         "@nuxt/eslint-config": "^1.9.0",
         "@nuxt/test-utils": "3.19.2",

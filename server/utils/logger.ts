@@ -1,4 +1,4 @@
-import { createLogger, format, transports, Logform } from "winston";
+import { createLogger, format, type Logform, transports } from "winston";
 
 const { combine, timestamp, printf, colorize } = format;
 

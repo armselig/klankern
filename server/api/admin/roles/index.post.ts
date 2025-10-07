@@ -1,7 +1,7 @@
-import { defineEventHandler, readBody, createError } from "h3";
+import { createError, defineEventHandler, readBody } from "h3";
+import { z } from "zod";
 import { db } from "#server/db/index.ts";
 import { roles } from "#server/db/schema.ts";
-import { z } from "zod";
 import { logger } from "#server/utils/logger";
 
 export default defineEventHandler(

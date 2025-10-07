@@ -1,9 +1,9 @@
-import { defineEventHandler, createError, H3Error } from "h3";
+import { eq, sql } from "drizzle-orm";
+import { createError, defineEventHandler, H3Error } from "h3";
 import { z } from "zod";
 import { db } from "#server/db";
+import { roles, userRoles, users } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
-import { users, userRoles, roles } from "#server/db/schema";
-import { eq, sql } from "drizzle-orm";
 
 const userIdSchema = z.string().uuid();
 

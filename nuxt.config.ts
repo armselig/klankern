@@ -1,6 +1,6 @@
-import pkg from "./package.json";
 // https://nuxt.com/docs/api/configuration/nuxt-config
-import { fileURLToPath } from "url";
+import { fileURLToPath } from "node:url";
+import pkg from "./package.json";
 
 const aliasServer = fileURLToPath(new URL("./server/", import.meta.url));
 
