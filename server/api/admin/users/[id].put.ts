@@ -33,12 +33,10 @@ export default defineEventHandler(async (event) => {
 
     const { roleIds, password, ...userDetails } = validation.data;
 
-    // Define a type for userDetails that includes an optional password
-    type UserDetailsWithOptionalPassword = typeof userDetails & {
+    // Create a new object with the correct type, ensuring password is optional
+    const userDetailsWithPassword: Partial<Omit<UpdateUser, "roleIds">> & {
         password?: string;
-    };
-    const userDetailsWithPassword: UserDetailsWithOptionalPassword =
-        userDetails;
+    } = { ...userDetails };
 
     if (password) {
         // Hash the new password before storing it

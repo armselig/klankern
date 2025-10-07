@@ -1,6 +1,6 @@
+import { eq, sql } from "drizzle-orm";
 import { db } from "#server/db";
 import { roles, userRoles, users } from "#server/db/schema";
-import { eq, sql } from "drizzle-orm";
 
 /**
  * @function getUserWithRolesByEmail

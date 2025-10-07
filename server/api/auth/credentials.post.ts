@@ -1,10 +1,10 @@
 import {
-    defineEventHandler,
-    readBody,
     createError,
-    H3Event,
-    EventHandlerRequest,
+    defineEventHandler,
+    type EventHandlerRequest,
     H3Error,
+    type H3Event,
+    readBody,
 } from "h3";
 import { z } from "zod";
 import { getUserWithRolesByEmail } from "#server/db/utils";

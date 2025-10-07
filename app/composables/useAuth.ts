@@ -1,4 +1,4 @@
-import { useUserSession, navigateTo, useLogger } from "#imports";
+import { navigateTo, useLogger, useUserSession } from "#imports";
 
 /**
  * @file Composable for handling authentication logic.

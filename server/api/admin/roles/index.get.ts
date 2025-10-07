@@ -1,4 +1,4 @@
-import { defineEventHandler, createError } from "h3";
+import { createError, defineEventHandler } from "h3";
 import { db } from "#server/db/index.ts";
 import { roles } from "#server/db/schema.ts";
 import { logger } from "#server/utils/logger";

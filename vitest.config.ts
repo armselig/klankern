@@ -1,6 +1,6 @@
-import { defineConfig } from "vitest/config";
+import path from "node:path";
 import { defineVitestProject } from "@nuxt/test-utils/config";
-import path from "path";
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
     test: {

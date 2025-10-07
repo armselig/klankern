@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { logger } from "#server/utils/logger";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import winston from "winston";
+import { logger } from "#server/utils/logger";
 
 describe("server/utils/logger", () => {
-    let logSpy;
+    let logSpy: ReturnType<typeof vi.spyOn>;
 
     beforeEach(() => {
         const mockTransport = new winston.transports.Console();

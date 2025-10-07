@@ -1,6 +1,6 @@
-import { it, expect, describe } from "vitest";
 import { registerEndpoint } from "@nuxt/test-utils/runtime";
 import { createError, type H3Error } from "h3"; // Added type H3Error
+import { describe, expect, it } from "vitest";
 
 describe("Admin Roles API", () => {
     it("should return a list of roles", async () => {

@@ -1,8 +1,8 @@
+import { eq, sql } from "drizzle-orm";
 import { defineEventHandler } from "h3";
 import { db } from "#server/db";
+import { roles, userRoles, users } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
-import { users, userRoles, roles } from "#server/db/schema";
-import { eq, sql } from "drizzle-orm";
 
 export default defineEventHandler(async () => {
     try {

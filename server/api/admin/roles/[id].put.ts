@@ -1,8 +1,8 @@
-import { defineEventHandler, readBody, createError, getRouterParam } from "h3";
+import { eq } from "drizzle-orm";
+import { createError, defineEventHandler, getRouterParam, readBody } from "h3";
+import { z } from "zod";
 import { db } from "#server/db/index.ts";
 import { roles } from "#server/db/schema.ts";
-import { eq } from "drizzle-orm";
-import { z } from "zod";
 import { logger } from "#server/utils/logger";
 
 const roleIdSchema = z.string().uuid();

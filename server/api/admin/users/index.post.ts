@@ -1,8 +1,8 @@
-import { db } from "#server/db";
-import { users, userRoles } from "#server/db/schema";
 import { createUserFormSchema } from "#imports";
-import { customHashPassword } from "#server/utils/password";
+import { db } from "#server/db";
+import { userRoles, users } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
+import { customHashPassword } from "#server/utils/password";
 
 export default defineEventHandler(async (event) => {
     try {

@@ -60,7 +60,7 @@ export const useRolesStore = defineStore("roles", () => {
      * @param id The ID of the role to fetch.
      * @returns The fetched role, or null if not found.
      */
-    async function fetchRoleById(id: string): Promise<RoleResponse | null> {
+    async function fetchRoleById(id: string): Promise<RoleResponse> {
         loading.value = true;
         error.value = null;
         try {
@@ -74,7 +74,7 @@ export const useRolesStore = defineStore("roles", () => {
                 err instanceof Error ? err : new Error(String(err));
             logger.error(`Failed to fetch role with ID ${id}:`, errorToLog);
             error.value = errorToLog;
-            return null;
+            return;
         } finally {
             loading.value = false;
         }

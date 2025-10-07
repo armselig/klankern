@@ -62,7 +62,7 @@ const route = useRoute();
 const router = useRouter();
 const rolesStore = useRolesStore();
 
-const role = ref<RoleResponse | null>(null);
+const role = ref<RoleResponse>();
 
 /**
  * Fetches the role details when the component is mounted.

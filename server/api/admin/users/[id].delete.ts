@@ -1,9 +1,9 @@
-import { defineEventHandler, createError, H3Error } from "h3";
+import { eq } from "drizzle-orm";
+import { createError, defineEventHandler, H3Error } from "h3";
 import { z } from "zod";
 import { db } from "#server/db";
-import { users, userRoles } from "#server/db/schema";
+import { userRoles, users } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
-import { eq } from "drizzle-orm";
 
 const userIdSchema = z.string().uuid("Invalid user ID format");
 
