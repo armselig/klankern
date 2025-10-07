@@ -63,7 +63,7 @@ import { useAdminUserStore, type User } from "~/stores/admin/users";
  */
 
 definePageMeta({
-    middleware: "auth",
+    middleware: "admin",
 });
 
 const userStore = useAdminUserStore();

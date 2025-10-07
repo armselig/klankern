@@ -24,6 +24,10 @@ import FormUserUpdate from "~/components/admin/form-user-update.vue";
  * component to allow an administrator to modify it.
  */
 
+definePageMeta({
+    middleware: "admin",
+});
+
 const route = useRoute();
 const userStore = useAdminUserStore();
 const { currentUser: user, loading, error } = storeToRefs(userStore);
