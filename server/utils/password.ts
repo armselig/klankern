@@ -4,6 +4,21 @@ import { logger } from "../utils/logger";
 
 const scryptAsync = promisify(scrypt);
 
+/**
+ * Verifies a password against a stored scrypt hash.
+ *
+ * @param password - The plain text password to verify
+ * @param hash - The stored scrypt hash in format: $scrypt$n=16384,r=8,p=1$salt$key
+ * @returns Promise resolving to true if password matches, false otherwise
+ *
+ * @example
+ * ```typescript
+ * const isValid = await customVerifyPassword("mypassword", storedHash);
+ * if (isValid) {
+ *   // Password is correct
+ * }
+ * ```
+ */
 export async function customVerifyPassword(
     password: string,
     hash: string,
@@ -36,6 +51,18 @@ export async function customVerifyPassword(
     }
 }
 
+/**
+ * Hashes a password using scrypt with secure defaults.
+ *
+ * @param password - The plain text password to hash
+ * @returns Promise resolving to a scrypt hash string in format: $scrypt$n=16384,r=8,p=1$salt$key
+ *
+ * @example
+ * ```typescript
+ * const hashedPassword = await customHashPassword("mypassword");
+ * // Returns: "$scrypt$n=16384,r=8,p=1$base64salt$base64key"
+ * ```
+ */
 export async function customHashPassword(password: string): Promise<string> {
     const salt = randomBytes(16).toString("base64");
     const n = 16384;

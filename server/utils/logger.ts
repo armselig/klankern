@@ -1,3 +1,16 @@
+/**
+ * @fileoverview Winston logger configuration for server-side logging.
+ * Provides structured logging with appropriate levels based on environment.
+ *
+ * @example
+ * ```typescript
+ * import { logger } from '#server/utils/logger';
+ *
+ * logger.info('User created successfully', { userId: '123' });
+ * logger.error('Database connection failed', error);
+ * ```
+ */
+
 import { createLogger, format, type Logform, transports } from "winston";
 
 const { combine, timestamp, printf, colorize } = format;

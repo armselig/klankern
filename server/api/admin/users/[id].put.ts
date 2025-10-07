@@ -1,5 +1,5 @@
 import { eq, sql } from "drizzle-orm";
-import { createError, defineEventHandler, readBody } from "h3";
+import { defineEventHandler, readBody } from "h3";
 import { z } from "zod";
 import { db } from "#server/db";
 import { roles, userRoles, users } from "#server/db/schema";
