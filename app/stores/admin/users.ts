@@ -12,7 +12,7 @@ type Role = RoleResponse;
 
 interface AdminUsersState {
     users: UserResponse[];
-    currentUser: UserResponse | null;
+    currentUser: UserResponse;
     roles: Role[];
     loading: boolean;
     error: unknown;
