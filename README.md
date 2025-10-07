@@ -2,6 +2,12 @@
 
 Welcome to Klankern, a Progressive Web App (PWA) designed to bring families closer and keep them organized! 🚀 This project aims to provide a central, intuitive platform for managing shared tasks, appointments, and notes, fostering seamless collaboration and simplifying daily family life.
 
+![Nuxt.js](https://img.shields.io/badge/Nuxt.js-4.x-00DC82?style=for-the-badge&logo=nuxt.js&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-20.x-339933?style=for-the-badge&logo=node.js&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18.x-316192?style=for-the-badge&logo=postgresql&logoColor=white)
+![Drizzle ORM](https://img.shields.io/badge/Drizzle_ORM-0.44.x-F3722C?style=for-the-badge&logo=drizzle&logoColor=white)
+![pnpm](https://img.shields.io/badge/pnpm-10.x-F69220?style=for-the-badge&logo=pnpm&logoColor=white)
+
 ## ✨ Features
 
 - **Family Group Management:** Create, edit, and delete family groups.
