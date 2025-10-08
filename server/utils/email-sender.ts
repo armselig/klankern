@@ -28,6 +28,10 @@ interface SendInvitationEmailOptions {
 /**
  * Sends a family invitation email.
  * @param options - The details for the invitation email.
+ * @param options.token - The invitation token to include in the email link.
+ * @param options.familyName - The name of the family being invited to.
+ * @param options.inviterName - The name of the person sending the invitation.
+ * @param options.to - The recipient's email address.
  */
 export async function sendInvitationEmail(options: SendInvitationEmailOptions) {
     const { to, token, familyName, inviterName } = options;
