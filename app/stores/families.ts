@@ -25,6 +25,7 @@ export const useFamilyStore = defineStore("family", () => {
     const currentFamily = ref<FamilyDetails | null>(null);
     const isLoading = ref(false); // For fetching
     const isCreating = ref(false); // For creating
+    const isSendingInvite = ref(false);
     const error = ref<string | null>(null);
 
     // Getters (as computed properties)
@@ -90,11 +91,36 @@ export const useFamilyStore = defineStore("family", () => {
         }
     }
 
+    async function sendInvitation(familyId: string, email: string) {
+        isSendingInvite.value = true;
+        error.value = null;
+        try {
+            await $fetch(`/api/families/${familyId}/invitations`, {
+                method: "POST",
+                body: { email },
+            });
+            // Optionally, refetch family data to show pending invitations
+            // await fetchFamily(familyId);
+            return true;
+        } catch (e: unknown) {
+            if (isH3Error(e)) {
+                error.value = e.data.message;
+            } else {
+                error.value =
+                    "An unexpected error occurred while sending the invitation.";
+            }
+            return false;
+        } finally {
+            isSendingInvite.value = false;
+        }
+    }
+
     return {
         // State
         currentFamily,
         isLoading,
         isCreating,
+        isSendingInvite,
         error,
         // Getters
         members,
@@ -103,5 +129,6 @@ export const useFamilyStore = defineStore("family", () => {
         // Actions
         fetchFamily,
         createFamily,
+        sendInvitation,
     };
 });

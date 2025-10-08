@@ -13,6 +13,7 @@ This document provides instructions for AI agents to work with the Klankern proj
 - File names and custom elements/components use Kebab-case. DO: `utility-file.ts`, `<my-component />`. DON'T: `utility_file.ts`, `<MyComponent />`.
 - Avoid [Nuxt Auto-Imports](https://nuxt.com/docs/4.x/guide/concepts/auto-imports)! Prefer consistent path aliasing (create as needed). Use `import xy from "#imports";` as a fallback to document dependency on auto-import in file. Try to refactor auto-imports if you encounter them.
 - Schemas and types should be shared and reused across the project via files in `./shared/types`.
+- **Separation of concerns**: Do not mix presentation with business logic. Example: API calls should be handled by a Pinia store, not by a component. Use composables.
 
 ## AI Agent Collaboration
 
