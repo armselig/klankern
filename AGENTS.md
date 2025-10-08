@@ -15,6 +15,23 @@ This document provides instructions for AI agents to work with the Klankern proj
 - Schemas and types should be shared and reused across the project via files in `./shared/types`.
 - **Separation of concerns**: Do not mix presentation with business logic. Example: API calls should be handled by a Pinia store, not by a component. Use composables.
 
+## Test Users & Credentials
+
+The database seed script creates the following default users:
+
+**1. Admin User**
+
+- **Username:** `admin`
+- **Email:** `admin@example.com`
+- **Password:** `password123`
+
+**2. Standard Test User (for E2E tests)**
+
+- **ID:** `a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11`
+- **Username:** `testuser`
+- **Email:** `user@example.com`
+- **Password:** `password123`
+
 ## AI Agent Collaboration
 
 - **Agent-Relevant Files**: Keep all files relevant for AI agents within the `./vibes/` directory.

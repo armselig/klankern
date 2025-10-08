@@ -1,7 +1,7 @@
 import { defineEventHandler, createError, readValidatedBody } from "h3";
 import { db } from "#server/db";
 import { families, familyMembers } from "#server/db/schema";
-import { FamilyCreateSchema } from "~/shared/types/family";
+import { FamilyCreateSchema } from "~~/shared/types/family";
 import { logger } from "#server/utils/logger";
 
 /**

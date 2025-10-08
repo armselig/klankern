@@ -10,7 +10,7 @@ import { db } from "#server/db";
 import { familyInvitations, familyMembers, users } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
 import { sendInvitationEmail } from "#server/utils/email-sender";
-import { InvitationCreateSchema } from "~/shared/types/invitation";
+import { InvitationCreateSchema } from "~~/shared/types/invitation";
 
 export default defineEventHandler(async (event) => {
     const { familyId } = await getRouterParams(event);
