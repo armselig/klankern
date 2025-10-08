@@ -1,0 +1,43 @@
+import { defineEventHandler, createError } from "h3";
+import { db } from "#server/db";
+import { familyMembers } from "#server/db/schema";
+import { eq } from "drizzle-orm";
+import { logger } from "#server/utils/logger";
+
+/**
+ * @api {get} /api/families
+ * @description Fetches all families the authenticated user is a member of.
+ * @returns {Promise<object[]>} An array of family objects.
+ */
+export default defineEventHandler(async (event) => {
+    const user = event.context.user;
+
+    if (!user) {
+        throw createError({
+            statusCode: 401,
+            statusMessage: "Unauthorized",
+        });
+    }
+
+    try {
+        const userFamilyMemberships = await db.query.familyMembers.findMany({
+            where: eq(familyMembers.user_id, user.id),
+            with: {
+                family: true, // Include the full family object
+            },
+        });
+
+        // Extract the family object from each membership record
+        const families = userFamilyMemberships.map(
+            (membership) => membership.family,
+        );
+
+        return families;
+    } catch (error) {
+        logger.error(`Error fetching families for user ${user.id}:`, error);
+        throw createError({
+            statusCode: 500,
+            statusMessage: "Internal Server Error",
+        });
+    }
+});
