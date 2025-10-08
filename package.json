@@ -24,6 +24,8 @@
     },
     "dependencies": {
         "@pinia/nuxt": "0.11.2",
+        "@types/nodemailer": "7.0.2",
+        "nodemailer": "7.0.9",
         "nuxt": "^4.1.2",
         "nuxt-auth-utils": "0.5.25",
         "nuxt-security": "2.4.0",
