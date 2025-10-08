@@ -27,10 +27,10 @@ export default defineEventHandler(async (event) => {
             },
         });
 
-        // Extract the family object from each membership record
-        const families = userFamilyMemberships.map(
-            (membership) => membership.family,
-        );
+        // Extract the family object from each membership record and filter out soft-deleted families
+        const families = userFamilyMemberships
+            .map((membership) => membership.family)
+            .filter((family) => family && !family.deleted_at);
 
         return families;
     } catch (error) {
