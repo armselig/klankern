@@ -106,12 +106,23 @@ Maintain code quality and consistency with:
 ## 📜 Version Control
 
 - **Commit Messages:** Please adhere to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for all commit messages. This helps with automated changelog generation and understanding project history.
+- **Branches**:
+    - **NEVER** push to `main` directly! It is the production branch. Only PRs from `develop` are allowed to go into `main`.
+    - All development happens in `develop`.
+    - If a task is more complex or might introduce breaking changes, it will be handled in a separate branch derived from `develop`. Naming convention: `type/brief-task-description`. Examples: `feature/add-pwa-functionality`, `bugfix/repair-broken-event-bus`. A PR to merge into `develop` is required.
 
 ## 🔑 Default Admin Login
 
 For local development and testing, you can use the following credentials:
 
-- **Email:** `test@example.com`
+- **Email:** `admin@example.com`
+- **Password:** `password123`
+
+## 🔑 Default Test User Login
+
+For E2E testing and general user-level feature development, you can use the following credentials:
+
+- **Email:** `user@example.com`
 - **Password:** `password123`
 
 ## ✍️ Coding Guidelines
@@ -134,10 +145,7 @@ To ensure a consistent, maintainable, and high-quality codebase, please follow t
 ### Project-Specific Nuxt Guidelines
 
 - **Server-Side Logging:** Always use the `Winston` logger for server-side logging. Direct `console.log` usage is prohibited on the server.
-- **Client-Side Logging:** `console.log` is permitted _only_ within the `useLogger` composable for client-side logging.
-- **Nuxt Auto-Imports:**
-    - **NEVER** explicitly import from `~/shared/types`. These types are globally available.
-    - For other auto-imported items (e.g., composables), **ALWAYS** use the `#imports` virtual alias if explicit import is needed (e.g., `import { useUserSession } from '#imports';`).
+- **Client-Side Logging:** Always use the `useLogger` composable for client-side logging. Direct `console.log` usage is prohibited in the frontend.
 - **Authentication:** We use `nuxt-security` and `nuxt-auth-utils`. Server-side utilities like `setUserSession` are auto-imported in the `server/` directory. Login/logout logic is handled by the `useAuth` composable.
 
 ---
