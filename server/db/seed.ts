@@ -1,4 +1,4 @@
-import { customHashPassword } from "#server/utils/password";
+import { customHashPassword } from "../utils/password";
 import { logger } from "../utils/logger";
 import { db } from "./index";
 import { roles, userRoles, users } from "./schema";
@@ -6,13 +6,9 @@ import { roles, userRoles, users } from "./schema";
 async function seed() {
     logger.info("Starting database seeding...");
 
-    const email = "test@example.com";
-    const username = "admin";
-    const password = "password123";
-    const hashedPassword: string = await customHashPassword(password);
-
     try {
-        // 1. Seed roles
+        // 1. Seed Roles
+        logger.info("Seeding roles...");
         const roleData = [
             {
                 name: "admin",
@@ -20,61 +16,62 @@ async function seed() {
             },
             { name: "user", description: "Standard user role" },
         ];
+        await db.insert(roles).values(roleData).onConflictDoNothing();
 
-        for (const role of roleData) {
-            const existingRole = await db.query.roles.findFirst({
-                where: (roles, { eq }) =>
-                    eq(roles.name, role.name as "admin" | "user"),
-            });
-            if (!existingRole) {
-                await db.insert(roles).values(role);
-                logger.info(`Role '${role.name}' seeded.`);
-            }
+        const seededRoles = await db.query.roles.findMany();
+        const adminRole = seededRoles.find((r) => r.name === "admin");
+        const userRole = seededRoles.find((r) => r.name === "user");
+
+        if (!adminRole || !userRole) {
+            throw new Error("Admin or user role not found after seeding.");
         }
 
-        const adminRole = await db.query.roles.findFirst({
-            where: (roles, { eq }) => eq(roles.name, "admin"),
-        });
-
-        if (!adminRole) {
-            logger.error("Admin role not found after seeding. Exiting.");
-            process.exit(1);
-        }
-
-        // 2. Check if the admin user already exists
-        const existingUser = await db.query.users.findFirst({
-            where: (users, { eq }) => eq(users.email, email),
-        });
-
-        if (existingUser) {
-            logger.info(
-                `User with email ${email} already exists. Skipping insertion.`,
-            );
-            return;
-        }
-
-        // 3. Insert the test user
-        const [newUser] = await db
+        // 2. Seed Admin User
+        logger.info("Attempting to seed admin user...");
+        await db
             .insert(users)
             .values({
-                email,
-                username,
-                password: hashedPassword,
+                email: "admin@example.com",
+                username: "admin",
+                password: await customHashPassword("password123"),
                 display_name: "Test Admin",
-                first_name: "Test",
-                last_name: "Admin",
             })
-            .returning();
+            .onConflictDoNothing();
 
-        logger.info(`Successfully seeded user: ${newUser.email}`);
+        // 3. Seed Standard User for E2E Testing
+        logger.info("Attempting to seed standard test user...");
+        const testUserId = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"; // Predictable ID
+        await db
+            .insert(users)
+            .values({
+                id: testUserId,
+                email: "user@example.com",
+                username: "testuser",
+                password: await customHashPassword("password123"),
+                display_name: "Test User",
+            })
+            .onConflictDoNothing();
 
-        // 4. Assign 'admin' role to the new user
-        await db.insert(userRoles).values({
-            userId: newUser.id,
-            roleId: adminRole.id,
+        // 4. Assign roles idempotently
+        const adminUser = await db.query.users.findFirst({
+            where: (users, { eq }) => eq(users.username, "admin"),
         });
+        if (adminUser) {
+            await db
+                .insert(userRoles)
+                .values({ userId: adminUser.id, roleId: adminRole.id })
+                .onConflictDoNothing();
+        }
 
-        logger.info(`Assigned 'admin' role to user ${newUser.email}`);
+        const testUser = await db.query.users.findFirst({
+            where: (users, { eq }) => eq(users.id, testUserId),
+        });
+        if (testUser) {
+            await db
+                .insert(userRoles)
+                .values({ userId: testUser.id, roleId: userRole.id })
+                .onConflictDoNothing();
+        }
     } catch (error) {
         logger.error("Error during database seeding:", error);
         process.exit(1);

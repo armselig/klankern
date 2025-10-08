@@ -116,6 +116,9 @@ export const corkboardPosts = pgTable(
         userId: uuid("user_id")
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
+        family_id: uuid("family_id").references(() => families.id, {
+            onDelete: "set null",
+        }),
         type: corkboardPostTypeEnum("type").notNull(),
         data: jsonb("data"), // JSONB for content (note text or photo URL/caption)
         createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -124,9 +127,92 @@ export const corkboardPosts = pgTable(
     (table) => {
         return {
             userIdIndex: index("corkboard_posts_user_id_idx").on(table.userId),
+            familyIdIndex: index("corkboard_posts_family_id_idx").on(
+                table.family_id,
+            ),
             typeIndex: index("corkboard_posts_type_idx").on(table.type),
             createdAtIndex: index("corkboard_posts_created_at_idx").on(
                 table.createdAt,
+            ),
+        };
+    },
+);
+
+export const families = pgTable(
+    "families",
+    {
+        id: uuid("id")
+            .primaryKey()
+            .default(sql`uuidv7()`),
+        name: text("name").notNull(),
+        creator_id: uuid("creator_id")
+            .notNull()
+            .references(() => users.id, { onDelete: "cascade" }),
+        created_at: timestamp("created_at").notNull().defaultNow(),
+        updated_at: timestamp("updated_at")
+            .notNull()
+            .default(sql`now()`),
+        deleted_at: timestamp("deleted_at"),
+    },
+    (table) => {
+        return {
+            creatorIdIndex: index("families_creator_id_idx").on(
+                table.creator_id,
+            ),
+            deletedAtIndex: index("families_deleted_at_idx").on(
+                table.deleted_at,
+            ),
+        };
+    },
+);
+
+export const familyMembers = pgTable(
+    "family_members",
+    {
+        family_id: uuid("family_id")
+            .notNull()
+            .references(() => families.id, { onDelete: "cascade" }),
+        user_id: uuid("user_id")
+            .notNull()
+            .references(() => users.id, { onDelete: "cascade" }),
+        role: text("role").notNull(), // e.g., 'manager', 'member'
+    },
+    (table) => {
+        return {
+            pk: primaryKey({ columns: [table.family_id, table.user_id] }),
+            userIdIndex: index("family_members_user_id_idx").on(table.user_id),
+        };
+    },
+);
+
+export const familyInvitations = pgTable(
+    "family_invitations",
+    {
+        id: uuid("id")
+            .primaryKey()
+            .default(sql`uuidv7()`),
+        family_id: uuid("family_id")
+            .notNull()
+            .references(() => families.id, { onDelete: "cascade" }),
+        invited_by_user_id: uuid("invited_by_user_id")
+            .notNull()
+            .references(() => users.id, { onDelete: "cascade" }),
+        invited_email: text("invited_email").notNull(),
+        token: text("token").notNull().unique(),
+        status: text("status").notNull().default("pending"), // e.g., 'pending', 'accepted', 'declined'
+        expires_at: timestamp("expires_at").notNull(),
+        created_at: timestamp("created_at").notNull().defaultNow(),
+        updated_at: timestamp("updated_at")
+            .notNull()
+            .default(sql`now()`),
+    },
+    (table) => {
+        return {
+            familyIdIndex: index("family_invitations_family_id_idx").on(
+                table.family_id,
+            ),
+            invitedEmailIndex: index("family_invitations_invited_email_idx").on(
+                table.invited_email,
             ),
         };
     },
@@ -137,6 +223,11 @@ export const usersRelations = relations(users, ({ many }) => ({
     userRoles: many(userRoles),
     sessions: many(sessions),
     corkboardPosts: many(corkboardPosts),
+    familyMembers: many(familyMembers),
+    createdFamilies: many(families, { relationName: "creator" }),
+    sentFamilyInvitations: many(familyInvitations, {
+        relationName: "inviter",
+    }),
 }));
 
 export const rolesRelations = relations(roles, ({ many }) => ({
@@ -166,4 +257,45 @@ export const corkboardPostsRelations = relations(corkboardPosts, ({ one }) => ({
         fields: [corkboardPosts.userId],
         references: [users.id],
     }),
+    family: one(families, {
+        fields: [corkboardPosts.family_id],
+        references: [families.id],
+    }),
 }));
+
+export const familiesRelations = relations(families, ({ one, many }) => ({
+    creator: one(users, {
+        fields: [families.creator_id],
+        references: [users.id],
+        relationName: "creator",
+    }),
+    members: many(familyMembers),
+    invitations: many(familyInvitations),
+    corkboardPosts: many(corkboardPosts),
+}));
+
+export const familyMembersRelations = relations(familyMembers, ({ one }) => ({
+    family: one(families, {
+        fields: [familyMembers.family_id],
+        references: [families.id],
+    }),
+    user: one(users, {
+        fields: [familyMembers.user_id],
+        references: [users.id],
+    }),
+}));
+
+export const familyInvitationsRelations = relations(
+    familyInvitations,
+    ({ one }) => ({
+        family: one(families, {
+            fields: [familyInvitations.family_id],
+            references: [families.id],
+        }),
+        invitedByUser: one(users, {
+            fields: [familyInvitations.invited_by_user_id],
+            references: [users.id],
+            relationName: "inviter",
+        }),
+    }),
+);
