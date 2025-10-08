@@ -32,6 +32,38 @@ The database seed script creates the following default users:
 - **Email:** `user@example.com`
 - **Password:** `password123`
 
+## Testing Guidelines & Learnings for AI Agents
+
+This section documents specific challenges and solutions encountered during testing in the Klankern project environment.
+
+### General Testing Principles
+
+- Always prefer explicit environment setup for tests (e.g., `// @vitest-environment nuxt`).
+- Be aware of the context in which a script runs (Node.js vs. Nuxt server) for path alias resolution.
+
+### Nuxt Test Environment Specifics
+
+- **Nuxt Path Aliases in Non-Nuxt Contexts:**
+    - Problem: Server-side scripts (like `seed.ts`) and Vitest unit tests (in `test/unit/`) do not resolve Nuxt path aliases (`#server`, `~`, `~~`).
+    - Solution: Use relative paths (`../`) in these contexts.
+- **Drizzle Schema Inspection:**
+    - Problem: Low-level inspection of Drizzle schema constraints (e.g., via `getTableConfig`) is unreliable or undocumented for testing.
+    - Solution: Focus on testing the existence of table/column objects and the higher-level Drizzle `relations` objects.
+
+### End-to-End (E2E) Testing with @nuxt/test-utils
+
+- **Environment Setup:**
+    - Ensure `playwright-core` is installed (`pnpm add -D playwright-core`).
+    - Install Playwright browser binaries: `pnpm exec playwright install` (or `pnpm exec playwright-core install`).
+    - Explicitly set the test environment in the file: `// @vitest-environment nuxt`.
+    - Use `await setup({ browser: true, dev: true });` in the `describe` block to enable browser testing and hot-reloading.
+- **Authentication:**
+    - Use a test-only API endpoint (`POST /api/__test__/login`) to programmatically log in users. This endpoint must be guarded by `process.env.NODE_ENV === 'test'`.
+    - Use `$fetch` for API calls within E2E tests, as it correctly resolves the test server's base URL. Avoid `page.request.post` for relative URLs.
+- **Known Issue: Nuxt Test Server File Discovery:**
+    - Problem: The `@nuxt/test-utils` test server does not reliably discover new API route files created _during_ a test session, even with `dev: true`.
+    - Status: Unresolved. This issue currently blocks the E2E test from functioning.
+
 ## AI Agent Collaboration
 
 - **Agent-Relevant Files**: Keep all files relevant for AI agents within the `./vibes/` directory.
