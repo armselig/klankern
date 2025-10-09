@@ -2,6 +2,7 @@
 import { onMounted, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useInvitationStore } from "~/stores/invitations";
+import { definePageMeta } from "#imports";
 
 // Define component-specific metadata
 definePageMeta({

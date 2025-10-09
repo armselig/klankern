@@ -8,8 +8,6 @@
                 <nuxt-link to="/">{{ appName }} v{{ appVersion }}</nuxt-link>
             </template>
 
-            <the-nav />
-
             <client-only>
                 <span v-if="loggedIn" class="user-name"
                     >hallo, {{ user.name }}</span

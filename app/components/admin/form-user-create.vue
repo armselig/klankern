@@ -27,7 +27,8 @@
 
 <script setup lang="ts">
 import { ref, watch } from "vue";
-import type { CreateUserFormData } from "#/shared/types/user";
+import { useLogger } from "#composables/useLogger";
+import type { CreateUserFormData } from "#shared/types/user";
 
 const emit = defineEmits(["submit"]);
 const logger = useLogger();
@@ -46,7 +47,7 @@ const confirmPassword = ref("");
 
 watch(confirmPassword, (newVal) => {
     if (newVal !== formData.value.password) {
-        // Handle password mismatch error, e.g., set an error message
+        // TODO: Handle password mismatch error, e.g., set an error message. Use debouncing.
         logger.warn("Passwords do not match!");
     }
 });

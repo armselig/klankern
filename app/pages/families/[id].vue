@@ -3,6 +3,7 @@ import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import { storeToRefs } from "pinia";
 import { useFamilyStore } from "~/stores/families";
+import { definePageMeta } from "#imports";
 
 // Define component-specific metadata
 definePageMeta({

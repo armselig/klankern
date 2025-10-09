@@ -33,10 +33,11 @@
 import { ref } from "vue";
 import { useAuth } from "~/composables/useAuth";
 import { useLogger } from "~/composables/useLogger";
+import { definePageMeta } from "#imports";
 
-// definePageMeta({
-//     middleware: ["guest"],
-// });
+definePageMeta({
+    middleware: ["guest"],
+});
 
 const email = ref("");
 const password = ref("");

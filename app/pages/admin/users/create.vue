@@ -13,6 +13,11 @@
 <script setup lang="ts">
 import { useAdminUserStore } from "~/stores/admin/users";
 import type { CreateUserFormData } from "#imports";
+import { definePageMeta } from "#imports";
+
+definePageMeta({
+    middleware: "admin",
+});
 
 const userStore = useAdminUserStore();
 

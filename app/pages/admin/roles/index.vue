@@ -48,6 +48,7 @@
 <script setup lang="ts">
 import { useRolesStore } from "~/stores/admin/roles";
 import { onMounted } from "vue";
+import { definePageMeta } from "#imports";
 
 definePageMeta({ middleware: "auth" });
 

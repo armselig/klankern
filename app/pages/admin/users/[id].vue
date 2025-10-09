@@ -17,6 +17,7 @@ import { storeToRefs } from "pinia";
 import { useRoute } from "vue-router";
 import { useAdminUserStore } from "~/stores/admin/users";
 import FormUserUpdate from "~/components/admin/form-user-update.vue";
+import { definePageMeta } from "#imports";
 
 /**
  * @file Page for editing an existing user.
