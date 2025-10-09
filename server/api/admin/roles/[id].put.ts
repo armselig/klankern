@@ -9,6 +9,7 @@ const roleIdSchema = z.string().uuid();
 
 export default defineEventHandler(
     async (event): Promise<{ role: RoleResponse }> => {
+        logger.http(`${event.method} ${event.path}`);
         try {
             const id = getRouterParam(event, "id");
             const parsedRoleId = roleIdSchema.safeParse(id);

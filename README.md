@@ -115,7 +115,7 @@ Maintain code quality and consistency with:
 
 For local development and testing, you can use the following credentials:
 
-- **Email:** `admin@example.com`
+- **Email:** `test@example.com`
 - **Password:** `password123`
 
 ## 🔑 Default Test User Login

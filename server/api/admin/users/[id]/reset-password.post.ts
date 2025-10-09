@@ -16,6 +16,7 @@ const userIdSchema = z.string().uuid();
  */
 
 export default defineEventHandler(async (event) => {
+    logger.http(`${event.method} ${event.path}`);
     const userId = event.context.params?.id;
     const parsedUserId = userIdSchema.safeParse(userId);
 

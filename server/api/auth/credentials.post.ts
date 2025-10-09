@@ -28,6 +28,7 @@ interface UserSession {
 
 export default defineEventHandler(
     async (event: H3Event<EventHandlerRequest>) => {
+        logger.http(`${event.method} ${event.path}`);
         try {
             const body: z.infer<typeof loginCredentialsSchema> =
                 await readBody(event);

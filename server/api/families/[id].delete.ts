@@ -5,6 +5,7 @@ import { families, familyMembers } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
 
 export default defineEventHandler(async (event) => {
+    logger.http(`${event.method} ${event.path}`);
     const { id: familyId } = await getRouterParams(event);
     const user = event.context.user;
 

@@ -6,6 +6,7 @@ import { logger } from "#server/utils/logger";
 
 export default defineEventHandler(
     async (event): Promise<{ role: RoleResponse }> => {
+        logger.http(`${event.method} ${event.path}`);
         try {
             const body = await readBody(event);
             const newRoleData = createRoleSchema.parse(body);

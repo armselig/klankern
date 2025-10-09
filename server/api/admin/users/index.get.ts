@@ -4,7 +4,8 @@ import { db } from "#server/db";
 import { roles, userRoles, users } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
+    logger.http(`${event.method} ${event.path}`);
     try {
         const usersWithRoles = await db
             .select({

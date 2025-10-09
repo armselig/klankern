@@ -7,6 +7,7 @@ import { logger } from "#server/utils/logger";
 import { customHashPassword } from "#server/utils/password";
 
 export default defineEventHandler(async (event) => {
+    logger.http(`${event.method} ${event.path}`);
     try {
         const body = await readValidatedBody(event, (body) =>
             createUserFormSchema.parse(body),

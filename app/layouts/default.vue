@@ -8,12 +8,7 @@
                 <nuxt-link to="/">{{ appName }} v{{ appVersion }}</nuxt-link>
             </template>
 
-            <nav v-if="loggedIn && isAdmin">
-                <ul>
-                    <li><nuxt-link to="/admin/users">Users</nuxt-link></li>
-                    <li><nuxt-link to="/admin/roles">Roles</nuxt-link></li>
-                </ul>
-            </nav>
+            <the-nav />
 
             <client-only>
                 <span v-if="loggedIn" class="user-name"
@@ -39,7 +34,6 @@
 <script setup lang="ts">
 import { useRuntimeConfig, navigateTo, useUserSession } from "#imports";
 import { useAuth } from "#composables/useAuth";
-import { useAdmin } from "#composables/useAdmin";
 import { useLogger } from "#composables/useLogger";
 
 const {
@@ -48,7 +42,6 @@ const {
 const logger = useLogger();
 
 const { loggedIn, user } = useUserSession();
-const { isAdmin } = useAdmin();
 const { logout } = useAuth();
 
 async function handleLogout() {

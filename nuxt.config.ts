@@ -36,17 +36,17 @@ export default defineNuxtConfig({
         transpile: ["zod"],
     },
     alias: {
+        "#auth": aliasAuth,
         "#composables": aliasComposables,
+        "#imports": aliasImports,
         "#server": aliasServer,
         "#shared": aliasShared,
-        "#auth": aliasAuth,
-        "#imports": aliasImports,
     },
     nitro: {
         alias: {
-            "#composables": aliasComposables,
-            "#server": aliasServer,
             "#auth": aliasAuth,
+            "#server": aliasServer,
+            "#shared": aliasShared,
         },
     },
     eslint: {

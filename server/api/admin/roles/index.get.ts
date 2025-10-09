@@ -4,7 +4,8 @@ import { roles } from "#server/db/schema.ts";
 import { logger } from "#server/utils/logger";
 
 export default defineEventHandler(
-    async (): Promise<{ roles: z.infer<typeof roleSchema>[] }> => {
+    async (event): Promise<{ roles: z.infer<typeof roleSchema>[] }> => {
+        logger.http(`${event.method} ${event.path}`);
         try {
             const allRoles = await db.select().from(roles);
             return { roles: allRoles };

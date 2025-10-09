@@ -5,6 +5,7 @@ import { familyMembers } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
 
 export default defineEventHandler(async (event) => {
+    logger.http(`${event.method} ${event.path}`);
     const { familyId, userId: userIdToRemove } = await getRouterParams(event);
     const managerUser = event.context.user;
 
