@@ -26,6 +26,9 @@ export const useLogger = () => {
                 case "warn":
                     console.warn(`[${level.toUpperCase()}]`, ...formattedArgs);
                     break;
+                case "debug":
+                    console.debug(`[${level.toUpperCase()}]`, ...formattedArgs);
+                    break;
                 default:
                     console.log(`[${level.toUpperCase()}]`, ...formattedArgs);
             }
@@ -37,5 +40,6 @@ export const useLogger = () => {
         error: (...args: unknown[]) => log("error", ...args),
         warn: (...args: unknown[]) => log("warn", ...args),
         log: (...args: unknown[]) => log("log", ...args),
+        debug: (...args: unknown[]) => log("debug", ...args),
     };
 };

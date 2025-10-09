@@ -1,5 +1,3 @@
-// @vitest-environment nuxt
-
 import { describe, test, expect } from "vitest";
 import { setup } from "@nuxt/test-utils/e2e";
 

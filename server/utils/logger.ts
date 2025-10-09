@@ -12,14 +12,27 @@
  */
 
 import { createLogger, format, type Logform, transports } from "winston";
+import DailyRotateFile from "winston-daily-rotate-file";
 
-const { combine, timestamp, printf, colorize } = format;
+const { combine, timestamp, printf, colorize, json } = format;
 
-// Custom log format
-const logFormat = printf((info: Logform.TransformableInfo) => {
+// Custom log format for the console
+const consoleLogFormat = printf((info: Logform.TransformableInfo) => {
     const { level, message, timestamp, stack } = info;
     const formattedTimestamp = String(timestamp);
-    const formattedLevel = String(level);
+    const showTimestamp = false;
+
+    const emojiMap: { [level: string]: string } = {
+        error: "❌",
+        warn: "⚠️",
+        info: "ℹ️",
+        http: "🌐",
+        verbose: "🔍",
+        debug: "🐛",
+        silly: "🤪",
+    };
+    const rawLevel = level.replace(/\x1B\[[0-9;]*[mG]/g, "");
+    const emoji = emojiMap[rawLevel] || "";
 
     let formattedMessage: string;
     if (stack) {
@@ -36,42 +49,41 @@ const logFormat = printf((info: Logform.TransformableInfo) => {
         formattedMessage = "";
     }
 
-    return `${formattedTimestamp} ${formattedLevel}: ${formattedMessage}`;
+    const coloredTimestamp = `\x1b[90m[${formattedTimestamp}]\x1b[0m`;
+    const timestampString = showTimestamp ? `${coloredTimestamp} ` : "";
+
+    return `${timestampString}${emoji} ${level}: ${formattedMessage}`;
+});
+
+const fileTransport = new DailyRotateFile({
+    filename: "log/klankern-%DATE%.log",
+    datePattern: "YYYY-MM-DD",
+    zippedArchive: true,
+    maxSize: "20m",
+    maxFiles: "14d",
+    format: combine(timestamp(), json()),
 });
 
 export const logger = createLogger({
-    level: process.env.NODE_ENV === "production" ? "info" : "debug", // Log level based on environment
-    format: combine(timestamp({ format: "YYYY-MM-DD HH:mm:ss" }), logFormat),
+    level: process.env.NODE_ENV === "production" ? "info" : "debug",
+    format: combine(
+        timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
+        consoleLogFormat,
+    ),
     transports: [
         new transports.Console({
-            format: combine(
-                colorize(), // Add colors for console output
-                logFormat,
-            ),
+            format: combine(colorize(), consoleLogFormat),
         }),
-        // In a production environment, you might add file transports or external logging services
-        // new transports.File({ filename: 'error.log', level: 'error' }),
-        // new transports.File({ filename: 'combined.log' }),
+        fileTransport,
     ],
     exceptionHandlers: [
         new transports.Console({
-            format: combine(colorize(), logFormat),
+            format: combine(colorize(), consoleLogFormat),
         }),
-        // new transports.File({ filename: 'exceptions.log' }),
     ],
     rejectionHandlers: [
         new transports.Console({
-            format: combine(colorize(), logFormat),
+            format: combine(colorize(), consoleLogFormat),
         }),
-        // new transports.File({ filename: 'rejections.log' }),
     ],
 });
-
-// If not in production, log to console with simple format
-if (process.env.NODE_ENV !== "production") {
-    logger.add(
-        new transports.Console({
-            format: format.simple(),
-        }),
-    );
-}

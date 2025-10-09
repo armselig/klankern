@@ -7,6 +7,7 @@ import {
     readBody,
 } from "h3";
 import { z } from "zod";
+import { setUserSession } from "#auth";
 import { getUserWithRolesByEmail } from "#server/db/utils";
 import { logger } from "#server/utils/logger";
 import { customVerifyPassword } from "#server/utils/password";

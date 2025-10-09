@@ -37,9 +37,10 @@
 </template>
 
 <script setup lang="ts">
-import { useUserSession } from "#imports";
-import { useAuth } from "~/composables/useAuth";
-import { useAdmin } from "~/composables/useAdmin";
+import { useRuntimeConfig, navigateTo, useUserSession } from "#imports";
+import { useAuth } from "#composables/useAuth";
+import { useAdmin } from "#composables/useAdmin";
+import { useLogger } from "#composables/useLogger";
 
 const {
     public: { appName, appVersion },

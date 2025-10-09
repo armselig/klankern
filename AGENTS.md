@@ -11,8 +11,9 @@ This document provides instructions for AI agents to work with the Klankern proj
 
 - **NEVER** commit or push to Git without explicit approval.
 - File names and custom elements/components use Kebab-case. DO: `utility-file.ts`, `<my-component />`. DON'T: `utility_file.ts`, `<MyComponent />`.
-- Avoid [Nuxt Auto-Imports](https://nuxt.com/docs/4.x/guide/concepts/auto-imports)! Prefer consistent path aliasing (create as needed). Use `import xy from "#imports";` as a fallback to document dependency on auto-import in file. Try to refactor auto-imports if you encounter them.
-- Schemas and types should be shared and reused across the project via files in `./shared/types`.
+- **[Nuxt Auto-Imports](https://nuxt.com/docs/4.x/guide/concepts/auto-imports)** have been disabled.
+- Always make use of the **custom path aliases** defined in `nuxt.config.ts`.
+- **Schemas and types** should be shared and reused across the project via files in `./shared/types` (imported via alias `#shared/types`).
 - **Separation of concerns**: Do not mix presentation with business logic. Example: API calls should be handled by a Pinia store, not by a component. Use composables.
 
 ## Test Users & Credentials
@@ -38,7 +39,6 @@ This section documents specific challenges and solutions encountered during test
 
 ### General Testing Principles
 
-- Always prefer explicit environment setup for tests (e.g., `// @vitest-environment nuxt`).
 - Be aware of the context in which a script runs (Node.js vs. Nuxt server) for path alias resolution.
 
 ### Nuxt Test Environment Specifics
@@ -50,12 +50,11 @@ This section documents specific challenges and solutions encountered during test
     - Problem: Low-level inspection of Drizzle schema constraints (e.g., via `getTableConfig`) is unreliable or undocumented for testing.
     - Solution: Focus on testing the existence of table/column objects and the higher-level Drizzle `relations` objects.
 
-### End-to-End (E2E) Testing with @nuxt/test-utils
+### End-to-End (E2E) Testing with `@nuxt/test-utils`
 
 - **Environment Setup:**
     - Ensure `playwright-core` is installed (`pnpm add -D playwright-core`).
     - Install Playwright browser binaries: `pnpm exec playwright install` (or `pnpm exec playwright-core install`).
-    - Explicitly set the test environment in the file: `// @vitest-environment nuxt`.
     - Use `await setup({ browser: true, dev: true });` in the `describe` block to enable browser testing and hot-reloading.
 - **Authentication:**
     - Use a test-only API endpoint (`POST /api/__test__/login`) to programmatically log in users. This endpoint must be guarded by `process.env.NODE_ENV === 'test'`.
