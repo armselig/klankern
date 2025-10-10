@@ -5,3 +5,4 @@
 - [ ] user input sanitization on the backend (security)
 - [ ] consistent input validation on backend and frontend (preferably with `zod`)
 - [ ] update AGENTS.md
+- [ ] manually write a working API endpoint test as a blueprint for the AI
