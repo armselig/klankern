@@ -31,13 +31,9 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-import { useAuth } from "~/composables/useAuth";
-import { useLogger } from "~/composables/useLogger";
-import { definePageMeta } from "#imports";
-
-definePageMeta({
-    middleware: ["guest"],
-});
+import { useAuth } from "#composables/useAuth";
+import { useLogger } from "#composables/useLogger";
+import { type LoginCredentials } from "#shared/types/auth";
 
 const email = ref("");
 const password = ref("");
