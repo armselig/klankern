@@ -55,7 +55,7 @@
 import { onMounted } from "vue";
 import { storeToRefs } from "pinia";
 import { useAdminUserStore, type User } from "~/stores/admin/users";
-import { definePageMeta } from "#imports";
+import { definePageMeta, navigateTo } from "#imports";
 
 /**
  * @file Admin page for listing and managing users.
