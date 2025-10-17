@@ -97,12 +97,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, type Ref } from "vue"; // Added computed
-import { storeToRefs } from "pinia";
-import { useAdminUserStore } from "~/stores/admin/users";
-import { z } from "zod";
-import { roleSchema } from "#imports";
-
 /**
  * @file Base form component for user details.
  * @description This component provides the common input fields for user information and role selection.
@@ -111,18 +105,18 @@ import { roleSchema } from "#imports";
 
 import type { CreateUserFormData } from "#imports";
 
-type Role = z.infer<typeof roleSchema>;
-
 const props = defineProps<{
     user: CreateUserFormData;
 }>();
 
 const emit = defineEmits(["update:user"]);
 
-const userStore: ReturnType<typeof useAdminUserStore> = useAdminUserStore(); // Explicitly typed userStore
-const availableRoles = computed<Ref<Role[]>>(
-    () => storeToRefs(userStore).roles,
-); // Using computed property
+const availableRoles = reactive({
+    roles: [
+        { id: "1", name: "Admin" },
+        { id: "2", name: "User" },
+    ],
+});
 
 function handleRoleChange(roleId: string, isChecked: boolean) {
     const newRoleIds = isChecked
@@ -130,10 +124,4 @@ function handleRoleChange(roleId: string, isChecked: boolean) {
         : props.user.roleIds.filter((id) => id !== roleId);
     emit("update:user", { ...props.user, roleIds: newRoleIds });
 }
-onMounted(async () => {
-    // Fetch available roles if they haven't been fetched already.
-    if (availableRoles.value.length === 0) {
-        await userStore.fetchRoles();
-    }
-});
 </script>

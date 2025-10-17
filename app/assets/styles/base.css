@@ -1,8 +1,19 @@
 /* Basic styles for the application */
 
+:root {
+    color-scheme: light dark;
+}
+
+*:focus-visible {
+    outline: var(--outline-base);
+    outline-offset: var(--outline-offset);
+}
+
 body {
     background-color: var(--color-background);
     color: var(--color-text);
+    font-family: var(--font-family);
+    font-size: 1rem;
     line-height: 1.5;
 }
 
@@ -25,7 +36,7 @@ button,
     font-size: 0.8rem;
     min-width: 44px;
     min-height: 44px;
-    padding: var(--spacing-sm) var(--spacing-md);
+    padding: var(--spacing-base);
     text-transform: uppercase;
 
     &:focus-visible,

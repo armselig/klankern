@@ -1,3 +1,9 @@
+import { type RoleResponse } from "#shared/types/role";
+import {
+    type NewUser,
+    type UpdateUser,
+    type UserResponse,
+} from "#shared/types/user";
 import { defineStore } from "pinia";
 import { useLogger } from "~/composables/useLogger";
 
@@ -12,7 +18,7 @@ type Role = RoleResponse;
 
 interface AdminUsersState {
     users: UserResponse[];
-    currentUser: UserResponse;
+    currentUser?: UserResponse;
     roles: Role[];
     loading: boolean;
     error: unknown;
@@ -80,6 +86,7 @@ export const useAdminUserStore = defineStore("admin-users", {
             try {
                 const roles = await $fetch<Role[]>("/api/admin/roles");
                 this.roles = roles;
+                logger.debug("Fetched roles:", roles);
             } catch (error: unknown) {
                 // Explicitly type error as unknown
                 if (error instanceof Error) {
