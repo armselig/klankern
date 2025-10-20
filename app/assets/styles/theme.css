@@ -4,8 +4,10 @@
     --color-secondary: light-dark(#52c41a, #95de64);
     --color-background: light-dark(#ffffff, #141414);
     --color-text: light-dark(#333333, #ffffffd9);
-    --color-text-light: light-dark(#666666, #ffffffa6);
+    --color-text-invert: light-dark(#ffffffd9, #333333);
+    --color-text-grey: light-dark(#666666, #ffffffa6);
     --color-border: light-dark(#d9d9d9, #434343);
+    --color-success: light-dark(#52c41a, #95de64);
     --color-error: light-dark(#620404, #d43232);
 
     /* Spacing */
@@ -16,9 +18,13 @@
     --spacing-xl: 4rem;
     --spacing-base: var(--spacing-sm) var(--spacing-md);
 
-    --font-family:
-        Seravek, "Gill Sans Nova", Ubuntu, Calibri, "DejaVu Sans",
-        source-sans-pro, sans-serif;
+    --font-mono:
+        ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas,
+        "DejaVu Sans Mono", monospace;
+    --font-sans: system-ui, sans-serif;
+    --font-serif: Charter, "Bitstream Charter", "Sitka Text", Cambria, serif;
+    --font-md: 1rem;
+    --font-sm: 0.8rem;
 
     --border-base: 1px solid var(--color-border);
     --outline-base: 2px solid var(--color-primary);

@@ -12,9 +12,14 @@
 body {
     background-color: var(--color-background);
     color: var(--color-text);
-    font-family: var(--font-family);
+    font-family: var(--font-sans);
     font-size: 1rem;
+    font-weight: 400;
     line-height: 1.5;
+}
+
+h1 {
+    font-family: var(--font-serif);
 }
 
 a {
@@ -43,4 +48,25 @@ button,
     &:hover {
         text-decoration: underline;
     }
+}
+
+form {
+    background-color: var(--color-primary);
+    color: var(--color-text-invert);
+    padding: var(--spacing-base);
+}
+
+ol:not(:first-child),
+ul:not(:first-child),
+p:not(:first-child) {
+    margin-top: var(--spacing-md);
+}
+
+ol,
+ul {
+    margin-left: 4ch;
+}
+
+ul {
+    list-style-type: square;
 }

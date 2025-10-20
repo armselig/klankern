@@ -1,4 +1,9 @@
-/* A very simple reset to start from a clean slate */
+/* Ref: https://itnext.io/basic-css-resets-to-apply-in-every-app-9bd724dc4f49 */
+
+* {
+    margin: 0;
+    padding: 0;
+}
 
 *,
 *::before,
@@ -6,11 +11,20 @@
     box-sizing: border-box;
 }
 
-body {
-    margin: 0;
-    line-height: 1.5;
-    font-family: sans-serif;
-    -webkit-font-smoothing: antialiased;
+button {
+    background: none;
+    border: 0;
+    outline: none;
+    cursor: pointer;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+ul {
+    list-style-type: none;
 }
 
 img,
@@ -18,12 +32,13 @@ picture,
 video,
 canvas,
 svg {
-    display: block;
     max-width: 100%;
+    display: block;
 }
 
 input,
 button,
+em,
 textarea,
 select {
     font: inherit;
@@ -39,7 +54,12 @@ h6 {
     overflow-wrap: break-word;
 }
 
-#root,
-#__next {
-    isolation: isolate;
+sub,
+sup {
+    line-height: 0;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
 }
