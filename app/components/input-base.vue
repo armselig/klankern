@@ -1,17 +1,16 @@
 <!-- eslint-disable vuejs-accessibility/form-control-has-label -->
 <template>
-    <div class="input">
+    <div class="input" :class="{ 'input--required': isRequired }">
         <label :for="inputId" class="input__label">
             <slot name="label">Label is required!</slot>
-            <span v-if="isRequired" class="input__required">{{
-                requiredMarker
-            }}</span>
+            <span class="input__required">{{ requiredMarker }}</span>
         </label>
-        <span v-if="$slots.description" class="input__desc">
+        <span :id="descId" class="input__desc">
             <slot name="description"></slot>
         </span>
         <input
             :id="inputId"
+            :aria-describedby="descId"
             :autocomplete="inputAutocomplete"
             :disabled="isDisabled"
             :inputmode="inputMode"
@@ -29,9 +28,13 @@
 </template>
 
 <script setup lang="ts">
+import { defineProps, useSlots } from "vue";
+
+// TODO: test popover api
 // TODO: add validators
 const {
     inputAutocomplete = "on",
+    inputId = Date.now().toString(),
     inputType = "text",
     isDisabled = false,
     isReadonly = false,
@@ -59,6 +62,9 @@ const {
     isRequired?: boolean;
     requiredMarker?: string;
 }>();
+
+const slots = useSlots();
+const descId = !!slots.description ? `${inputId}Desc` : undefined;
 </script>
 
 <style lang="css">
@@ -72,6 +78,10 @@ const {
     .input__desc {
         font-size: var(--font-sm);
         margin-bottom: var(--spacing-sm);
+
+        &:empty {
+            display: none;
+        }
     }
 
     .input__element {
@@ -87,8 +97,12 @@ const {
         }
     }
 
-    .input__label {
-        font-weight: 600;
+    .input__required {
+        display: none;
+
+        .input--required & {
+            display: inline;
+        }
     }
 }
 </style>
