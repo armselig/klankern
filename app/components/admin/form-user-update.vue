@@ -68,7 +68,7 @@ watch(
         if (newUser) {
             formData.value.username = newUser.username;
             formData.value.email = newUser.email;
-            formData.value.display_name = newUser.displayName || undefined;
+            formData.value.display_name = newUser.display_name || undefined;
             formData.value.first_name = newUser.first_name || undefined;
             formData.value.last_name = newUser.last_name || undefined;
             formData.value.roleIds = newUser.roles.map((role) => role.id);

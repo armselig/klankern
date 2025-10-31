@@ -17,6 +17,7 @@ This document provides instructions for AI agents to work with the Klankern proj
 - **Separation of concerns**: Do not mix presentation with business logic. Example: API calls should be handled by a Pinia store, not by a component. Use composables.
 - **ALWAYS** use TypeScript in compliance with `tsconfig.json` files and `eslint` rules.
 - Take care of type safety by ensuring types can be safely inferred or are defined in a (shared) type/interface.
+- **Commit Messages**: MUST follow conventional commit guidelines. The first line/heading of the message is in all lowercase. If possible, always include a scope. In the message body, explain the changes with a focus on WHY they were made. Always flag breaking changes. Each commit message must first be presented to the user for approval.
 
 ## Test Users & Credentials
 

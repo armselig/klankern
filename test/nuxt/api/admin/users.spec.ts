@@ -68,8 +68,11 @@ describe("Admin Users API Access Control", () => {
                     id: "1",
                     email: "admin@example.com",
                     username: "admin",
-                    displayName: "Admin User",
-                    isActive: true,
+                    display_name: "Admin User",
+                    is_active: true,
+                    dashboardConfig: { theme: "dark" },
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
                     roles: [
                         {
                             id: "admin-id",
@@ -82,8 +85,11 @@ describe("Admin Users API Access Control", () => {
                     id: "2",
                     email: "user@example.com",
                     username: "user",
-                    displayName: "Regular User",
-                    isActive: true,
+                    display_name: "Regular User",
+                    is_active: true,
+                    dashboardConfig: null,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
                     roles: [
                         {
                             id: "user-id",
@@ -234,10 +240,23 @@ describe("Admin Users API Access Control", () => {
         it("should create a user successfully for authorized requests", async () => {
             const newUserResponse = {
                 id: "new-user-id",
-                ...validUserData,
+                email: validUserData.email,
+                username: validUserData.username,
+                display_name: validUserData.display_name,
+                first_name: validUserData.first_name,
+                last_name: validUserData.last_name,
+                is_active: true,
+                dashboardConfig: null,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                roles: [
+                    {
+                        id: "user-role-id",
+                        name: "user",
+                        description: "Regular User",
+                    },
+                ],
             };
-            // @ts-expect-error: password is not part of the UserResponse type
-            delete newUserResponse.password;
 
             registerEndpoint("/api/admin/users", {
                 method: "POST",
