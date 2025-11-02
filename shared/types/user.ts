@@ -78,6 +78,11 @@ export const updateUserFormSchema = baseUserFormSchema.extend({
         .optional()
         .or(z.literal(""))
         .transform((e) => (e === "" ? undefined : e)),
+    roleIds: z.preprocess(
+        (val) =>
+            typeof val === "string" ? val.split(",").map((s) => s.trim()) : val,
+        z.array(z.string().uuid("Invalid UUID format")).optional(),
+    ),
 });
 
 export type UpdateUserFormData = z.infer<typeof updateUserFormSchema>;

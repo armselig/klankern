@@ -1,48 +1,81 @@
-<!-- eslint-disable vuejs-accessibility/form-control-has-label -->
 <template>
     <div class="input" :class="{ 'input--required': isRequired }">
-        <label :for="inputId" class="input__label">
-            <slot name="label">Label is required!</slot>
-            <span class="input__required">{{ requiredMarker }}</span>
-        </label>
-        <span :id="descId" class="input__desc">
-            <slot name="description"></slot>
-        </span>
-        <input
-            :id="inputId"
-            :aria-describedby="descId"
-            :autocomplete="inputAutocomplete"
-            :disabled="isDisabled"
-            :inputmode="inputMode"
-            :name="inputName"
-            :pattern="inputPattern"
-            :placeholder="inputPlaceholder"
-            :readonly="isReadonly"
-            :required="isRequired"
-            :type="inputType"
-            :value="inputValue"
-            class="input__element"
-        />
-        <output :for="inputId" class="input__status"></output>
+        <template v-if="inputType !== 'checkbox'">
+            <label :for="inputId" class="input__label">
+                <slot name="label">Label is required!</slot>
+                <span class="input__required">{{ requiredMarker }}</span>
+            </label>
+            <span :id="descId" class="input__desc">
+                <slot name="description"></slot>
+            </span>
+            <input
+                :id="inputId"
+                :aria-describedby="descId"
+                :autocomplete="inputAutocomplete"
+                :disabled="isDisabled"
+                :inputmode="inputMode"
+                :name="inputName"
+                :pattern="inputPattern"
+                :placeholder="inputPlaceholder"
+                :readonly="isReadonly"
+                :required="isRequired"
+                :type="inputType"
+                :value="modelValue"
+                class="input__element"
+                @input="updateValue"
+            />
+        </template>
+        <template v-else>
+            <label :for="inputId" class="input__label">
+                <input
+                    :id="inputId"
+                    :aria-describedby="descId"
+                    :disabled="isDisabled"
+                    :name="inputName"
+                    :readonly="isReadonly"
+                    :required="isRequired"
+                    type="checkbox"
+                    :checked="modelValue"
+                    class="input__element"
+                    @change="updateCheckedValue"
+                />
+                <slot name="label">Label is required!</slot>
+                <span class="input__required">{{ requiredMarker }}</span>
+            </label>
+            <span :id="descId" class="input__desc">
+                <slot name="description"></slot>
+            </span>
+        </template>
+        <output
+            v-if="error"
+            :for="inputId"
+            class="input__status"
+            aria-label="Validation error"
+        >
+            {{ error }}
+        </output>
     </div>
 </template>
 
 <script setup lang="ts">
-import { defineProps, useSlots } from "vue";
+import { defineProps, useSlots, defineEmits } from "vue";
 
-// TODO: test popover api
-// TODO: add validators
 const {
     inputAutocomplete = "on",
-    inputId = Date.now().toString(),
+    inputId = `input-${Date.now()}`,
+    inputMode = "text",
+    inputPattern = "",
+    inputPlaceholder = "",
     inputType = "text",
     isDisabled = false,
     isReadonly = false,
     isRequired = false,
     requiredMarker = "*",
+    modelValue = "",
+    error = "",
 } = defineProps<{
     inputAutocomplete?: string;
-    inputId: string;
+    inputId?: string;
     inputMode?:
         | "text"
         | "none"
@@ -56,12 +89,23 @@ const {
     inputPattern?: string;
     inputPlaceholder?: string;
     inputType?: string;
-    inputValue?: string;
+    modelValue?: string | number | boolean;
     isDisabled?: boolean;
     isReadonly?: boolean;
     isRequired?: boolean;
     requiredMarker?: string;
+    error?: string;
 }>();
+
+const emit = defineEmits(["update:modelValue"]);
+
+function updateValue(event: Event) {
+    emit("update:modelValue", (event.target as HTMLInputElement).value);
+}
+
+function updateCheckedValue(event: Event) {
+    emit("update:modelValue", (event.target as HTMLInputElement).checked);
+}
 
 const slots = useSlots();
 const descId = !!slots.description ? `${inputId}Desc` : undefined;
