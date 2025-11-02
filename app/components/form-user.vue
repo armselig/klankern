@@ -172,7 +172,7 @@ const initialFormData: UpdateUserFormData = {
     last_name: "",
     is_active: true,
     password: "",
-    roleIds: [],
+    roleIds: "",
 };
 
 const formData: Ref<UpdateUserFormData> = ref({ ...initialFormData });

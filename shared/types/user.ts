@@ -72,6 +72,7 @@ export const createUserFormSchema = baseUserFormSchema.extend({
 export type CreateUserFormData = z.infer<typeof createUserFormSchema>;
 
 export const updateUserFormSchema = baseUserFormSchema.extend({
+    id: z.string().uuid().optional(),
     password: z
         .string()
         .min(8, "Password must be at least 8 characters long")
@@ -79,8 +80,13 @@ export const updateUserFormSchema = baseUserFormSchema.extend({
         .or(z.literal(""))
         .transform((e) => (e === "" ? undefined : e)),
     roleIds: z.preprocess(
-        (val) =>
-            typeof val === "string" ? val.split(",").map((s) => s.trim()) : val,
+        (val) => {
+            if (typeof val !== "string") return val;
+            const trimmed = val.trim();
+            return trimmed === ""
+                ? undefined
+                : trimmed.split(",").map((s) => s.trim());
+        },
         z.array(z.string().uuid("Invalid UUID format")).optional(),
     ),
 });
