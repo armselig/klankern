@@ -8,7 +8,7 @@ RUN npm install -g pnpm@10.13.1
 WORKDIR /app
 
 # Copy package files first (for better caching)
-COPY package.json pnpm-workspace.yaml ./
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 
 # Install dependencies
 # --frozen-lockfile ensures reproducible builds

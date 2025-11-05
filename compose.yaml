@@ -16,7 +16,11 @@ services:
         networks:
             - klankern_network
         healthcheck:
-            test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-klankern_user}"]
+            test:
+                [
+                    "CMD-SHELL",
+                    "pg_isready -U ${DB_USER:-klankern_user} -d ${DB_NAME:-klankern_db}",
+                ]
             interval: 10s
             timeout: 5s
             retries: 5

@@ -247,6 +247,12 @@ Add or update the `vite` section:
 export default defineNuxtConfig({
     // ... existing configuration ...
 
+    // Configure Nuxt dev server to listen on all interfaces
+    devServer: {
+        host: "0.0.0.0",
+        port: 3000,
+    },
+
     vite: {
         server: {
             // Listen on all network interfaces (required for container access)
@@ -303,7 +309,14 @@ export default defineNuxtConfig({
 
 **Configuration Explained:**
 
-**host: '0.0.0.0'**
+**devServer Configuration:**
+
+- **devServer.host: '0.0.0.0'** - Configures Nuxt's dev server to listen on all network interfaces
+- **devServer.port: 3000** - Explicitly sets the port (matches Vite server port)
+- Required in addition to `vite.server.host` for container accessibility
+- Without this, Nuxt may only bind to IPv6 localhost (::1) inside the container
+
+**vite.server.host: '0.0.0.0'**
 
 - Makes Vite server accessible from outside the container
 - Default `localhost` only binds to loopback interface inside container
