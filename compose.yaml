@@ -1,16 +1,80 @@
 services:
+    # Existing PostgreSQL service
     db:
-        build: ./docker/postgres
-        container_name: klankern_db_container
-        restart: always
+        build:
+            context: ./docker/postgres
+            dockerfile: Dockerfile
+        container_name: klankern_db
+        environment:
+            POSTGRES_DB: ${DB_NAME:-klankern_db}
+            POSTGRES_USER: ${DB_USER:-klankern_user}
+            POSTGRES_PASSWORD: ${DB_PASSWORD:-klankern_password}
         ports:
             - "5432:5432"
-        environment:
-            POSTGRES_DB: ${DB_NAME}
-            POSTGRES_USER: ${DB_USER}
-            POSTGRES_PASSWORD: ${DB_PASSWORD}
         volumes:
             - db_data:/var/lib/postgresql/data
+        networks:
+            - klankern_network
+        healthcheck:
+            test:
+                [
+                    "CMD-SHELL",
+                    "pg_isready -U ${DB_USER:-klankern_user} -d ${DB_NAME:-klankern_db}",
+                ]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    # New Nuxt application service
+    nuxt:
+        build:
+            context: .
+            dockerfile: Dockerfile.dev
+        container_name: klankern_nuxt
+        ports:
+            - "3000:3000"
+        environment:
+            # Database connection (points to db service)
+            DB_HOST: db
+            DB_PORT: 5432
+            DB_NAME: ${DB_NAME:-klankern_db}
+            DB_USER: ${DB_USER:-klankern_user}
+            DB_PASSWORD: ${DB_PASSWORD:-klankern_password}
+            # Node environment
+            NODE_ENV: development
+        volumes:
+            # Bind mount source code for live editing
+            - ./app:/app/app:z
+            - ./server:/app/server:z
+            - ./shared:/app/shared:z
+            - ./public:/app/public:z
+            - ./test:/app/test:z
+            # Bind mount configuration files
+            - ./nuxt.config.ts:/app/nuxt.config.ts:z
+            - ./tsconfig.json:/app/tsconfig.json:z
+            - ./drizzle.config.ts:/app/drizzle.config.ts:z
+            - ./vitest.config.ts:/app/vitest.config.ts:z
+            - ./.env:/app/.env:z
+            # Named volume for node_modules (CRITICAL for performance)
+            - nuxt_node_modules:/app/node_modules
+            # Exclude build outputs from bind mount
+            - /app/.nuxt
+            - /app/.output
+            - /app/log
+        networks:
+            - klankern_network
+        depends_on:
+            db:
+                condition: service_healthy
+        # Restart policy for development
+        restart: unless-stopped
+        # Use host IPC namespace for better file watching performance
+        ipc: host
+
+networks:
+    klankern_network:
+        driver: bridge
 
 volumes:
     db_data:
+    nuxt_node_modules:

@@ -1,0 +1,27 @@
+# Use Node.js 22 Alpine for minimal size
+FROM node:22-alpine
+
+# Install pnpm globally
+RUN npm install -g pnpm@10.13.1
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files first (for better caching)
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+
+# Install dependencies
+# --frozen-lockfile ensures reproducible builds
+# --prefer-offline speeds up builds
+RUN pnpm install --frozen-lockfile --prefer-offline
+
+# Copy all application code
+# Note: Most of this will be overridden by bind mount in compose
+COPY . .
+
+# Expose Nuxt dev server port
+EXPOSE 3000
+
+# Start development server
+# Uses pnpm for consistency with local development
+CMD ["pnpm", "dev"]
