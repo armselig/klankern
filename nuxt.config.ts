@@ -71,4 +71,53 @@ export default defineNuxtConfig({
     //         },
     //     },
     // },
+    vite: {
+        server: {
+            // Listen on all network interfaces (required for container access)
+            host: "0.0.0.0",
+
+            // Use the standard port
+            port: 3000,
+
+            // Don't try other ports if 3000 is taken
+            strictPort: true,
+
+            // File watching configuration for containers
+            watch: {
+                // Use polling instead of native file system events
+                // Required for Docker/Podman on macOS and some Linux setups
+                usePolling: true,
+
+                // Check for changes every 100ms (balance between responsiveness and CPU)
+                interval: 100,
+
+                // Follow symbolic links
+                followSymlinks: true,
+
+                // Ignore node_modules and build outputs
+                ignored: ["**/node_modules/**", "**/.nuxt/**", "**/.output/**"],
+            },
+
+            // HMR (Hot Module Replacement) configuration
+            hmr: {
+                // Use WebSocket protocol
+                protocol: "ws",
+
+                // Browser connects to localhost (outside container)
+                host: "localhost",
+
+                // Port for HMR WebSocket
+                port: 3000,
+
+                // Client connects to the same path
+                clientPort: 3000,
+            },
+        },
+
+        // Optimize dependency pre-bundling
+        optimizeDeps: {
+            // Force re-optimize on server restart if needed
+            force: false,
+        },
+    },
 });

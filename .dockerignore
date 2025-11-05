@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+pnpm-lock.yaml
+
+# Build outputs
+.nuxt/
+.output/
+dist/
+
+# Logs
+log/
+*.log
+
+# Environment
+.env
+.env.*
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tests
+coverage/
+test-results/
+
+# Misc
+*.md
+vibes/
