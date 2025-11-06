@@ -13,8 +13,8 @@ Klankern is a Progressive Web App (PWA) designed as a family's digital hub for m
 - **Database**: PostgreSQL 18.x with Drizzle ORM
 - **Validation**: Zod
 - **Testing**: Vitest with @nuxt/test-utils
-- **Package Manager**: pnpm 10.x
-- **Node.js**: v22.17.0
+- **Package Manager**: pnpm ^10.13.1
+- **Node.js**: ^22.17.0
 - **Linting & Formatting**: ESLint, Prettier
 - **Containerization**: Podman with podman-compose
 
@@ -78,11 +78,9 @@ podman exec klankern_nuxt pnpm run db:generate  # Generate migrations
 pnpm run test               # Run all tests
 pnpm run test:watch         # Run tests in watch mode
 pnpm run test:ui            # Open Vitest UI
-pnpm run test:nuxt          # Run only Nuxt environment tests
 ```
 
 **Test Structure:**
-- `test/unit/` - Simple, isolated unit tests (standard Node.js)
 - `test/nuxt/` - Tests requiring Nuxt runtime (components, composables, server)
 - `test/e2e/` - End-to-end tests
 
@@ -90,8 +88,7 @@ pnpm run test:nuxt          # Run only Nuxt environment tests
 
 ```bash
 pnpm run lint               # Lint entire codebase
-pnpm run lint:fix           # Auto-fix linting issues
-pnpm run format             # Format code with Prettier
+pnpm run lint:fix           # Auto-fix linting issues (also formats with Prettier)
 pnpm run typecheck          # Run TypeScript type checking
 ```
 
@@ -253,7 +250,6 @@ klankern/
 │   └── types/           # Shared TypeScript types
 ├── test/                # Tests
 │   ├── nuxt/           # Nuxt runtime tests
-│   ├── unit/           # Unit tests
 │   └── e2e/            # E2E tests
 ├── public/             # Static assets
 └── vibes/              # Project documentation and plans
