@@ -48,9 +48,9 @@ export const users = pgTable(
         first_name: text("first_name"),
         last_name: text("last_name"),
         is_active: boolean("is_active").default(true),
-        dashboardConfig: jsonb("dashboard_config"), // JSONB for dashboard preferences
-        createdAt: timestamp("created_at").notNull().defaultNow(),
-        updatedAt: timestamp("updated_at")
+        dashboard_config: jsonb("dashboard_config"), // JSONB for dashboard preferences
+        created_at: timestamp("created_at").notNull().defaultNow(),
+        updated_at: timestamp("updated_at")
             .notNull()
             .default(sql`now()`),
     },
@@ -59,7 +59,7 @@ export const users = pgTable(
             emailIndex: index("users_email_idx").on(table.email),
             usernameIndex: index("users_username_idx").on(table.username),
             isActiveIndex: index("users_is_active_idx").on(table.is_active),
-            createdAtIndex: index("users_created_at_idx").on(table.createdAt),
+            createdAtIndex: index("users_created_at_idx").on(table.created_at),
         };
     },
 );
@@ -67,18 +67,18 @@ export const users = pgTable(
 export const userRoles = pgTable(
     "user_roles",
     {
-        userId: uuid("user_id")
+        user_id: uuid("user_id")
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
-        roleId: uuid("role_id")
+        role_id: uuid("role_id")
             .notNull()
             .references(() => roles.id, { onDelete: "cascade" }),
     },
     (table) => {
         return {
-            pk: primaryKey({ columns: [table.userId, table.roleId] }),
-            userIdIndex: index("user_roles_user_id_idx").on(table.userId),
-            roleIdIndex: index("user_roles_role_id_idx").on(table.roleId),
+            pk: primaryKey({ columns: [table.user_id, table.role_id] }),
+            userIdIndex: index("user_roles_user_id_idx").on(table.user_id),
+            roleIdIndex: index("user_roles_role_id_idx").on(table.role_id),
         };
     },
 );
@@ -89,19 +89,19 @@ export const sessions = pgTable(
         id: uuid("id")
             .primaryKey()
             .default(sql`uuidv7()`),
-        userId: uuid("user_id")
+        user_id: uuid("user_id")
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
         token: text("token").notNull().unique(),
-        expiresAt: timestamp("expires_at").notNull(),
-        createdAt: timestamp("created_at").notNull().defaultNow(),
+        expires_at: timestamp("expires_at").notNull(),
+        created_at: timestamp("created_at").notNull().defaultNow(),
     },
     (table) => {
         return {
-            userIdIndex: index("sessions_user_id_idx").on(table.userId),
+            userIdIndex: index("sessions_user_id_idx").on(table.user_id),
             tokenIndex: index("sessions_token_idx").on(table.token),
             expiresAtIndex: index("sessions_expires_at_idx").on(
-                table.expiresAt,
+                table.expires_at,
             ),
         };
     },
@@ -113,7 +113,7 @@ export const corkboardPosts = pgTable(
         id: uuid("id")
             .primaryKey()
             .default(sql`uuidv7()`),
-        userId: uuid("user_id")
+        user_id: uuid("user_id")
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
         family_id: uuid("family_id").references(() => families.id, {
@@ -121,18 +121,18 @@ export const corkboardPosts = pgTable(
         }),
         type: corkboardPostTypeEnum("type").notNull(),
         data: jsonb("data"), // JSONB for content (note text or photo URL/caption)
-        createdAt: timestamp("created_at").notNull().defaultNow(),
-        updatedAt: timestamp("updated_at").notNull().defaultNow(),
+        created_at: timestamp("created_at").notNull().defaultNow(),
+        updated_at: timestamp("updated_at").notNull().defaultNow(),
     },
     (table) => {
         return {
-            userIdIndex: index("corkboard_posts_user_id_idx").on(table.userId),
+            userIdIndex: index("corkboard_posts_user_id_idx").on(table.user_id),
             familyIdIndex: index("corkboard_posts_family_id_idx").on(
                 table.family_id,
             ),
             typeIndex: index("corkboard_posts_type_idx").on(table.type),
             createdAtIndex: index("corkboard_posts_created_at_idx").on(
-                table.createdAt,
+                table.created_at,
             ),
         };
     },
@@ -236,25 +236,25 @@ export const rolesRelations = relations(roles, ({ many }) => ({
 
 export const userRolesRelations = relations(userRoles, ({ one }) => ({
     role: one(roles, {
-        fields: [userRoles.roleId],
+        fields: [userRoles.role_id],
         references: [roles.id],
     }),
     user: one(users, {
-        fields: [userRoles.userId],
+        fields: [userRoles.user_id],
         references: [users.id],
     }),
 }));
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
     user: one(users, {
-        fields: [sessions.userId],
+        fields: [sessions.user_id],
         references: [users.id],
     }),
 }));
 
 export const corkboardPostsRelations = relations(corkboardPosts, ({ one }) => ({
     user: one(users, {
-        fields: [corkboardPosts.userId],
+        fields: [corkboardPosts.user_id],
         references: [users.id],
     }),
     family: one(families, {
