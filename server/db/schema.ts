@@ -17,7 +17,9 @@ import {
     primaryKey,
     text,
     timestamp,
+    uniqueIndex,
     uuid,
+    varchar,
 } from "drizzle-orm/pg-core";
 
 // Enums
@@ -26,13 +28,27 @@ export const corkboardPostTypeEnum = pgEnum("corkboard_post_type", [
     "photo",
 ]);
 
+export const invitationStatusEnum = pgEnum("invitation_status", [
+    "pending",
+    "accepted",
+    "declined",
+    "expired",
+    "cancelled",
+]);
+
+export const familyRoleEnum = pgEnum("family_role", [
+    "manager",
+    "member",
+    "viewer",
+]);
+
 // Tables
 export const roles = pgTable("roles", {
     id: uuid("id")
         .primaryKey()
         .default(sql`uuidv7()`),
-    name: text("name").notNull().unique(),
-    description: text("description"),
+    name: varchar("name", { length: 50 }).notNull().unique(),
+    description: varchar("description", { length: 500 }),
 });
 
 export const users = pgTable(
@@ -41,16 +57,16 @@ export const users = pgTable(
         id: uuid("id")
             .primaryKey()
             .default(sql`uuidv7()`),
-        email: text("email").notNull().unique(),
-        username: text("username").notNull().unique(),
-        display_name: text("display_name"),
+        email: varchar("email", { length: 255 }).notNull().unique(),
+        username: varchar("username", { length: 50 }).notNull().unique(),
+        display_name: varchar("display_name", { length: 100 }),
         password: text("password").notNull(),
-        first_name: text("first_name"),
-        last_name: text("last_name"),
+        first_name: varchar("first_name", { length: 100 }),
+        last_name: varchar("last_name", { length: 100 }),
         is_active: boolean("is_active").default(true),
-        dashboardConfig: jsonb("dashboard_config"), // JSONB for dashboard preferences
-        createdAt: timestamp("created_at").notNull().defaultNow(),
-        updatedAt: timestamp("updated_at")
+        dashboard_config: jsonb("dashboard_config"), // JSONB for dashboard preferences
+        created_at: timestamp("created_at").notNull().defaultNow(),
+        updated_at: timestamp("updated_at")
             .notNull()
             .default(sql`now()`),
     },
@@ -59,7 +75,11 @@ export const users = pgTable(
             emailIndex: index("users_email_idx").on(table.email),
             usernameIndex: index("users_username_idx").on(table.username),
             isActiveIndex: index("users_is_active_idx").on(table.is_active),
-            createdAtIndex: index("users_created_at_idx").on(table.createdAt),
+            createdAtIndex: index("users_created_at_idx").on(table.created_at),
+            // GIN index for JSONB dashboard_config field
+            dashboardConfigGinIndex: index("users_dashboard_config_gin_idx")
+                .using("gin", table.dashboard_config)
+                .concurrently(),
         };
     },
 );
@@ -93,20 +113,29 @@ export const sessions = pgTable(
         id: uuid("id")
             .primaryKey()
             .default(sql`uuidv7()`),
-        userId: uuid("user_id")
+        user_id: uuid("user_id")
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
         token: text("token").notNull().unique(),
-        expiresAt: timestamp("expires_at").notNull(),
-        createdAt: timestamp("created_at").notNull().defaultNow(),
+        expires_at: timestamp("expires_at").notNull(),
+        created_at: timestamp("created_at").notNull().defaultNow(),
     },
     (table) => {
         return {
-            userIdIndex: index("sessions_user_id_idx").on(table.userId),
+            userIdIndex: index("sessions_user_id_idx").on(table.user_id),
             tokenIndex: index("sessions_token_idx").on(table.token),
             expiresAtIndex: index("sessions_expires_at_idx").on(
-                table.expiresAt,
+                table.expires_at,
             ),
+            // Composite index for active sessions per user
+            userActiveSessionsIndex: index("sessions_user_active_idx")
+                .on(table.user_id, table.expires_at)
+                .concurrently(),
+            // Partial index for active sessions only
+            activeSessionsIndex: index("sessions_active_idx")
+                .on(table.expires_at)
+                .where(sql`${table.expires_at} > now()`)
+                .concurrently(),
         };
     },
 );
@@ -117,7 +146,7 @@ export const corkboardPosts = pgTable(
         id: uuid("id")
             .primaryKey()
             .default(sql`uuidv7()`),
-        userId: uuid("user_id")
+        user_id: uuid("user_id")
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
         family_id: uuid("family_id").references(() => families.id, {
@@ -125,19 +154,30 @@ export const corkboardPosts = pgTable(
         }),
         type: corkboardPostTypeEnum("type").notNull(),
         data: jsonb("data"), // JSONB for content (note text or photo URL/caption)
-        createdAt: timestamp("created_at").notNull().defaultNow(),
-        updatedAt: timestamp("updated_at").notNull().defaultNow(),
+        created_at: timestamp("created_at").notNull().defaultNow(),
+        updated_at: timestamp("updated_at").notNull().defaultNow(),
     },
     (table) => {
         return {
-            userIdIndex: index("corkboard_posts_user_id_idx").on(table.userId),
+            userIdIndex: index("corkboard_posts_user_id_idx").on(table.user_id),
             familyIdIndex: index("corkboard_posts_family_id_idx").on(
                 table.family_id,
             ),
             typeIndex: index("corkboard_posts_type_idx").on(table.type),
             createdAtIndex: index("corkboard_posts_created_at_idx").on(
-                table.createdAt,
+                table.created_at,
             ),
+            // Composite index for family timeline queries
+            // Note: PostgreSQL can scan indexes backward efficiently, so explicit DESC
+            // ordering is not required. Queries with ORDER BY created_at DESC will
+            // still benefit from this index.
+            familyTimelineIndex: index("corkboard_posts_family_timeline_idx")
+                .on(table.family_id, table.created_at)
+                .concurrently(),
+            // GIN index for JSONB data field
+            dataGinIndex: index("corkboard_posts_data_gin_idx")
+                .using("gin", table.data)
+                .concurrently(),
         };
     },
 );
@@ -148,7 +188,7 @@ export const families = pgTable(
         id: uuid("id")
             .primaryKey()
             .default(sql`uuidv7()`),
-        name: text("name").notNull(),
+        name: varchar("name", { length: 100 }).notNull(),
         creator_id: uuid("creator_id")
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
@@ -166,6 +206,11 @@ export const families = pgTable(
             deletedAtIndex: index("families_deleted_at_idx").on(
                 table.deleted_at,
             ),
+            // Partial index for active families only
+            activeFamiliesIndex: index("families_active_idx")
+                .on(table.created_at)
+                .where(sql`${table.deleted_at} IS NULL`)
+                .concurrently(),
         };
     },
 );
@@ -179,7 +224,7 @@ export const familyMembers = pgTable(
         user_id: uuid("user_id")
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
-        role: text("role").notNull(), // e.g., 'manager', 'member'
+        role: familyRoleEnum("role").notNull().default("member"),
         created_at: timestamp("created_at").notNull().defaultNow(),
         updated_at: timestamp("updated_at")
             .notNull()
@@ -205,9 +250,9 @@ export const familyInvitations = pgTable(
         invited_by_user_id: uuid("invited_by_user_id")
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
-        invited_email: text("invited_email").notNull(),
+        invited_email: varchar("invited_email", { length: 255 }).notNull(),
         token: text("token").notNull().unique(),
-        status: text("status").notNull().default("pending"), // e.g., 'pending', 'accepted', 'declined'
+        status: invitationStatusEnum("status").notNull().default("pending"),
         expires_at: timestamp("expires_at").notNull(),
         created_at: timestamp("created_at").notNull().defaultNow(),
         updated_at: timestamp("updated_at")
@@ -222,6 +267,21 @@ export const familyInvitations = pgTable(
             invitedEmailIndex: index("family_invitations_invited_email_idx").on(
                 table.invited_email,
             ),
+            // Composite index for pending family invitations
+            familyStatusIndex: index("family_invitations_family_status_idx")
+                .on(table.family_id, table.status)
+                .concurrently(),
+            // Partial index for pending invitations only
+            pendingInvitationsIndex: index("family_invitations_pending_idx")
+                .on(table.family_id, table.invited_email)
+                .where(sql`${table.status} = 'pending'`)
+                .concurrently(),
+            // Unique constraint to prevent duplicate pending invitations
+            uniquePendingInvitation: uniqueIndex(
+                "family_invitations_unique_pending",
+            )
+                .on(table.family_id, table.invited_email)
+                .where(sql`status = 'pending'`),
         };
     },
 );
@@ -255,14 +315,14 @@ export const userRolesRelations = relations(userRoles, ({ one }) => ({
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
     user: one(users, {
-        fields: [sessions.userId],
+        fields: [sessions.user_id],
         references: [users.id],
     }),
 }));
 
 export const corkboardPostsRelations = relations(corkboardPosts, ({ one }) => ({
     user: one(users, {
-        fields: [corkboardPosts.userId],
+        fields: [corkboardPosts.user_id],
         references: [users.id],
     }),
     family: one(families, {

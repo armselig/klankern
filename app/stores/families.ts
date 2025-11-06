@@ -4,8 +4,8 @@ import { useAuth } from "~/composables/useAuth";
 
 // Define interfaces for our state shape for type safety
 interface FamilyMember {
-    userId: string;
-    displayName: string | null;
+    user_id: string;
+    display_name: string | null;
     username: string;
     role: string;
 }
@@ -38,7 +38,7 @@ export const useFamilyStore = defineStore("family", () => {
     const currentUserMembership = computed(() => {
         if (!authUser.value || !currentFamily.value) return null;
         return members.value.find(
-            (member) => member.userId === authUser.value?.id,
+            (member) => member.user_id === authUser.value?.id,
         );
     });
 

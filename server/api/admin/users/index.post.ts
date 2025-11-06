@@ -31,8 +31,8 @@ export default defineEventHandler(async (event) => {
             if (body.roleIds && body.roleIds.length > 0) {
                 await tx.insert(userRoles).values(
                     body.roleIds.map((roleId) => ({
-                        userId: createdUser.id,
-                        roleId,
+                        user_id: createdUser.id,
+                        role_id: roleId,
                     })),
                 );
             }

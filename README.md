@@ -35,44 +35,130 @@ Klankern is built with modern, efficient, and developer-friendly technologies:
 
 ## 🚀 Getting Started
 
-Follow these steps to get your development environment up and running:
+You can set up your development environment in two ways: **fully containerized** (recommended for consistency) or **traditional local setup** (for more control).
 
-1.  **Install Tools:**
+### Option 1: Fully Containerized Development (Recommended)
+
+This setup runs both the Nuxt application and PostgreSQL database in containers, ensuring a consistent environment across all developers.
+
+1. **Install Tools:**
+    - Ensure you have `podman` and `podman-compose` installed on your system.
+
+2. **Environment Variables:**
+    - Copy the example environment file:
+
+        ```bash
+        cp .env.example .env
+        ```
+
+    - Open `.env` and update the values as needed. The default values work out-of-the-box for containerized development.
+
+3. **Start All Services:**
+    - Build and start both the database and Nuxt application containers:
+
+        ```bash
+        pnpm run dev:container
+        ```
+
+        Or with forced rebuild:
+
+        ```bash
+        pnpm run dev:container:build
+        ```
+
+    - The first build may take a few minutes as dependencies are installed inside the container.
+
+4. **Run Database Migrations:**
+    - Execute migrations inside the running Nuxt container:
+
+        ```bash
+        pnpm run db:migrate:container
+        ```
+
+5. **Access the Application:**
+    - Your app will be available at `http://localhost:3000`
+    - The database is accessible at `localhost:5432`
+
+6. **Useful Container Commands:**
+    - View logs: `pnpm run dev:container:logs`
+    - Restart Nuxt container: `pnpm run dev:container:restart`
+    - Open shell in container: `pnpm run dev:container:shell`
+    - Stop all containers: `pnpm run dev:container:stop`
+    - Seed database: `pnpm run db:seed:container`
+
+**Note:** Your source code is bind-mounted into the container, so changes you make locally are immediately reflected in the running application with hot-reloading enabled.
+
+### Option 2: Traditional Local Development
+
+This setup runs the Nuxt application locally on your machine while using a containerized PostgreSQL database.
+
+1. **Install Tools:**
     - Ensure you have `pnpm` (our preferred package manager) and `podman` (for database containerization) installed on your system.
     - We recommend using Node.js LTS. Check `.nvmrc` for the recommended version.
 
-2.  **Install Dependencies:**
+2. **Install Dependencies:**
 
     ```bash
     pnpm install
     ```
 
-3.  **Environment Variables:**
+3. **Environment Variables:**
     - Copy the example environment file:
+
         ```bash
         cp .env.example .env
         ```
-    - Open `.env` and update the values as needed. This typically includes database connection strings and authentication secrets.
 
-4.  **Start Database:**
-    - Spin up the PostgreSQL database container using `podman-compose`:
+    - Open `.env` and ensure `DB_HOST=localhost` (default for local development).
+
+4. **Start Database:**
+    - Spin up only the PostgreSQL database container:
+
         ```bash
-        podman-compose up -d
+        pnpm run db:start
         ```
+
     - Run database migrations to set up the schema:
+
         ```bash
         pnpm run db:migrate
         ```
 
+    - To stop the database: `pnpm run db:stop`
+
 ## 👨‍💻 Development
 
-Here are the essential scripts for local development:
+### Container Management Scripts
+
+These scripts simplify working with the containerized environment:
+
+- `pnpm run dev:container`: Start all services (database + Nuxt)
+- `pnpm run dev:container:build`: Rebuild and start all services
+- `pnpm run dev:container:stop`: Stop all containers
+- `pnpm run dev:container:restart`: Restart the Nuxt container only
+- `pnpm run dev:container:logs`: View live Nuxt application logs
+- `pnpm run dev:container:shell`: Open an interactive shell in the Nuxt container
+- `pnpm run db:start`: Start only the PostgreSQL database container
+- `pnpm run db:stop`: Stop the PostgreSQL database container
+- `pnpm run db:migrate:container`: Run database migrations inside the container
+- `pnpm run db:seed:container`: Seed the database inside the container
+
+### Application Development Scripts
+
+**For Traditional Local Setup:**
 
 - `pnpm run dev`: Starts the development server with hot-reloading. Your app will typically be available at `http://localhost:3000`.
 - `pnpm run build`: Builds the application for production deployment.
 - `pnpm run preview`: Previews the production build locally.
 - `pnpm run db:generate`: Generates new Drizzle ORM migrations after schema changes in `server/db/schema.ts`.
+- `pnpm run db:migrate`: Applies pending database migrations.
 - `pnpm run db:seed`: Seeds the database with initial data (if a seed file exists).
+
+**For Containerized Setup:**
+
+The Nuxt dev server runs automatically inside the container when you start it with `pnpm run dev:container`. All development scripts are available through the dedicated container commands listed above. For ad-hoc commands not covered by npm scripts, use:
+
+- `podman exec klankern_nuxt pnpm run <script-name>`
 
 ## 🧪 Testing
 
@@ -85,15 +171,33 @@ We use [Vitest](https://vitest.dev/) with [`@nuxt/test-utils`](https://nuxt.com/
 
 ### Running Tests
 
+**Traditional Local Setup:**
+
 - `pnpm run test`: Runs all tests (unit and Nuxt).
 - `pnpm run test:nuxt`: Runs only tests in the `nuxt` environment.
 - `pnpm run test:ui`: Starts the Vitest UI for interactive test development.
 
+**Containerized Setup:**
+
+- `podman exec klankern_nuxt pnpm run test`: Runs all tests inside the container.
+- `podman exec klankern_nuxt pnpm run test:nuxt`: Runs only tests in the `nuxt` environment.
+- `podman exec klankern_nuxt pnpm run test:ui`: Starts the Vitest UI (accessible at the exposed port).
+
 ## 🗄️ Database Management
 
 - **Schema Definition:** Located in `server/db/schema.ts`.
+
+**Traditional Local Setup:**
+
 - **Generate Migrations:** After modifying `server/db/schema.ts`, run `pnpm run db:generate` to create a new migration file.
 - **Apply Migrations:** To apply pending migrations to your database, use `pnpm run db:migrate`.
+- **Seed Database:** Populate the database with initial test data using `pnpm run db:seed`.
+
+**Containerized Setup:**
+
+- **Generate Migrations:** `podman exec klankern_nuxt pnpm run db:generate`
+- **Apply Migrations:** `pnpm run db:migrate:container`
+- **Seed Database:** `pnpm run db:seed:container`
 
 ## 🧹 Linting and Formatting
 

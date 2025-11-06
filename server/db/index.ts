@@ -8,6 +8,7 @@ const pool = new Pool({
     user: process.env.DB_USER || "klankern_user",
     password: process.env.DB_PASSWORD || "klankern_password",
     database: process.env.DB_NAME || "klankern_db",
+    ssl: false,
 });
 
 export const db = drizzle(pool, { schema });
