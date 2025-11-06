@@ -1,34 +1,41 @@
 {
-    "version": "7",
-    "dialect": "postgresql",
-    "entries": [
-        {
-            "idx": 0,
-            "version": "7",
-            "when": 1759778404604,
-            "tag": "0000_plain_the_fury",
-            "breakpoints": true
-        },
-        {
-            "idx": 1,
-            "version": "7",
-            "when": 1759842468492,
-            "tag": "0001_optimal_pestilence",
-            "breakpoints": true
-        },
-        {
-            "idx": 2,
-            "version": "7",
-            "when": 1759862956493,
-            "tag": "0002_elite_firebird",
-            "breakpoints": true
-        },
-        {
-            "idx": 3,
-            "version": "7",
-            "when": 1759916120260,
-            "tag": "0003_amused_jack_flag",
-            "breakpoints": true
-        }
-    ]
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1759778404604,
+      "tag": "0000_plain_the_fury",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1759842468492,
+      "tag": "0001_optimal_pestilence",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1759862956493,
+      "tag": "0002_elite_firebird",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1759916120260,
+      "tag": "0003_amused_jack_flag",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1762459291155,
+      "tag": "0004_supreme_mac_gargan",
+      "breakpoints": true
+    }
+  ]
 }
