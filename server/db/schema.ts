@@ -148,6 +148,9 @@ export const corkboardPosts = pgTable(
                 table.createdAt,
             ),
             // Composite index for family timeline queries
+            // Note: PostgreSQL can scan indexes backward efficiently, so explicit DESC
+            // ordering is not required. Queries with ORDER BY created_at DESC will
+            // still benefit from this index.
             familyTimelineIndex: index("corkboard_posts_family_timeline_idx")
                 .on(table.family_id, table.createdAt)
                 .concurrently(),
