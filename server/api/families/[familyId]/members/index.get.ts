@@ -46,9 +46,9 @@ export default defineEventHandler(async (event) => {
 
         // 3. Format the response to be a clean list of members.
         const memberList = memberships.map((m) => ({
-            userId: m.user.id,
+            user_id: m.user.id,
             username: m.user.username,
-            displayName: m.user.display_name,
+            display_name: m.user.display_name,
             email: m.user.email,
             role: m.role,
         }));
