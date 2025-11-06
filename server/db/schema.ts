@@ -17,7 +17,9 @@ import {
     primaryKey,
     text,
     timestamp,
+    uniqueIndex,
     uuid,
+    varchar,
 } from "drizzle-orm/pg-core";
 
 // Enums
@@ -26,13 +28,27 @@ export const corkboardPostTypeEnum = pgEnum("corkboard_post_type", [
     "photo",
 ]);
 
+export const invitationStatusEnum = pgEnum("invitation_status", [
+    "pending",
+    "accepted",
+    "declined",
+    "expired",
+    "cancelled",
+]);
+
+export const familyRoleEnum = pgEnum("family_role", [
+    "manager",
+    "member",
+    "viewer",
+]);
+
 // Tables
 export const roles = pgTable("roles", {
     id: uuid("id")
         .primaryKey()
         .default(sql`uuidv7()`),
-    name: text("name").notNull().unique(),
-    description: text("description"),
+    name: varchar("name", { length: 50 }).notNull().unique(),
+    description: varchar("description", { length: 500 }),
 });
 
 export const users = pgTable(
@@ -41,12 +57,12 @@ export const users = pgTable(
         id: uuid("id")
             .primaryKey()
             .default(sql`uuidv7()`),
-        email: text("email").notNull().unique(),
-        username: text("username").notNull().unique(),
-        display_name: text("display_name"),
+        email: varchar("email", { length: 255 }).notNull().unique(),
+        username: varchar("username", { length: 50 }).notNull().unique(),
+        display_name: varchar("display_name", { length: 100 }),
         password: text("password").notNull(),
-        first_name: text("first_name"),
-        last_name: text("last_name"),
+        first_name: varchar("first_name", { length: 100 }),
+        last_name: varchar("last_name", { length: 100 }),
         is_active: boolean("is_active").default(true),
         dashboard_config: jsonb("dashboard_config"), // JSONB for dashboard preferences
         created_at: timestamp("created_at").notNull().defaultNow(),
@@ -168,7 +184,7 @@ export const families = pgTable(
         id: uuid("id")
             .primaryKey()
             .default(sql`uuidv7()`),
-        name: text("name").notNull(),
+        name: varchar("name", { length: 100 }).notNull(),
         creator_id: uuid("creator_id")
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
@@ -204,7 +220,7 @@ export const familyMembers = pgTable(
         user_id: uuid("user_id")
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
-        role: text("role").notNull(), // e.g., 'manager', 'member'
+        role: familyRoleEnum("role").notNull().default("member"),
     },
     (table) => {
         return {
@@ -226,9 +242,9 @@ export const familyInvitations = pgTable(
         invited_by_user_id: uuid("invited_by_user_id")
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
-        invited_email: text("invited_email").notNull(),
+        invited_email: varchar("invited_email", { length: 255 }).notNull(),
         token: text("token").notNull().unique(),
-        status: text("status").notNull().default("pending"), // e.g., 'pending', 'accepted', 'declined'
+        status: invitationStatusEnum("status").notNull().default("pending"),
         expires_at: timestamp("expires_at").notNull(),
         created_at: timestamp("created_at").notNull().defaultNow(),
         updated_at: timestamp("updated_at")
@@ -252,6 +268,12 @@ export const familyInvitations = pgTable(
                 .on(table.family_id, table.invited_email)
                 .where(sql`${table.status} = 'pending'`)
                 .concurrently(),
+            // Unique constraint to prevent duplicate pending invitations
+            uniquePendingInvitation: uniqueIndex(
+                "family_invitations_unique_pending",
+            )
+                .on(table.family_id, table.invited_email)
+                .where(sql`status = 'pending'`),
         };
     },
 );
