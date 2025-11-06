@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { defineEventHandler, createError, getRouterParams } from "h3";
 import { db } from "#server/db";
 import { families } from "#server/db/schema";
@@ -13,9 +13,9 @@ export default defineEventHandler(async (event) => {
     }
 
     try {
-        // 1. Fetch the family and all its members in a single query.
+        // 1. Fetch the family and all its members in a single query, excluding soft-deleted family
         const familyData = await db.query.families.findFirst({
-            where: eq(families.id, familyId),
+            where: and(eq(families.id, familyId), isNull(families.deleted_at)),
             with: {
                 members: {
                     with: {
@@ -38,8 +38,13 @@ export default defineEventHandler(async (event) => {
             });
         }
 
-        // 2. Authorize: Check if the current user is in the list of members.
-        const isCurrentUserMember = familyData.members.some(
+        // Filter out soft-deleted members
+        const activeMembers = familyData.members.filter(
+            (member) => !member.deleted_at,
+        );
+
+        // 2. Authorize: Check if the current user is in the list of active members.
+        const isCurrentUserMember = activeMembers.some(
             (member) => member.user_id === user.id,
         );
 
@@ -51,7 +56,7 @@ export default defineEventHandler(async (event) => {
         const response = {
             id: familyData.id,
             name: familyData.name,
-            members: familyData.members.map((m) => ({
+            members: activeMembers.map((m) => ({
                 userId: m.user.id,
                 username: m.user.username,
                 displayName: m.user.display_name,

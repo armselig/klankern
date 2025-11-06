@@ -1,8 +1,9 @@
 import { defineEventHandler, createError } from "h3";
 import { db } from "#server/db";
 import { familyMembers } from "#server/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { logger } from "#server/utils/logger";
+import { notDeleted } from "#server/db/helpers";
 
 /**
  * @api {get} /api/families
@@ -21,7 +22,10 @@ export default defineEventHandler(async (event) => {
 
     try {
         const userFamilyMemberships = await db.query.familyMembers.findMany({
-            where: eq(familyMembers.user_id, user.id),
+            where: and(
+                eq(familyMembers.user_id, user.id),
+                notDeleted(familyMembers),
+            ),
             with: {
                 family: true, // Include the full family object
             },
