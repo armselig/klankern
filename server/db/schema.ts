@@ -60,6 +60,10 @@ export const users = pgTable(
             usernameIndex: index("users_username_idx").on(table.username),
             isActiveIndex: index("users_is_active_idx").on(table.is_active),
             createdAtIndex: index("users_created_at_idx").on(table.createdAt),
+            // GIN index for JSONB dashboard_config field
+            dashboardConfigGinIndex: index("users_dashboard_config_gin_idx")
+                .using("gin", table.dashboardConfig)
+                .concurrently(),
         };
     },
 );
@@ -103,6 +107,15 @@ export const sessions = pgTable(
             expiresAtIndex: index("sessions_expires_at_idx").on(
                 table.expiresAt,
             ),
+            // Composite index for active sessions per user
+            userActiveSessionsIndex: index("sessions_user_active_idx")
+                .on(table.userId, table.expiresAt)
+                .concurrently(),
+            // Partial index for active sessions only
+            activeSessionsIndex: index("sessions_active_idx")
+                .on(table.expiresAt)
+                .where(sql`${table.expiresAt} > now()`)
+                .concurrently(),
         };
     },
 );
@@ -134,6 +147,14 @@ export const corkboardPosts = pgTable(
             createdAtIndex: index("corkboard_posts_created_at_idx").on(
                 table.createdAt,
             ),
+            // Composite index for family timeline queries
+            familyTimelineIndex: index("corkboard_posts_family_timeline_idx")
+                .on(table.family_id, table.createdAt)
+                .concurrently(),
+            // GIN index for JSONB data field
+            dataGinIndex: index("corkboard_posts_data_gin_idx")
+                .using("gin", table.data)
+                .concurrently(),
         };
     },
 );
@@ -162,6 +183,11 @@ export const families = pgTable(
             deletedAtIndex: index("families_deleted_at_idx").on(
                 table.deleted_at,
             ),
+            // Partial index for active families only
+            activeFamiliesIndex: index("families_active_idx")
+                .on(table.created_at)
+                .where(sql`${table.deleted_at} IS NULL`)
+                .concurrently(),
         };
     },
 );
@@ -214,6 +240,15 @@ export const familyInvitations = pgTable(
             invitedEmailIndex: index("family_invitations_invited_email_idx").on(
                 table.invited_email,
             ),
+            // Composite index for pending family invitations
+            familyStatusIndex: index("family_invitations_family_status_idx")
+                .on(table.family_id, table.status)
+                .concurrently(),
+            // Partial index for pending invitations only
+            pendingInvitationsIndex: index("family_invitations_pending_idx")
+                .on(table.family_id, table.invited_email)
+                .where(sql`${table.status} = 'pending'`)
+                .concurrently(),
         };
     },
 );
