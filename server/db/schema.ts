@@ -11,6 +11,7 @@ import { relations, sql } from "drizzle-orm";
 import {
     boolean,
     index,
+    integer,
     jsonb,
     pgEnum,
     pgTable,
@@ -49,6 +50,12 @@ export const users = pgTable(
         last_name: text("last_name"),
         is_active: boolean("is_active").default(true),
         dashboardConfig: jsonb("dashboard_config"), // JSONB for dashboard preferences
+        // Failed login tracking fields
+        failed_login_attempts: integer("failed_login_attempts").default(0),
+        last_failed_login_at: timestamp("last_failed_login_at"),
+        locked_until: timestamp("locked_until"),
+        // GDPR compliance field
+        anonymized_at: timestamp("anonymized_at"),
         createdAt: timestamp("created_at").notNull().defaultNow(),
         updatedAt: timestamp("updated_at")
             .notNull()
@@ -95,6 +102,11 @@ export const sessions = pgTable(
         token: text("token").notNull().unique(),
         expiresAt: timestamp("expires_at").notNull(),
         createdAt: timestamp("created_at").notNull().defaultNow(),
+        // Session metadata tracking fields
+        ip_address: text("ip_address"),
+        user_agent: text("user_agent"),
+        last_activity_at: timestamp("last_activity_at"),
+        device_fingerprint: text("device_fingerprint"),
     },
     (table) => {
         return {
@@ -218,6 +230,64 @@ export const familyInvitations = pgTable(
     },
 );
 
+// Audit Log Table
+export const auditLog = pgTable(
+    "audit_log",
+    {
+        id: uuid("id")
+            .primaryKey()
+            .default(sql`uuidv7()`),
+        user_id: uuid("user_id").references(() => users.id, {
+            onDelete: "set null",
+        }),
+        action: text("action").notNull(), // 'create', 'update', 'delete'
+        entity_type: text("entity_type").notNull(), // 'user', 'family', etc.
+        entity_id: uuid("entity_id").notNull(),
+        old_values: jsonb("old_values"),
+        new_values: jsonb("new_values"),
+        ip_address: text("ip_address"),
+        user_agent: text("user_agent"),
+        created_at: timestamp("created_at").notNull().defaultNow(),
+    },
+    (table) => {
+        return {
+            userIdIndex: index("audit_log_user_id_idx").on(table.user_id),
+            entityTypeIndex: index("audit_log_entity_type_idx").on(
+                table.entity_type,
+            ),
+            entityIdIndex: index("audit_log_entity_id_idx").on(table.entity_id),
+            createdAtIndex: index("audit_log_created_at_idx").on(
+                table.created_at,
+            ),
+        };
+    },
+);
+
+// User Consents Table (GDPR)
+export const userConsents = pgTable(
+    "user_consents",
+    {
+        id: uuid("id")
+            .primaryKey()
+            .default(sql`uuidv7()`),
+        user_id: uuid("user_id")
+            .notNull()
+            .references(() => users.id, { onDelete: "cascade" }),
+        consent_type: text("consent_type").notNull(), // 'marketing', 'analytics', etc.
+        granted: boolean("granted").notNull(),
+        granted_at: timestamp("granted_at").notNull().defaultNow(),
+        revoked_at: timestamp("revoked_at"),
+    },
+    (table) => {
+        return {
+            userIdIndex: index("user_consents_user_id_idx").on(table.user_id),
+            consentTypeIndex: index("user_consents_consent_type_idx").on(
+                table.consent_type,
+            ),
+        };
+    },
+);
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
     userRoles: many(userRoles),
@@ -228,6 +298,8 @@ export const usersRelations = relations(users, ({ many }) => ({
     sentFamilyInvitations: many(familyInvitations, {
         relationName: "inviter",
     }),
+    auditLogs: many(auditLog),
+    consents: many(userConsents),
 }));
 
 export const rolesRelations = relations(roles, ({ many }) => ({
@@ -299,3 +371,17 @@ export const familyInvitationsRelations = relations(
         }),
     }),
 );
+
+export const auditLogRelations = relations(auditLog, ({ one }) => ({
+    user: one(users, {
+        fields: [auditLog.user_id],
+        references: [users.id],
+    }),
+}));
+
+export const userConsentsRelations = relations(userConsents, ({ one }) => ({
+    user: one(users, {
+        fields: [userConsents.user_id],
+        references: [users.id],
+    }),
+}));
