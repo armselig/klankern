@@ -14,7 +14,7 @@ Klankern is a Progressive Web App (PWA) designed as a family's digital hub for m
 - **Validation**: Zod
 - **Testing**: Vitest with @nuxt/test-utils
 - **Package Manager**: pnpm ^10.13.1
-- **Node.js**: ^22.17.0
+- **Node.js**: ^22.17.0 (LTS "Jod" - see `.nvmrc`)
 - **Linting & Formatting**: ESLint, Prettier
 - **Containerization**: Podman with podman-compose
 
