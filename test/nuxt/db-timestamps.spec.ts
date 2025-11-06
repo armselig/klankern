@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { sql } from "drizzle-orm";
 import { familyMembers, userRoles } from "#server/db/schema";
 
 /**
