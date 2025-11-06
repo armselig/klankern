@@ -60,10 +60,10 @@ export default defineEventHandler(async (event) => {
                 id: users.id,
                 email: users.email,
                 username: users.username,
-                displayName: users.display_name,
+                display_name: users.display_name,
                 first_name: users.first_name,
                 last_name: users.last_name,
-                isActive: users.is_active,
+                is_active: users.is_active,
                 created_at: users.created_at,
                 updated_at: users.updated_at,
                 roles: sql<
