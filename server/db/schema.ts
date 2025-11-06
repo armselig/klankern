@@ -67,10 +67,10 @@ export const users = pgTable(
 export const userRoles = pgTable(
     "user_roles",
     {
-        userId: uuid("user_id")
+        user_id: uuid("user_id")
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
-        roleId: uuid("role_id")
+        role_id: uuid("role_id")
             .notNull()
             .references(() => roles.id, { onDelete: "cascade" }),
         created_at: timestamp("created_at").notNull().defaultNow(),
@@ -80,9 +80,9 @@ export const userRoles = pgTable(
     },
     (table) => {
         return {
-            pk: primaryKey({ columns: [table.userId, table.roleId] }),
-            userIdIndex: index("user_roles_user_id_idx").on(table.userId),
-            roleIdIndex: index("user_roles_role_id_idx").on(table.roleId),
+            pk: primaryKey({ columns: [table.user_id, table.role_id] }),
+            userIdIndex: index("user_roles_user_id_idx").on(table.user_id),
+            roleIdIndex: index("user_roles_role_id_idx").on(table.role_id),
         };
     },
 );
@@ -244,11 +244,11 @@ export const rolesRelations = relations(roles, ({ many }) => ({
 
 export const userRolesRelations = relations(userRoles, ({ one }) => ({
     role: one(roles, {
-        fields: [userRoles.roleId],
+        fields: [userRoles.role_id],
         references: [roles.id],
     }),
     user: one(users, {
-        fields: [userRoles.userId],
+        fields: [userRoles.user_id],
         references: [users.id],
     }),
 }));
