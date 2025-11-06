@@ -24,8 +24,22 @@ export const FamilySchema = z.object({
     deleted_at: z.date().nullable(),
 });
 
+// Zod schema for transferring family ownership
+export const FamilyTransferOwnershipSchema = z.object({
+    newOwnerId: z
+        .string({
+            required_error: "New owner ID is required.",
+        })
+        .uuid("New owner ID must be a valid UUID."),
+});
+
 // Inferred TypeScript type for a family object.
 export type Family = z.infer<typeof FamilySchema>;
 
 // Inferred TypeScript type for creating a family.
 export type FamilyCreate = z.infer<typeof FamilyCreateSchema>;
+
+// Inferred TypeScript type for transferring family ownership.
+export type FamilyTransferOwnership = z.infer<
+    typeof FamilyTransferOwnershipSchema
+>;

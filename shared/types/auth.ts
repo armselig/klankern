@@ -6,3 +6,9 @@ export const loginCredentialsSchema = z.object({
 });
 
 export type LoginCredentials = z.infer<typeof loginCredentialsSchema>;
+
+export const verifyEmailSchema = z.object({
+    token: z.string().min(1, "Verification token is required"),
+});
+
+export type VerifyEmail = z.infer<typeof verifyEmailSchema>;

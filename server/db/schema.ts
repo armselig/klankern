@@ -48,6 +48,9 @@ export const users = pgTable(
         first_name: text("first_name"),
         last_name: text("last_name"),
         is_active: boolean("is_active").default(true),
+        email_verified: boolean("email_verified").default(false),
+        email_verified_at: timestamp("email_verified_at"),
+        email_verification_token: text("email_verification_token").unique(),
         dashboardConfig: jsonb("dashboard_config"), // JSONB for dashboard preferences
         createdAt: timestamp("created_at").notNull().defaultNow(),
         updatedAt: timestamp("updated_at")
@@ -60,6 +63,9 @@ export const users = pgTable(
             usernameIndex: index("users_username_idx").on(table.username),
             isActiveIndex: index("users_is_active_idx").on(table.is_active),
             createdAtIndex: index("users_created_at_idx").on(table.createdAt),
+            emailVerificationTokenIndex: index(
+                "users_email_verification_token_idx",
+            ).on(table.email_verification_token),
         };
     },
 );
