@@ -42,7 +42,7 @@ export default defineEventHandler(async (event) => {
             .update(users)
             .set({
                 is_active: validation.data.is_active,
-                updatedAt: new Date(),
+                updated_at: new Date(),
             })
             .where(eq(users.id, parsedUserId.data))
             .returning({ id: users.id }); // Only return ID for subsequent fetch
@@ -64,8 +64,8 @@ export default defineEventHandler(async (event) => {
                 first_name: users.first_name,
                 last_name: users.last_name,
                 isActive: users.is_active,
-                createdAt: users.createdAt,
-                updatedAt: users.updatedAt,
+                created_at: users.created_at,
+                updated_at: users.updated_at,
                 roles: sql<
                     {
                         id: string;
@@ -75,8 +75,8 @@ export default defineEventHandler(async (event) => {
                 >`json_agg(json_build_object('id', ${roles.id}, 'name', ${roles.name}, 'description', ${roles.description}))`,
             })
             .from(users)
-            .leftJoin(userRoles, eq(users.id, userRoles.userId))
-            .leftJoin(roles, eq(userRoles.roleId, roles.id))
+            .leftJoin(userRoles, eq(users.id, userRoles.user_id))
+            .leftJoin(roles, eq(userRoles.role_id, roles.id))
             .where(eq(users.id, updatedUserResult.id))
             .groupBy(users.id)
             .execute();
