@@ -16,7 +16,7 @@ describe("Database Schema Enhancements", () => {
 
     beforeEach(async () => {
         // Clean up any existing test data
-        await db.delete(sessions).where(eq(sessions.userId, testUserId));
+        await db.delete(sessions).where(eq(sessions.user_id, testUserId));
         await db
             .delete(userConsents)
             .where(eq(userConsents.user_id, testUserId));
@@ -26,7 +26,7 @@ describe("Database Schema Enhancements", () => {
 
     afterEach(async () => {
         // Clean up test data
-        await db.delete(sessions).where(eq(sessions.userId, testUserId));
+        await db.delete(sessions).where(eq(sessions.user_id, testUserId));
         await db
             .delete(userConsents)
             .where(eq(userConsents.user_id, testUserId));
@@ -153,9 +153,9 @@ describe("Database Schema Enhancements", () => {
             await db.insert(users).values(testUser);
 
             const sessionData = {
-                userId: testUserId,
+                user_id: testUserId,
                 token: "test-token-123",
-                expiresAt: new Date("2024-12-31"),
+                expires_at: new Date("2024-12-31"),
                 ip_address: "192.168.1.1",
                 user_agent: "Mozilla/5.0",
                 last_activity_at: new Date(),
@@ -165,7 +165,7 @@ describe("Database Schema Enhancements", () => {
             await db.insert(sessions).values(sessionData);
 
             const session = await db.query.sessions.findFirst({
-                where: eq(sessions.userId, testUserId),
+                where: eq(sessions.user_id, testUserId),
             });
 
             expect(session).toBeDefined();
@@ -179,13 +179,13 @@ describe("Database Schema Enhancements", () => {
             await db.insert(users).values(testUser);
 
             await db.insert(sessions).values({
-                userId: testUserId,
+                user_id: testUserId,
                 token: "test-token-456",
-                expiresAt: new Date("2024-12-31"),
+                expires_at: new Date("2024-12-31"),
             });
 
             const session = await db.query.sessions.findFirst({
-                where: eq(sessions.userId, testUserId),
+                where: eq(sessions.user_id, testUserId),
             });
 
             expect(session?.ip_address).toBeNull();
@@ -199,9 +199,9 @@ describe("Database Schema Enhancements", () => {
 
             const token = "test-token-789";
             await db.insert(sessions).values({
-                userId: testUserId,
+                user_id: testUserId,
                 token,
-                expiresAt: new Date("2024-12-31"),
+                expires_at: new Date("2024-12-31"),
             });
 
             const now = new Date();
