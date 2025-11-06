@@ -43,6 +43,38 @@ The database seed script creates the following default users:
 - **NEVER** assume! **ALWAYS** ask clarifying questions.
 - **NEVER** (re-)start, stop etc. any services on your own. Managing containers and dev servers is solely in the domain of the user. You may ask the user at any time to perform such tasks on your behalf.
 
+## Development Environment
+
+The project supports two development setups:
+
+### Containerized Development (Default)
+
+- Both the Nuxt application and PostgreSQL database run in containers via `podman-compose`
+- The Nuxt container name is `klankern_nuxt`, the database container is `klankern_db`
+- Source code is bind-mounted, so file changes are reflected immediately
+- **Important:** Do NOT start, stop, restart, or otherwise manage containers without explicit user approval
+
+**Available Container Scripts:**
+
+- `pnpm run dev:container`: Start all services
+- `pnpm run dev:container:build`: Rebuild and start all services
+- `pnpm run dev:container:stop`: Stop all containers
+- `pnpm run dev:container:restart`: Restart Nuxt container
+- `pnpm run dev:container:logs`: View Nuxt logs
+- `pnpm run dev:container:shell`: Open shell in container
+- `pnpm run db:migrate:container`: Run migrations in container
+- `pnpm run db:seed:container`: Seed database in container
+
+For ad-hoc commands: `podman exec klankern_nuxt pnpm run <script-name>`
+
+### Traditional Local Development
+
+- Nuxt runs locally on the host machine
+- Only PostgreSQL runs in a container
+- Standard `pnpm run <script-name>` commands work directly
+- `pnpm run db:start`: Start database container
+- `pnpm run db:stop`: Stop database container
+
 ## Further reading
 
 - [Initial project plan](./vibes/PROJECT.md)
