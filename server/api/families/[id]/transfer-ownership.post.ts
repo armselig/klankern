@@ -19,7 +19,7 @@ import { logger } from "#server/utils/logger";
  * @returns {Promise<object>} Success response.
  */
 export default defineEventHandler(async (event) => {
-    const { id: familyId } = await getRouterParams(event);
+    const { id: familyId } = getRouterParams(event);
     const user = event.context.user;
 
     if (!user) {

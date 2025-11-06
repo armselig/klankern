@@ -51,12 +51,18 @@ export default defineEventHandler(async (event) => {
             .set({ email_verification_token: token })
             .where(eq(users.id, user.id));
 
-        // TODO: Send email with verification link
-        // await sendVerificationEmail(userRecord.email, token);
+        // Note: Email sending functionality not yet implemented.
+        // When implemented, send email with verification link:
+        // const verificationUrl = `${process.env.APP_URL}/verify-email?token=${token}`;
+        // await sendVerificationEmail(userRecord.email, verificationUrl);
 
-        logger.info(`Verification email sent to user ${user.id}`);
+        logger.info(`Verification token generated for user ${user.id}`);
 
-        return { success: true };
+        return {
+            success: true,
+            message:
+                "Verification token generated. Email sending not yet implemented.",
+        };
     } catch (error) {
         if (
             typeof error === "object" &&
