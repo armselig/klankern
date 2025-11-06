@@ -93,6 +93,10 @@ export const userRoles = pgTable(
         role_id: uuid("role_id")
             .notNull()
             .references(() => roles.id, { onDelete: "cascade" }),
+        created_at: timestamp("created_at").notNull().defaultNow(),
+        updated_at: timestamp("updated_at")
+            .notNull()
+            .default(sql`now()`),
     },
     (table) => {
         return {
@@ -221,6 +225,10 @@ export const familyMembers = pgTable(
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
         role: familyRoleEnum("role").notNull().default("member"),
+        created_at: timestamp("created_at").notNull().defaultNow(),
+        updated_at: timestamp("updated_at")
+            .notNull()
+            .default(sql`now()`),
     },
     (table) => {
         return {

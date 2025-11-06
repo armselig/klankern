@@ -36,6 +36,20 @@
             "when": 1762462399245,
             "tag": "0004_shocking_molecule_man",
             "breakpoints": true
+        },
+        {
+            "idx": 5,
+            "version": "7",
+            "when": 1762437140496,
+            "tag": "0005_needy_black_cat",
+            "breakpoints": true
+        },
+        {
+            "idx": 6,
+            "version": "7",
+            "when": 1762437200000,
+            "tag": "0006_add_updated_at_triggers",
+            "breakpoints": true
         }
     ]
 }
