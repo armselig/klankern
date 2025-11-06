@@ -40,6 +40,11 @@ export const userConsents = pgTable("user_consents", {
 
 **Purpose:** Allow users to request deletion of their personal data while maintaining referential integrity.
 
+**Schema Considerations:**
+- `failed_login_attempts` should be validated to be non-negative in application logic
+- `locked_until` should be validated to be greater than `last_failed_login_at` when both are set
+- These validations ensure data integrity for security features
+
 **Implementation:**
 
 ```typescript
@@ -93,9 +98,14 @@ export async function grantConsent(userId: string, consentType: ConsentType): Pr
 }
 
 export async function revokeConsent(userId: string, consentType: ConsentType): Promise<void> {
+    const now = new Date();
     await db
         .update(userConsents)
-        .set({ granted: false, revoked_at: sql`now()` })
+        .set({ 
+            granted: false, 
+            revoked_at: now,
+            // Note: granted_at remains unchanged to preserve when consent was originally granted
+        })
         .where(
             and(
                 eq(userConsents.user_id, userId),
@@ -154,7 +164,7 @@ export default defineEventHandler(async (event) => {
     const userData = await db.query.users.findFirst({
         where: eq(users.id, userId),
         columns: {
-            password: false, // Exclude password hash
+            password: false, // Excluded for security - password hashes are not personal data under GDPR
         },
     });
 

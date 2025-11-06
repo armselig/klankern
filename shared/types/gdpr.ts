@@ -33,8 +33,8 @@ export const auditLogSchema = z.object({
     action: auditActionEnum,
     entity_type: auditEntityTypeEnum,
     entity_id: z.string().uuid(),
-    old_values: z.record(z.string(), z.any()).nullable(),
-    new_values: z.record(z.string(), z.any()).nullable(),
+    old_values: z.record(z.string(), z.unknown()).nullable(),
+    new_values: z.record(z.string(), z.unknown()).nullable(),
     ip_address: z.string().nullable(),
     user_agent: z.string().nullable(),
     created_at: z.date(),
@@ -47,8 +47,8 @@ export const createAuditLogSchema = z.object({
     action: auditActionEnum,
     entity_type: auditEntityTypeEnum,
     entity_id: z.string().uuid(),
-    old_values: z.record(z.string(), z.any()).optional(),
-    new_values: z.record(z.string(), z.any()).optional(),
+    old_values: z.record(z.string(), z.unknown()).optional(),
+    new_values: z.record(z.string(), z.unknown()).optional(),
     ip_address: z.string().optional(),
     user_agent: z.string().optional(),
 });
@@ -152,8 +152,8 @@ export const userDataExportSchema = z.object({
         anonymized_at: z.date().nullable(),
     }),
     sessions: z.array(sessionWithMetadataSchema),
-    posts: z.array(z.any()), // corkboard posts
-    families: z.array(z.any()), // family memberships
+    posts: z.array(z.unknown()), // corkboard posts
+    families: z.array(z.unknown()), // family memberships
     consents: z.array(userConsentSchema),
     export_date: z.string(),
 });

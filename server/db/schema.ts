@@ -51,6 +51,8 @@ export const users = pgTable(
         is_active: boolean("is_active").default(true),
         dashboardConfig: jsonb("dashboard_config"), // JSONB for dashboard preferences
         // Failed login tracking fields
+        // Note: Consider adding CHECK constraint: failed_login_attempts >= 0
+        // Note: Consider adding CHECK constraint: locked_until > last_failed_login_at when both are set
         failed_login_attempts: integer("failed_login_attempts").default(0),
         last_failed_login_at: timestamp("last_failed_login_at"),
         locked_until: timestamp("locked_until"),
