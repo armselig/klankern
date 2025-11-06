@@ -33,8 +33,29 @@
     {
       "idx": 4,
       "version": "7",
-      "when": 1762437143439,
-      "tag": "0004_tricky_jackpot",
+      "when": 1760000000000,
+      "tag": "0004_from_develop",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1761000000000,
+      "tag": "0005_from_develop",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1762000000000,
+      "tag": "0006_from_develop",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1762469089980,
+      "tag": "0007_mysterious_sasquatch",
       "breakpoints": true
     }
   ]
