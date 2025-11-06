@@ -37,29 +37,34 @@ Klankern is built with modern, efficient, and developer-friendly technologies:
 
 Follow these steps to get your development environment up and running:
 
-1.  **Install Tools:**
+1. **Install Tools:**
     - Ensure you have `pnpm` (our preferred package manager) and `podman` (for database containerization) installed on your system.
     - We recommend using Node.js LTS. Check `.nvmrc` for the recommended version.
 
-2.  **Install Dependencies:**
+2. **Install Dependencies:**
 
     ```bash
     pnpm install
     ```
 
-3.  **Environment Variables:**
+3. **Environment Variables:**
     - Copy the example environment file:
+
         ```bash
         cp .env.example .env
         ```
+
     - Open `.env` and update the values as needed. This typically includes database connection strings and authentication secrets.
 
-4.  **Start Database:**
+4. **Start Database:**
     - Spin up the PostgreSQL database container using `podman-compose`:
+
         ```bash
         podman-compose up -d
         ```
+
     - Run database migrations to set up the schema:
+
         ```bash
         pnpm run db:migrate
         ```

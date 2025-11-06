@@ -23,13 +23,13 @@ This document provides instructions for AI agents to work with the Klankern proj
 
 The database seed script creates the following default users:
 
-**1. Admin User**
+### Admin User
 
 - **Username:** `admin`
 - **Email:** `admin@example.com`
 - **Password:** `password123`
 
-**2. Standard Test User (for E2E tests)**
+### Standard Test User (for E2E tests)
 
 - **ID:** `a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11`
 - **Username:** `testuser`
@@ -38,17 +38,11 @@ The database seed script creates the following default users:
 
 ## AI Agent Collaboration
 
-- **Agent-Relevant Files**: Keep all files relevant for AI agents within the `./vibes/` directory.
+- **Agent-Relevant Files**: Keep all files relevant for AI agents within the `./vibes/` directory. All filenames start with a datestamp prefix. Example: `YYMMDD_topic_brief-description.md`.
 - **Knowledge Graph**: If the MCP server `memory` is available, proactively and autonomously read the graph at the beginning of each session and keep it updated and maintained as you go.
 - **NEVER** assume! **ALWAYS** ask clarifying questions.
-
-## Known AI issues in the project
-
-- Agents have no idea how to write proper Vitest tests in a Nuxt v4 environment. They screw up, get stuck in a loop and completely ignore documentation even if presented on a silver platter.
-- Agents are completely lost with the current ESLint setup and how to fix linting errors, especially regarding imports and types.
+- **NEVER** (re-)start, stop etc. any services on your own. Managing containers and dev servers is solely in the domain of the user. You may ask the user at any time to perform such tasks on your behalf.
 
 ## Further reading
 
-- [`README.md`](./README.md)
 - [Initial project plan](./vibes/PROJECT.md)
-- [To-do list](./TODO.md)
