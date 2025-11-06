@@ -59,7 +59,7 @@ async function seed() {
         if (adminUser) {
             await db
                 .insert(userRoles)
-                .values({ userId: adminUser.id, roleId: adminRole.id })
+                .values({ user_id: adminUser.id, role_id: adminRole.id })
                 .onConflictDoNothing();
         }
 
@@ -69,7 +69,7 @@ async function seed() {
         if (testUser) {
             await db
                 .insert(userRoles)
-                .values({ userId: testUser.id, roleId: userRole.id })
+                .values({ user_id: testUser.id, role_id: userRole.id })
                 .onConflictDoNothing();
         }
     } catch (error) {

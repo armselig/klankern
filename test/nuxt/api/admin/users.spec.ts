@@ -70,9 +70,9 @@ describe("Admin Users API Access Control", () => {
                     username: "admin",
                     display_name: "Admin User",
                     is_active: true,
-                    dashboardConfig: { theme: "dark" },
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
+                    dashboard_config: { theme: "dark" },
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
                     roles: [
                         {
                             id: "admin-id",
@@ -87,9 +87,9 @@ describe("Admin Users API Access Control", () => {
                     username: "user",
                     display_name: "Regular User",
                     is_active: true,
-                    dashboardConfig: null,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
+                    dashboard_config: null,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
                     roles: [
                         {
                             id: "user-id",
@@ -246,9 +246,9 @@ describe("Admin Users API Access Control", () => {
                 first_name: validUserData.first_name,
                 last_name: validUserData.last_name,
                 is_active: true,
-                dashboardConfig: null,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
+                dashboard_config: null,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
                 roles: [
                     {
                         id: "user-role-id",

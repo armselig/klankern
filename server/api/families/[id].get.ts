@@ -52,9 +52,9 @@ export default defineEventHandler(async (event) => {
             id: familyData.id,
             name: familyData.name,
             members: familyData.members.map((m) => ({
-                userId: m.user.id,
+                user_id: m.user.id,
                 username: m.user.username,
-                displayName: m.user.display_name,
+                display_name: m.user.display_name,
                 role: m.role,
             })),
         };
