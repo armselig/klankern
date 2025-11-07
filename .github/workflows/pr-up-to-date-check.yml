@@ -12,6 +12,9 @@ jobs:
     check-pr-status:
         runs-on: ubuntu-latest
         if: github.event_name == 'push'
+        permissions:
+            contents: read
+            pull-requests: write
 
         steps:
             - name: Check all open PRs
