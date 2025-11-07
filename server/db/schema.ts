@@ -213,7 +213,7 @@ export const families = pgTable(
             deletedAtIndex: index("families_deleted_at_idx").on(
                 table.deleted_at,
             ),
-            activeFamiliesIndex: index("families_active_idx")
+            activeFamiliesByCreationIndex: index("families_active_by_creation_idx")
                 .on(table.created_at)
                 .where(sql`deleted_at IS NULL`),
         };
@@ -278,9 +278,6 @@ export const familyInvitations = pgTable(
                 table.family_id,
                 table.status,
             ),
-            pendingInvitationsIndex: index(
-                "family_invitations_pending_idx",
-            ).on(table.family_id, table.invited_email).where(sql`status = 'pending'`),
             uniquePendingInvitation: index(
                 "family_invitations_unique_pending",
             ).on(table.family_id, table.invited_email).where(sql`status = 'pending'`).unique(),
