@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
         // Also delete associated user roles
         await db
             .delete(userRoles)
-            .where(eq(userRoles.userId, parsedUserId.data));
+            .where(eq(userRoles.user_id, parsedUserId.data));
 
         return { message: "User deleted successfully" };
     } catch (error: unknown) {

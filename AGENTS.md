@@ -23,13 +23,13 @@ This document provides instructions for AI agents to work with the Klankern proj
 
 The database seed script creates the following default users:
 
-**1. Admin User**
+### Admin User
 
 - **Username:** `admin`
 - **Email:** `admin@example.com`
 - **Password:** `password123`
 
-**2. Standard Test User (for E2E tests)**
+### Standard Test User (for E2E tests)
 
 - **ID:** `a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11`
 - **Username:** `testuser`
@@ -38,17 +38,43 @@ The database seed script creates the following default users:
 
 ## AI Agent Collaboration
 
-- **Agent-Relevant Files**: Keep all files relevant for AI agents within the `./vibes/` directory.
+- **Agent-Relevant Files**: Keep all files relevant for AI agents within the `./vibes/` directory. All filenames start with a datestamp prefix. Example: `YYMMDD_topic_brief-description.md`.
 - **Knowledge Graph**: If the MCP server `memory` is available, proactively and autonomously read the graph at the beginning of each session and keep it updated and maintained as you go.
 - **NEVER** assume! **ALWAYS** ask clarifying questions.
+- **NEVER** (re-)start, stop etc. any services on your own. Managing containers and dev servers is solely in the domain of the user. You may ask the user at any time to perform such tasks on your behalf.
 
-## Known AI issues in the project
+## Development Environment
 
-- Agents have no idea how to write proper Vitest tests in a Nuxt v4 environment. They screw up, get stuck in a loop and completely ignore documentation even if presented on a silver platter.
-- Agents are completely lost with the current ESLint setup and how to fix linting errors, especially regarding imports and types.
+The project supports two development setups:
+
+### Containerized Development (Default)
+
+- Both the Nuxt application and PostgreSQL database run in containers via `podman-compose`
+- The Nuxt container name is `klankern_nuxt`, the database container is `klankern_db`
+- Source code is bind-mounted, so file changes are reflected immediately
+- **Important:** Do NOT start, stop, restart, or otherwise manage containers without explicit user approval
+
+**Available Container Scripts:**
+
+- `pnpm run dev:container`: Start all services
+- `pnpm run dev:container:build`: Rebuild and start all services
+- `pnpm run dev:container:stop`: Stop all containers
+- `pnpm run dev:container:restart`: Restart Nuxt container
+- `pnpm run dev:container:logs`: View Nuxt logs
+- `pnpm run dev:container:shell`: Open shell in container
+- `pnpm run db:migrate:container`: Run migrations in container
+- `pnpm run db:seed:container`: Seed database in container
+
+For ad-hoc commands: `podman exec klankern_nuxt pnpm run <script-name>`
+
+### Traditional Local Development
+
+- Nuxt runs locally on the host machine
+- Only PostgreSQL runs in a container
+- Standard `pnpm run <script-name>` commands work directly
+- `pnpm run db:start`: Start database container
+- `pnpm run db:stop`: Stop database container
 
 ## Further reading
 
-- [`README.md`](./README.md)
 - [Initial project plan](./vibes/PROJECT.md)
-- [To-do list](./TODO.md)
