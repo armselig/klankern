@@ -45,8 +45,15 @@ export default defineEventHandler(
             }
 
             const user: UserWithRoles = userWithRoles[0];
+            if (!user) {
+                throw createError({
+                    statusCode: 401,
+                    statusMessage: "Invalid credentials",
+                });
+            }
+            
             const userRolesData: Role[] =
-                user.roles && user.roles.length > 0 && user.roles[0].id !== null
+                user.roles && user.roles.length > 0 && user.roles[0]?.id !== null
                     ? user.roles
                     : [];
 
