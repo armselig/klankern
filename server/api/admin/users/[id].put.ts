@@ -5,6 +5,7 @@ import { users, userRoles, roles } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
 import { eq, sql } from "drizzle-orm";
 import { customHashPassword } from "#server/utils/password";
+import { updateUserSchema, type UpdateUser } from "#shared/types/user";
 
 const userIdSchema = z.string().uuid();
 
@@ -17,18 +18,18 @@ export default defineEventHandler(async (event) => {
         throw createError({
             statusCode: 400,
             statusMessage: "Invalid User ID",
-            data: parsedUserId.error.errors,
+            data: parsedUserId.error.issues,
         });
     }
 
-    const body: UserUpdatePayload = await readBody(event);
+    const body: UpdateUser = await readBody(event);
 
     const validation = updateUserSchema.safeParse(body);
     if (!validation.success) {
         throw createError({
             statusCode: 400,
             statusMessage: "Invalid user data",
-            data: validation.error.errors,
+            data: validation.error.issues,
         });
     }
 
@@ -66,7 +67,7 @@ export default defineEventHandler(async (event) => {
                     .where(eq(userRoles.user_id, parsedUserId.data));
                 if (roleIds.length > 0) {
                     await tx.insert(userRoles).values(
-                        roleIds.map((roleId) => ({
+                        roleIds.map((roleId: string) => ({
                             user_id: parsedUserId.data,
                             role_id: roleId,
                         })),
@@ -110,7 +111,6 @@ export default defineEventHandler(async (event) => {
         return updatedUser;
     } catch (error) {
         logger.error(`Error updating user with ID ${userId}:`, error);
-        // @ts-expect-error h3 createError type mismatch
         throw createError({
             statusCode: 500,
             statusMessage: "Internal Server Error",
