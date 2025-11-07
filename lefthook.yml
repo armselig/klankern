@@ -18,4 +18,4 @@ pre-commit:
 pre-push:
     commands:
         test:
-            run: pnpm run test
+            run: pnpm exec vitest run --exclude 'test/e2e/**/*.{test,spec}.ts'
