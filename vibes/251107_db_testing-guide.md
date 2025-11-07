@@ -2,6 +2,8 @@
 
 This document explains how to test the database schema enhancements for security, audit, and GDPR compliance.
 
+**Status:** CI/CD workflow has been triggered and is running. Tests will verify all schema enhancements.
+
 ## Test Infrastructure
 
 ### Test Database Setup
