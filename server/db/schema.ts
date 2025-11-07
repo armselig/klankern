@@ -27,6 +27,20 @@ export const corkboardPostTypeEnum = pgEnum("corkboard_post_type", [
     "photo",
 ]);
 
+export const familyRoleEnum = pgEnum("family_role", [
+    "manager",
+    "member",
+    "viewer",
+]);
+
+export const invitationStatusEnum = pgEnum("invitation_status", [
+    "pending",
+    "accepted",
+    "declined",
+    "expired",
+    "cancelled",
+]);
+
 export const auditActionEnum = pgEnum("audit_action", [
     "create",
     "update",
@@ -208,7 +222,7 @@ export const familyMembers = pgTable(
         user_id: uuid("user_id")
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
-        role: text("role").notNull(), // e.g., 'manager', 'member'
+        role: familyRoleEnum("role").notNull().default("member"),
     },
     (table) => {
         return {
@@ -232,7 +246,7 @@ export const familyInvitations = pgTable(
             .references(() => users.id, { onDelete: "cascade" }),
         invited_email: text("invited_email").notNull(),
         token: text("token").notNull().unique(),
-        status: text("status").notNull().default("pending"), // e.g., 'pending', 'accepted', 'declined'
+        status: invitationStatusEnum("status").notNull().default("pending"),
         expires_at: timestamp("expires_at").notNull(),
         created_at: timestamp("created_at").notNull().defaultNow(),
         updated_at: timestamp("updated_at")
