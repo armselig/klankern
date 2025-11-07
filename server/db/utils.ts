@@ -24,8 +24,8 @@ export async function getUserWithRolesByEmail(
             >`json_agg(json_build_object('id', ${roles.id}, 'name', ${roles.name}, 'description', ${roles.description}))`,
         })
         .from(users)
-        .leftJoin(userRoles, eq(users.id, userRoles.userId))
-        .leftJoin(roles, eq(userRoles.roleId, roles.id))
+        .leftJoin(userRoles, eq(users.id, userRoles.user_id))
+        .leftJoin(roles, eq(userRoles.role_id, roles.id))
         .where(eq(users.email, email))
         .groupBy(users.id);
 

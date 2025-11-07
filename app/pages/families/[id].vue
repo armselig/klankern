@@ -107,8 +107,8 @@ async function handleSendInvitation() {
                     This will be created in the next step.
                 -->
                 <ul>
-                    <li v-for="member in members" :key="member.userId">
-                        {{ member.displayName || member.username }} ({{
+                    <li v-for="member in members" :key="member.user_id">
+                        {{ member.display_name || member.username }} ({{
                             member.role
                         }})
                     </li>

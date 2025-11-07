@@ -26,9 +26,9 @@ export const userResponseSchema = z.object({
     first_name: z.string().nullable(),
     last_name: z.string().nullable(),
     is_active: z.boolean(),
-    dashboardConfig: z.record(z.string(), z.any()).nullable(),
-    createdAt: z.date(),
-    updatedAt: z.date(),
+    dashboard_config: z.record(z.string(), z.any()).nullable(),
+    created_at: z.date(),
+    updated_at: z.date(),
     roles: z.array(roleSchema),
 });
 

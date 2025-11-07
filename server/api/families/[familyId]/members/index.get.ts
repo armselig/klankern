@@ -3,6 +3,7 @@ import { defineEventHandler, createError, getRouterParams } from "h3";
 import { db } from "#server/db";
 import { familyMembers } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
+import { notDeleted } from "#server/db/helpers";
 
 export default defineEventHandler(async (event) => {
     const { familyId } = await getRouterParams(event);
@@ -18,6 +19,7 @@ export default defineEventHandler(async (event) => {
             where: and(
                 eq(familyMembers.family_id, familyId),
                 eq(familyMembers.user_id, user.id),
+                notDeleted(familyMembers),
             ),
         });
 
@@ -29,9 +31,12 @@ export default defineEventHandler(async (event) => {
             });
         }
 
-        // 2. Fetch all members of the family and their user details.
+        // 2. Fetch all active (non-soft-deleted) members of the family and their user details.
         const memberships = await db.query.familyMembers.findMany({
-            where: eq(familyMembers.family_id, familyId),
+            where: and(
+                eq(familyMembers.family_id, familyId),
+                notDeleted(familyMembers),
+            ),
             with: {
                 user: {
                     columns: {
@@ -46,9 +51,9 @@ export default defineEventHandler(async (event) => {
 
         // 3. Format the response to be a clean list of members.
         const memberList = memberships.map((m) => ({
-            userId: m.user.id,
+            user_id: m.user.id,
             username: m.user.username,
-            displayName: m.user.display_name,
+            display_name: m.user.display_name,
             email: m.user.email,
             role: m.role,
         }));

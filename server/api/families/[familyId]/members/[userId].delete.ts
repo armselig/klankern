@@ -3,6 +3,7 @@ import { defineEventHandler, createError, getRouterParams } from "h3";
 import { db } from "#server/db";
 import { familyMembers } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
+import { notDeleted } from "#server/db/helpers";
 
 export default defineEventHandler(async (event) => {
     logger.http(`${event.method} ${event.path}`);
@@ -28,6 +29,7 @@ export default defineEventHandler(async (event) => {
             where: and(
                 eq(familyMembers.family_id, familyId),
                 eq(familyMembers.user_id, managerUser.id),
+                notDeleted(familyMembers),
             ),
         });
 
@@ -39,7 +41,7 @@ export default defineEventHandler(async (event) => {
             });
         }
 
-        // 3. Perform Deletion
+        // 3. Perform Deletion (hard delete is appropriate for member removal)
         const [deletedMembership] = await db
             .delete(familyMembers)
             .where(

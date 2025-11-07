@@ -27,9 +27,9 @@ describe("FormUser", () => {
         first_name: "Test",
         last_name: "User",
         is_active: true,
-        dashboardConfig: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        dashboard_config: null,
+        created_at: new Date(),
+        updated_at: new Date(),
         roles: [
             {
                 id: "role-uuid-1",

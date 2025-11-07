@@ -1,6 +1,6 @@
 {
-    "id": "24113b35-784c-406b-8ffa-861e23c823ff",
-    "prevId": "52c4d981-2198-47d3-a92c-cedaaef75ea5",
+    "id": "08ada9df-48c3-48dd-8791-66140e0bc53a",
+    "prevId": "d6d55dbe-ad71-4ee2-b60e-5dd7b1e0b062",
     "version": "7",
     "dialect": "postgresql",
     "tables": {
@@ -115,42 +115,6 @@
                     "concurrently": false,
                     "method": "btree",
                     "with": {}
-                },
-                "corkboard_posts_family_timeline_idx": {
-                    "name": "corkboard_posts_family_timeline_idx",
-                    "columns": [
-                        {
-                            "expression": "family_id",
-                            "isExpression": false,
-                            "asc": true,
-                            "nulls": "last"
-                        },
-                        {
-                            "expression": "created_at",
-                            "isExpression": false,
-                            "asc": true,
-                            "nulls": "last"
-                        }
-                    ],
-                    "isUnique": false,
-                    "concurrently": true,
-                    "method": "btree",
-                    "with": {}
-                },
-                "corkboard_posts_data_gin_idx": {
-                    "name": "corkboard_posts_data_gin_idx",
-                    "columns": [
-                        {
-                            "expression": "data",
-                            "isExpression": false,
-                            "asc": true,
-                            "nulls": "last"
-                        }
-                    ],
-                    "isUnique": false,
-                    "concurrently": true,
-                    "method": "gin",
-                    "with": {}
                 }
             },
             "foreignKeys": {
@@ -192,7 +156,7 @@
                 },
                 "name": {
                     "name": "name",
-                    "type": "varchar(100)",
+                    "type": "text",
                     "primaryKey": false,
                     "notNull": true
                 },
@@ -253,22 +217,6 @@
                     "concurrently": false,
                     "method": "btree",
                     "with": {}
-                },
-                "families_active_idx": {
-                    "name": "families_active_idx",
-                    "columns": [
-                        {
-                            "expression": "created_at",
-                            "isExpression": false,
-                            "asc": true,
-                            "nulls": "last"
-                        }
-                    ],
-                    "isUnique": false,
-                    "where": "\"families\".\"deleted_at\" IS NULL",
-                    "concurrently": true,
-                    "method": "btree",
-                    "with": {}
                 }
             },
             "foreignKeys": {
@@ -313,7 +261,7 @@
                 },
                 "invited_email": {
                     "name": "invited_email",
-                    "type": "varchar(255)",
+                    "type": "text",
                     "primaryKey": false,
                     "notNull": true
                 },
@@ -325,8 +273,7 @@
                 },
                 "status": {
                     "name": "status",
-                    "type": "invitation_status",
-                    "typeSchema": "public",
+                    "type": "text",
                     "primaryKey": false,
                     "notNull": true,
                     "default": "'pending'"
@@ -382,71 +329,6 @@
                     "concurrently": false,
                     "method": "btree",
                     "with": {}
-                },
-                "family_invitations_family_status_idx": {
-                    "name": "family_invitations_family_status_idx",
-                    "columns": [
-                        {
-                            "expression": "family_id",
-                            "isExpression": false,
-                            "asc": true,
-                            "nulls": "last"
-                        },
-                        {
-                            "expression": "status",
-                            "isExpression": false,
-                            "asc": true,
-                            "nulls": "last"
-                        }
-                    ],
-                    "isUnique": false,
-                    "concurrently": true,
-                    "method": "btree",
-                    "with": {}
-                },
-                "family_invitations_pending_idx": {
-                    "name": "family_invitations_pending_idx",
-                    "columns": [
-                        {
-                            "expression": "family_id",
-                            "isExpression": false,
-                            "asc": true,
-                            "nulls": "last"
-                        },
-                        {
-                            "expression": "invited_email",
-                            "isExpression": false,
-                            "asc": true,
-                            "nulls": "last"
-                        }
-                    ],
-                    "isUnique": false,
-                    "where": "\"family_invitations\".\"status\" = 'pending'",
-                    "concurrently": true,
-                    "method": "btree",
-                    "with": {}
-                },
-                "family_invitations_unique_pending": {
-                    "name": "family_invitations_unique_pending",
-                    "columns": [
-                        {
-                            "expression": "family_id",
-                            "isExpression": false,
-                            "asc": true,
-                            "nulls": "last"
-                        },
-                        {
-                            "expression": "invited_email",
-                            "isExpression": false,
-                            "asc": true,
-                            "nulls": "last"
-                        }
-                    ],
-                    "isUnique": true,
-                    "where": "status = 'pending'",
-                    "concurrently": false,
-                    "method": "btree",
-                    "with": {}
                 }
             },
             "foreignKeys": {
@@ -499,11 +381,9 @@
                 },
                 "role": {
                     "name": "role",
-                    "type": "family_role",
-                    "typeSchema": "public",
+                    "type": "text",
                     "primaryKey": false,
-                    "notNull": true,
-                    "default": "'member'"
+                    "notNull": true
                 }
             },
             "indexes": {
@@ -567,13 +447,13 @@
                 },
                 "name": {
                     "name": "name",
-                    "type": "varchar(50)",
+                    "type": "text",
                     "primaryKey": false,
                     "notNull": true
                 },
                 "description": {
                     "name": "description",
-                    "type": "varchar(500)",
+                    "type": "text",
                     "primaryKey": false,
                     "notNull": false
                 }
@@ -672,43 +552,6 @@
                     ],
                     "isUnique": false,
                     "concurrently": false,
-                    "method": "btree",
-                    "with": {}
-                },
-                "sessions_user_active_idx": {
-                    "name": "sessions_user_active_idx",
-                    "columns": [
-                        {
-                            "expression": "user_id",
-                            "isExpression": false,
-                            "asc": true,
-                            "nulls": "last"
-                        },
-                        {
-                            "expression": "expires_at",
-                            "isExpression": false,
-                            "asc": true,
-                            "nulls": "last"
-                        }
-                    ],
-                    "isUnique": false,
-                    "concurrently": true,
-                    "method": "btree",
-                    "with": {}
-                },
-                "sessions_active_idx": {
-                    "name": "sessions_active_idx",
-                    "columns": [
-                        {
-                            "expression": "expires_at",
-                            "isExpression": false,
-                            "asc": true,
-                            "nulls": "last"
-                        }
-                    ],
-                    "isUnique": false,
-                    "where": "\"sessions\".\"expires_at\" > now()",
-                    "concurrently": true,
                     "method": "btree",
                     "with": {}
                 }
@@ -829,19 +672,19 @@
                 },
                 "email": {
                     "name": "email",
-                    "type": "varchar(255)",
+                    "type": "text",
                     "primaryKey": false,
                     "notNull": true
                 },
                 "username": {
                     "name": "username",
-                    "type": "varchar(50)",
+                    "type": "text",
                     "primaryKey": false,
                     "notNull": true
                 },
                 "display_name": {
                     "name": "display_name",
-                    "type": "varchar(100)",
+                    "type": "text",
                     "primaryKey": false,
                     "notNull": false
                 },
@@ -853,13 +696,13 @@
                 },
                 "first_name": {
                     "name": "first_name",
-                    "type": "varchar(100)",
+                    "type": "text",
                     "primaryKey": false,
                     "notNull": false
                 },
                 "last_name": {
                     "name": "last_name",
-                    "type": "varchar(100)",
+                    "type": "text",
                     "primaryKey": false,
                     "notNull": false
                 },
@@ -869,6 +712,25 @@
                     "primaryKey": false,
                     "notNull": false,
                     "default": true
+                },
+                "email_verified": {
+                    "name": "email_verified",
+                    "type": "boolean",
+                    "primaryKey": false,
+                    "notNull": false,
+                    "default": false
+                },
+                "email_verified_at": {
+                    "name": "email_verified_at",
+                    "type": "timestamp",
+                    "primaryKey": false,
+                    "notNull": false
+                },
+                "email_verification_token": {
+                    "name": "email_verification_token",
+                    "type": "text",
+                    "primaryKey": false,
+                    "notNull": false
                 },
                 "dashboard_config": {
                     "name": "dashboard_config",
@@ -952,19 +814,19 @@
                     "method": "btree",
                     "with": {}
                 },
-                "users_dashboard_config_gin_idx": {
-                    "name": "users_dashboard_config_gin_idx",
+                "users_email_verification_token_idx": {
+                    "name": "users_email_verification_token_idx",
                     "columns": [
                         {
-                            "expression": "dashboard_config",
+                            "expression": "email_verification_token",
                             "isExpression": false,
                             "asc": true,
                             "nulls": "last"
                         }
                     ],
                     "isUnique": false,
-                    "concurrently": true,
-                    "method": "gin",
+                    "concurrently": false,
+                    "method": "btree",
                     "with": {}
                 }
             },
@@ -980,6 +842,11 @@
                     "name": "users_username_unique",
                     "nullsNotDistinct": false,
                     "columns": ["username"]
+                },
+                "users_email_verification_token_unique": {
+                    "name": "users_email_verification_token_unique",
+                    "nullsNotDistinct": false,
+                    "columns": ["email_verification_token"]
                 }
             },
             "policies": {},
@@ -992,22 +859,6 @@
             "name": "corkboard_post_type",
             "schema": "public",
             "values": ["note", "photo"]
-        },
-        "public.family_role": {
-            "name": "family_role",
-            "schema": "public",
-            "values": ["manager", "member", "viewer"]
-        },
-        "public.invitation_status": {
-            "name": "invitation_status",
-            "schema": "public",
-            "values": [
-                "pending",
-                "accepted",
-                "declined",
-                "expired",
-                "cancelled"
-            ]
         }
     },
     "schemas": {},
