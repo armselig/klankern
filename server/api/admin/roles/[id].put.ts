@@ -1,9 +1,10 @@
 import { eq } from "drizzle-orm";
 import { createError, defineEventHandler, getRouterParam, readBody } from "h3";
 import { z } from "zod";
-import { db } from "#server/db/index.ts";
-import { roles } from "#server/db/schema.ts";
+import { db } from "#server/db/index";
+import { roles } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
+import { updateRoleSchema, type RoleResponse } from "#shared/types/role";
 
 const roleIdSchema = z.string().uuid();
 
@@ -18,7 +19,7 @@ export default defineEventHandler(
                 throw createError({
                     statusCode: 400,
                     statusMessage: "Invalid Role ID",
-                    data: parsedRoleId.error.errors,
+                    data: parsedRoleId.error.issues,
                 });
             }
 

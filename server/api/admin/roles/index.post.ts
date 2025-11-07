@@ -1,8 +1,9 @@
 import { createError, defineEventHandler, readBody } from "h3";
 import { z } from "zod";
-import { db } from "#server/db/index.ts";
-import { roles } from "#server/db/schema.ts";
+import { db } from "#server/db/index";
+import { roles } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
+import { createRoleSchema, type RoleResponse } from "#shared/types/role";
 
 export default defineEventHandler(
     async (event): Promise<{ role: RoleResponse }> => {

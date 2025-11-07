@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
         throw createError({
             statusCode: 400,
             statusMessage: "Bad Request",
-            data: parsedUserId.error.errors,
+            data: parsedUserId.error.issues,
         });
     }
 
