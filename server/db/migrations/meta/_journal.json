@@ -71,6 +71,13 @@
             "when": 1762523257589,
             "tag": "0009_flippant_human_robot",
             "breakpoints": true
+        },
+        {
+            "idx": 10,
+            "version": "7",
+            "when": 1762525174740,
+            "tag": "0010_restore_email_verification",
+            "breakpoints": true
         }
     ]
 }

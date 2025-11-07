@@ -69,6 +69,10 @@ export const users = pgTable(
         last_name: text("last_name"),
         is_active: boolean("is_active").default(true),
         dashboard_config: jsonb("dashboard_config"), // JSONB for dashboard preferences
+        // Email verification fields
+        email_verified: boolean("email_verified").default(false),
+        email_verified_at: timestamp("email_verified_at"),
+        email_verification_token: text("email_verification_token").unique(),
         // Failed login tracking fields
         // Note: Consider adding CHECK constraint: failed_login_attempts >= 0
         // Note: Consider adding CHECK constraint: locked_until > last_failed_login_at when both are set
@@ -88,6 +92,9 @@ export const users = pgTable(
             usernameIndex: index("users_username_idx").on(table.username),
             isActiveIndex: index("users_is_active_idx").on(table.is_active),
             createdAtIndex: index("users_created_at_idx").on(table.created_at),
+            emailVerificationTokenIndex: index(
+                "users_email_verification_token_idx",
+            ).on(table.email_verification_token),
         };
     },
 );
