@@ -26,7 +26,7 @@
                             "N/A"
                         }}
                     </td>
-                    <td>{{ user.isActive ? "Active" : "Inactive" }}</td>
+                    <td>{{ user.is_active ? "Active" : "Inactive" }}</td>
                     <td>
                         <nuxt-link
                             class="button"
@@ -37,7 +37,7 @@
                             class="button"
                             @click="handleToggleStatus(user)"
                         >
-                            {{ user.isActive ? "Deactivate" : "Activate" }}
+                            {{ user.is_active ? "Deactivate" : "Activate" }}
                         </button-base>
                         <button-base
                             class="button"
@@ -54,8 +54,9 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
 import { storeToRefs } from "pinia";
-import { useAdminUserStore, type User } from "~/stores/admin/users";
+import { useAdminUserStore } from "~/stores/admin/users";
 import { definePageMeta, navigateTo } from "#imports";
+import type { UserResponse } from "#shared/types/user";
 
 /**
  * @file Admin page for listing and managing users.
@@ -88,7 +89,7 @@ async function handleDelete(id: string) {
  * Toggles the user's active status.
  * @param user The user object.
  */
-async function handleToggleStatus(user: User) {
+async function handleToggleStatus(user: UserResponse) {
     await userStore.toggleUserStatus(user);
 }
 

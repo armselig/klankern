@@ -1,5 +1,5 @@
 import { computed } from "vue";
-import { useUserSession } from "#imports";
+import { useUserSession, useFetch } from "#imports";
 import type { NewUser, UserResponse } from "#shared/types/user";
 
 /**
@@ -8,7 +8,7 @@ import type { NewUser, UserResponse } from "#shared/types/user";
  * for checking administrative privileges of the current user.
  */
 export const useAdmin = () => {
-    const { user } = useUserSession<UserResponse>();
+    const { user } = useUserSession();
 
     /**
      * Checks if the currently logged-in user is an administrator.
@@ -16,10 +16,13 @@ export const useAdmin = () => {
      * to check for admin privileges across the application.
      */
     const isAdmin = computed(() => {
-        if (!user.value || !Array.isArray(user.value.roles)) {
+        if (!user.value || !Array.isArray((user.value as UserResponse).roles)) {
             return false;
         }
-        return user.value.roles.some((role) => role.name === "admin");
+        return (user.value as UserResponse).roles.some(
+            (role: { id: string; name: string; description: string | null }) =>
+                role.name === "admin",
+        );
     });
 
     const createUser = async (userData: NewUser) => {

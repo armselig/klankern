@@ -20,9 +20,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from "vue";
+import { ref, watch, computed, type PropType } from "vue";
 import { z } from "zod";
 import FormUserBase from "./form-user-base.vue";
+import {
+    updateUserFormSchema,
+    type UserResponse,
+    type UpdateUserFormData,
+    type UpdateUser,
+} from "#shared/types/user";
+import { navigateTo } from "#app/composables/router";
 
 /**
  * @file Form component for updating existing users.
@@ -46,6 +53,7 @@ const formData = ref<UpdateUserFormData>({
     display_name: undefined,
     first_name: undefined,
     last_name: undefined,
+    is_active: undefined,
     roleIds: [] as string[],
 });
 
@@ -71,7 +79,10 @@ watch(
             formData.value.display_name = newUser.display_name || undefined;
             formData.value.first_name = newUser.first_name || undefined;
             formData.value.last_name = newUser.last_name || undefined;
-            formData.value.roleIds = newUser.roles.map((role) => role.id);
+            formData.value.is_active = newUser.is_active;
+            formData.value.roleIds = newUser.roles.map(
+                (role: { id: string }) => role.id,
+            );
         }
     },
     { immediate: true },
@@ -98,6 +109,7 @@ function handleSubmit() {
         display_name: formData.value.display_name,
         first_name: formData.value.first_name,
         last_name: formData.value.last_name,
+        is_active: formData.value.is_active,
         roleIds:
             formData.value.roleIds.length > 0
                 ? formData.value.roleIds

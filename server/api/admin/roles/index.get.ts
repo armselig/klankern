@@ -1,10 +1,11 @@
 import { createError, defineEventHandler } from "h3";
-import { db } from "#server/db/index.ts";
-import { roles } from "#server/db/schema.ts";
+import { db } from "#server/db/index";
+import { roles } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
+import type { RoleResponse } from "#shared/types/role";
 
 export default defineEventHandler(
-    async (event): Promise<{ roles: z.infer<typeof roleSchema>[] }> => {
+    async (event): Promise<{ roles: RoleResponse[] }> => {
         logger.http(`${event.method} ${event.path}`);
         try {
             const allRoles = await db.select().from(roles);

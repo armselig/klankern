@@ -25,22 +25,39 @@ export async function customVerifyPassword(
 ): Promise<boolean> {
     try {
         const parts = hash.split("$");
-        if (parts.length !== 5 || parts[1] !== "scrypt") {
+        if (parts.length !== 5 || parts[1] !== "scrypt" || !parts[2]) {
             return false; // Not a valid scrypt hash format
         }
 
         const params = parts[2].split(",");
-        const n = parseInt(params[0].split("=")[1], 10);
-        const r = parseInt(params[1].split("=")[1], 10);
-        const p = parseInt(params[2].split("=")[1], 10);
-        const salt = Buffer.from(parts[3], "base64");
-        const storedKey = Buffer.from(parts[4], "base64");
+        if (params.length !== 3) {
+            return false;
+        }
 
-        const derivedKey = (await scryptAsync(
+        const nParam = params[0]?.split("=")[1];
+        const rParam = params[1]?.split("=")[1];
+        const pParam = params[2]?.split("=")[1];
+        const saltString = parts[3];
+        const storedKeyString = parts[4];
+
+        if (!nParam || !rParam || !pParam || !saltString || !storedKeyString) {
+            return false;
+        }
+
+        const n = parseInt(nParam, 10);
+        const r = parseInt(rParam, 10);
+        const p = parseInt(pParam, 10);
+        const saltBuffer = Buffer.from(saltString, "base64");
+        const storedKey = Buffer.from(storedKeyString, "base64");
+
+        // TypeScript types for promisified scrypt don't include the options parameter,
+        // but the runtime function does support it. We use type assertion to work around this.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const derivedKey = (await (scryptAsync as any)(
             password,
-            salt,
+            saltBuffer,
             storedKey.length,
-            { N: n, r: r, p: p },
+            { N: n, r, p },
         )) as Buffer;
 
         // Use timingSafeEqual to prevent timing attacks
@@ -64,15 +81,18 @@ export async function customVerifyPassword(
  * ```
  */
 export async function customHashPassword(password: string): Promise<string> {
-    const salt = randomBytes(16).toString("base64");
+    const saltBuffer = randomBytes(16);
     const n = 16384;
     const r = 8;
     const p = 1;
-    const derivedKey = (await scryptAsync(password, salt, 32, {
+    // TypeScript types for promisified scrypt don't include the options parameter,
+    // but the runtime function does support it. We use type assertion to work around this.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const derivedKey = (await (scryptAsync as any)(password, saltBuffer, 32, {
         N: n,
-        r: r,
-        p: p,
+        r,
+        p,
     })) as Buffer;
 
-    return `$scrypt$n=${n},r=${r},p=${p}$${Buffer.from(salt).toString("base64")}$${derivedKey.toString("base64")}`;
+    return `$scrypt$n=${n},r=${r},p=${p}$${saltBuffer.toString("base64")}$${derivedKey.toString("base64")}`;
 }

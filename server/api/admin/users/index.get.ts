@@ -1,5 +1,5 @@
 import { eq, sql } from "drizzle-orm";
-import { defineEventHandler } from "h3";
+import { createError, defineEventHandler } from "h3";
 import { db } from "#server/db";
 import { roles, userRoles, users } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
@@ -13,7 +13,10 @@ export default defineEventHandler(async (event) => {
                 email: users.email,
                 username: users.username,
                 display_name: users.display_name,
+                first_name: users.first_name,
+                last_name: users.last_name,
                 is_active: users.is_active,
+                dashboard_config: users.dashboard_config,
                 created_at: users.created_at,
                 updated_at: users.updated_at,
                 roles: sql<

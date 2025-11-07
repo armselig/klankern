@@ -3,6 +3,7 @@ import {
     navigateTo,
     useUserSession,
 } from "#imports";
+import type { UserResponse } from "#shared/types/user";
 
 export default defineNuxtRouteMiddleware(async () => {
     const { loggedIn, user } = await useUserSession(); // Await useUserSession
@@ -11,7 +12,11 @@ export default defineNuxtRouteMiddleware(async () => {
         return await navigateTo("/auth/login");
     }
 
-    const isAdmin = user.value?.roles.some((role) => role.name === "admin");
+    const userValue = user.value;
+    const isAdmin = userValue?.roles.some(
+        (role: { id: string; name: string; description: string | null }) =>
+            role.name === "admin",
+    );
 
     if (!isAdmin) {
         return await navigateTo("/"); // Or a dedicated /forbidden page

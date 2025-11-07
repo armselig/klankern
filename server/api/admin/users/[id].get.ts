@@ -4,6 +4,7 @@ import { z } from "zod";
 import { db } from "#server/db";
 import { roles, userRoles, users } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
+import type { UserResponse } from "#shared/types/user";
 
 const userIdSchema = z.string().uuid();
 
@@ -16,7 +17,7 @@ export default defineEventHandler(async (event) => {
         throw createError({
             statusCode: 400,
             statusMessage: "Invalid User ID",
-            data: parsedUserId.error.errors,
+            data: parsedUserId.error.issues,
         });
     }
 

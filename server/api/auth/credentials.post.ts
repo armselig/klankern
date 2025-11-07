@@ -8,7 +8,11 @@ import {
 } from "h3";
 import { z } from "zod";
 import { setUserSession } from "#auth";
-import { getUserWithRolesByEmail } from "#server/db/utils";
+import {
+    getUserWithRolesByEmail,
+    type UserWithRoles,
+    type Role,
+} from "#server/db/utils";
 import { logger } from "#server/utils/logger";
 import { customVerifyPassword } from "#server/utils/password";
 
@@ -45,8 +49,17 @@ export default defineEventHandler(
             }
 
             const user: UserWithRoles = userWithRoles[0];
+            if (!user) {
+                throw createError({
+                    statusCode: 401,
+                    statusMessage: "Invalid credentials",
+                });
+            }
+
             const userRolesData: Role[] =
-                user.roles && user.roles.length > 0 && user.roles[0].id !== null
+                user.roles &&
+                user.roles.length > 0 &&
+                user.roles[0]?.id !== null
                     ? user.roles
                     : [];
 
@@ -71,7 +84,7 @@ export default defineEventHandler(
                     roles: userRolesData,
                 },
                 loggedInAt: new Date(),
-            } as UserSession);
+            });
 
             return { message: "Login successful" };
         } catch (error: unknown) {

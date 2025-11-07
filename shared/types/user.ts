@@ -18,6 +18,8 @@ export const roleSchema = z.object({
     description: z.string().nullable(),
 });
 
+export type Role = z.infer<typeof roleSchema>;
+
 export const userResponseSchema = z.object({
     id: z.string().uuid(),
     email: z.string().email(),
@@ -33,6 +35,16 @@ export const userResponseSchema = z.object({
 });
 
 export type UserResponse = z.infer<typeof userResponseSchema>;
+
+// Schema for user with roles (used for authentication)
+export const userWithRolesSchema = z.object({
+    id: z.string().uuid(),
+    email: z.string().email(),
+    password: z.string(),
+    roles: z.array(roleSchema),
+});
+
+export type UserWithRoles = z.infer<typeof userWithRolesSchema>;
 
 export const updateUserSchema = z.object({
     email: z.string().email().optional(),
@@ -62,6 +74,7 @@ export const baseUserFormSchema = z.object({
     display_name: z.string().optional(),
     first_name: z.string().optional(),
     last_name: z.string().optional(),
+    is_active: z.boolean().optional(),
     roleIds: z.array(z.string().uuid()).optional(),
 });
 

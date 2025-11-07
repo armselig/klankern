@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
     );
 
     if (!parseResult.success) {
-        throw createError({ statusCode: 400, data: parseResult.error.errors });
+        throw createError({ statusCode: 400, data: parseResult.error.issues });
     }
 
     const { email: invitedEmail } = parseResult.data;

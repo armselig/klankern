@@ -27,7 +27,7 @@ interface AdminUsersState {
 export const useAdminUserStore = defineStore("admin-users", {
     state: (): AdminUsersState => ({
         users: [],
-        currentUser: null,
+        currentUser: undefined,
         roles: [],
         loading: false,
         error: null,

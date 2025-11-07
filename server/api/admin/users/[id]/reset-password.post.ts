@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { createError, defineEventHandler, H3Error, readBody } from "h3";
 import { z } from "zod";
-import { passwordResetSchema } from "#imports";
+import { passwordResetSchema } from "#shared/types/user";
 import { db } from "#server/db";
 import { users } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
         throw createError({
             statusCode: 400,
             statusMessage: "Invalid User ID",
-            data: parsedUserId.error.errors,
+            data: parsedUserId.error.issues,
         });
     }
 
@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
         throw createError({
             statusCode: 400,
             statusMessage: "Invalid password data",
-            data: validation.error.errors,
+            data: validation.error.issues,
         });
     }
 

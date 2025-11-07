@@ -1,6 +1,10 @@
 import { eq, sql } from "drizzle-orm";
 import { db } from "#server/db";
 import { roles, userRoles, users } from "#server/db/schema";
+import type { Role, UserWithRoles } from "#shared/types/user";
+
+// Re-export types for convenience
+export type { Role, UserWithRoles };
 
 /**
  * @function getUserWithRolesByEmail
