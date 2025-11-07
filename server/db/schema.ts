@@ -64,6 +64,9 @@ export const users = pgTable(
         first_name: varchar("first_name", { length: 100 }),
         last_name: varchar("last_name", { length: 100 }),
         is_active: boolean("is_active").default(true),
+        email_verified: boolean("email_verified").default(false),
+        email_verified_at: timestamp("email_verified_at"),
+        email_verification_token: text("email_verification_token").unique(),
         dashboard_config: jsonb("dashboard_config"), // JSONB for dashboard preferences
         created_at: timestamp("created_at").notNull().defaultNow(),
         updated_at: timestamp("updated_at")
@@ -76,6 +79,9 @@ export const users = pgTable(
             usernameIndex: index("users_username_idx").on(table.username),
             isActiveIndex: index("users_is_active_idx").on(table.is_active),
             createdAtIndex: index("users_created_at_idx").on(table.created_at),
+            emailVerificationTokenIndex: index(
+                "users_email_verification_token_idx",
+            ).on(table.email_verification_token),
             // GIN index for JSONB dashboard_config field
             dashboardConfigGinIndex: index("users_dashboard_config_gin_idx")
                 .using("gin", table.dashboard_config)

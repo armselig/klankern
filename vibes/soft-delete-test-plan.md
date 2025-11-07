@@ -7,6 +7,7 @@ This document outlines the testing strategy for the soft delete functionality im
 ### Unit Tests
 
 ✅ **Helper Function Tests** (`test/nuxt/api/soft-delete-helpers.spec.ts`)
+
 - Tests the `notDeleted()` helper function
 - Validates it returns proper SQL conditions for tables with `deleted_at`
 - Verifies it handles tables without `deleted_at` properly
@@ -20,6 +21,7 @@ The following tests should be run manually with a live database connection:
 #### 1. Soft Delete Cascade Tests
 
 **Test: Cascade soft delete to related records**
+
 ```typescript
 // 1. Create a family with members, invitations, and corkboard posts
 // 2. Soft delete the family by setting deleted_at
@@ -27,23 +29,27 @@ The following tests should be run manually with a live database connection:
 ```
 
 **Expected Result:**
+
 - Family's `deleted_at` is set
 - All family_members records have `deleted_at` set
-- All family_invitations records have `deleted_at` set  
+- All family_invitations records have `deleted_at` set
 - All corkboard_posts records have `deleted_at` set
 
 **Test: Updates without soft delete don't trigger cascade**
+
 ```typescript
 // 1. Update family name without touching deleted_at
 // 2. Verify no related records are affected
 ```
 
 **Expected Result:**
+
 - Related records remain unchanged (deleted_at stays null)
 
 #### 2. Query Filtering Tests
 
 **Test: notDeleted() helper excludes soft-deleted records**
+
 ```typescript
 // 1. Soft delete a family
 // 2. Query family_members with notDeleted(familyMembers)
@@ -51,9 +57,11 @@ The following tests should be run manually with a live database connection:
 ```
 
 **Expected Result:**
+
 - Query returns empty results for soft-deleted family members
 
 **Test: Soft-deleted families don't appear in user's family list**
+
 ```typescript
 // 1. User has 2 families
 // 2. Soft delete one family
@@ -61,11 +69,13 @@ The following tests should be run manually with a live database connection:
 ```
 
 **Expected Result:**
+
 - Only 1 family returned (the non-deleted one)
 
 #### 3. Restore Functionality Tests
 
 **Test: restoreFamily() restores all records**
+
 ```typescript
 // 1. Soft delete a family (cascade to all related records)
 // 2. Call restoreFamily(familyId)
@@ -73,24 +83,28 @@ The following tests should be run manually with a live database connection:
 ```
 
 **Expected Result:**
+
 - Family restored (deleted_at = null)
 - All family_members restored
 - All family_invitations restored
 - All corkboard_posts restored
 
 **Test: Restore non-deleted family is safe**
+
 ```typescript
 // 1. Call restoreFamily() on active family
 // 2. Verify no errors thrown
 ```
 
 **Expected Result:**
+
 - Function completes without error
 - Family remains active
 
 #### 4. Hard Delete Tests
 
 **Test: Hard delete still cascades properly**
+
 ```typescript
 // 1. Create family with related records
 // 2. Hard delete family (DELETE FROM families)
@@ -98,6 +112,7 @@ The following tests should be run manually with a live database connection:
 ```
 
 **Expected Result:**
+
 - All related records are removed from database (not soft deleted)
 
 ## Manual Testing Checklist
@@ -107,80 +122,77 @@ The following tests should be run manually with a live database connection:
 #### Families Endpoints
 
 - [ ] **GET /api/families**
-  - Soft-deleted families don't appear
-  - Active families appear normally
-  
+    - Soft-deleted families don't appear
+    - Active families appear normally
 - [ ] **GET /api/families/:id**
-  - Returns 404 for soft-deleted family
-  - Returns family data for active family
-  
+    - Returns 404 for soft-deleted family
+    - Returns family data for active family
 - [ ] **DELETE /api/families/:id**
-  - Sets deleted_at on family
-  - Trigger cascades to related records
-  
+    - Sets deleted_at on family
+    - Trigger cascades to related records
+
 #### Members Endpoints
 
 - [ ] **GET /api/families/:familyId/members**
-  - Only returns non-deleted members
-  - Returns 403 if family is soft-deleted
-  
+    - Only returns non-deleted members
+    - Returns 403 if family is soft-deleted
 - [ ] **DELETE /api/families/:familyId/members/:userId**
-  - Manager can remove members
-  - Check uses notDeleted() filter
-  
+    - Manager can remove members
+    - Check uses notDeleted() filter
+
 #### Invitations Endpoints
 
 - [ ] **GET /api/invitations**
-  - Doesn't show invitations for soft-deleted families
-  - Shows only pending invitations that aren't deleted
-  
+    - Doesn't show invitations for soft-deleted families
+    - Shows only pending invitations that aren't deleted
 - [ ] **POST /api/families/:familyId/invitations**
-  - Can't create invitation for soft-deleted family
-  - Uses notDeleted() filter in membership check
-  
+    - Can't create invitation for soft-deleted family
+    - Uses notDeleted() filter in membership check
 - [ ] **POST /api/invitations/:token/accept**
-  - Can't accept invitation for soft-deleted family
-  - Uses notDeleted() filter
-  
+    - Can't accept invitation for soft-deleted family
+    - Uses notDeleted() filter
 - [ ] **POST /api/invitations/:token/decline**
-  - Works with notDeleted() filter
+    - Works with notDeleted() filter
 
 ### Database Testing
 
 #### Migration Tests
 
 - [ ] **Run migration**
-  ```bash
-  pnpm run db:migrate
-  ```
-  - Verify columns added: `family_members.deleted_at`, `family_invitations.deleted_at`, `corkboard_posts.deleted_at`
-  - Verify indexes created: `*_deleted_at_idx`
-  - Verify trigger function created: `soft_delete_family_cascade()`
-  - Verify trigger attached: `cascade_family_soft_delete`
+    ```bash
+    pnpm run db:migrate
+    ```
+
+    - Verify columns added: `family_members.deleted_at`, `family_invitations.deleted_at`, `corkboard_posts.deleted_at`
+    - Verify indexes created: `*_deleted_at_idx`
+    - Verify trigger function created: `soft_delete_family_cascade()`
+    - Verify trigger attached: `cascade_family_soft_delete`
 
 #### Trigger Tests
 
 - [ ] **Test trigger fires on soft delete**
-  ```sql
-  UPDATE families SET deleted_at = NOW() WHERE id = '<test-id>';
-  SELECT * FROM family_members WHERE family_id = '<test-id>';
-  ```
-  - All members should have deleted_at set
-  
+    ```sql
+    UPDATE families SET deleted_at = NOW() WHERE id = '<test-id>';
+    SELECT * FROM family_members WHERE family_id = '<test-id>';
+    ```
+
+    - All members should have deleted_at set
 - [ ] **Test trigger doesn't fire on other updates**
-  ```sql
-  UPDATE families SET name = 'New Name' WHERE id = '<test-id>';
-  SELECT * FROM family_members WHERE family_id = '<test-id>';
-  ```
-  - Members should NOT have deleted_at set
+    ```sql
+    UPDATE families SET name = 'New Name' WHERE id = '<test-id>';
+    SELECT * FROM family_members WHERE family_id = '<test-id>';
+    ```
+
+    - Members should NOT have deleted_at set
 
 #### Restore Tests
 
 - [ ] **Test restore function**
-  ```typescript
-  await restoreFamily('<family-id>');
-  ```
-  - Verify all records restored
+    ```typescript
+    await restoreFamily("<family-id>");
+    ```
+
+    - Verify all records restored
 
 ## Performance Testing
 
@@ -189,9 +201,9 @@ The following tests should be run manually with a live database connection:
 Verify indexes are being used for soft delete queries:
 
 ```sql
-EXPLAIN ANALYZE 
-SELECT * FROM family_members 
-WHERE family_id = '<test-id>' 
+EXPLAIN ANALYZE
+SELECT * FROM family_members
+WHERE family_id = '<test-id>'
 AND deleted_at IS NULL;
 ```
 
@@ -234,7 +246,7 @@ For manual testing, use these scripts to create test data:
 INSERT INTO families (name, creator_id) VALUES ('Test Family', '<user-id>') RETURNING id;
 
 -- Add members
-INSERT INTO family_members (family_id, user_id, role) 
+INSERT INTO family_members (family_id, user_id, role)
 VALUES ('<family-id>', '<user-id>', 'manager');
 
 -- Add invitation

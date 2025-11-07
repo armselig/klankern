@@ -57,6 +57,13 @@
             "when": 1762469089980,
             "tag": "0007_mysterious_sasquatch",
             "breakpoints": true
+        },
+        {
+            "idx": 8,
+            "version": "7",
+            "when": 1762437165727,
+            "tag": "0008_acoustic_lady_mastermind",
+            "breakpoints": true
         }
     ]
 }

@@ -1,6 +1,6 @@
 {
-    "id": "2224233f-fa47-4ac8-aff0-c8f417880529",
-    "prevId": "52c4d981-2198-47d3-a92c-cedaaef75ea5",
+    "id": "08ada9df-48c3-48dd-8791-66140e0bc53a",
+    "prevId": "d6d55dbe-ad71-4ee2-b60e-5dd7b1e0b062",
     "version": "7",
     "dialect": "postgresql",
     "tables": {
@@ -53,12 +53,6 @@
                     "primaryKey": false,
                     "notNull": true,
                     "default": "now()"
-                },
-                "deleted_at": {
-                    "name": "deleted_at",
-                    "type": "timestamp",
-                    "primaryKey": false,
-                    "notNull": false
                 }
             },
             "indexes": {
@@ -112,21 +106,6 @@
                     "columns": [
                         {
                             "expression": "created_at",
-                            "isExpression": false,
-                            "asc": true,
-                            "nulls": "last"
-                        }
-                    ],
-                    "isUnique": false,
-                    "concurrently": false,
-                    "method": "btree",
-                    "with": {}
-                },
-                "corkboard_posts_deleted_at_idx": {
-                    "name": "corkboard_posts_deleted_at_idx",
-                    "columns": [
-                        {
-                            "expression": "deleted_at",
                             "isExpression": false,
                             "asc": true,
                             "nulls": "last"
@@ -318,12 +297,6 @@
                     "primaryKey": false,
                     "notNull": true,
                     "default": "now()"
-                },
-                "deleted_at": {
-                    "name": "deleted_at",
-                    "type": "timestamp",
-                    "primaryKey": false,
-                    "notNull": false
                 }
             },
             "indexes": {
@@ -347,21 +320,6 @@
                     "columns": [
                         {
                             "expression": "invited_email",
-                            "isExpression": false,
-                            "asc": true,
-                            "nulls": "last"
-                        }
-                    ],
-                    "isUnique": false,
-                    "concurrently": false,
-                    "method": "btree",
-                    "with": {}
-                },
-                "family_invitations_deleted_at_idx": {
-                    "name": "family_invitations_deleted_at_idx",
-                    "columns": [
-                        {
-                            "expression": "deleted_at",
                             "isExpression": false,
                             "asc": true,
                             "nulls": "last"
@@ -426,19 +384,6 @@
                     "type": "text",
                     "primaryKey": false,
                     "notNull": true
-                },
-                "created_at": {
-                    "name": "created_at",
-                    "type": "timestamp",
-                    "primaryKey": false,
-                    "notNull": true,
-                    "default": "now()"
-                },
-                "deleted_at": {
-                    "name": "deleted_at",
-                    "type": "timestamp",
-                    "primaryKey": false,
-                    "notNull": false
                 }
             },
             "indexes": {
@@ -447,21 +392,6 @@
                     "columns": [
                         {
                             "expression": "user_id",
-                            "isExpression": false,
-                            "asc": true,
-                            "nulls": "last"
-                        }
-                    ],
-                    "isUnique": false,
-                    "concurrently": false,
-                    "method": "btree",
-                    "with": {}
-                },
-                "family_members_deleted_at_idx": {
-                    "name": "family_members_deleted_at_idx",
-                    "columns": [
-                        {
-                            "expression": "deleted_at",
                             "isExpression": false,
                             "asc": true,
                             "nulls": "last"
@@ -783,6 +713,25 @@
                     "notNull": false,
                     "default": true
                 },
+                "email_verified": {
+                    "name": "email_verified",
+                    "type": "boolean",
+                    "primaryKey": false,
+                    "notNull": false,
+                    "default": false
+                },
+                "email_verified_at": {
+                    "name": "email_verified_at",
+                    "type": "timestamp",
+                    "primaryKey": false,
+                    "notNull": false
+                },
+                "email_verification_token": {
+                    "name": "email_verification_token",
+                    "type": "text",
+                    "primaryKey": false,
+                    "notNull": false
+                },
                 "dashboard_config": {
                     "name": "dashboard_config",
                     "type": "jsonb",
@@ -864,6 +813,21 @@
                     "concurrently": false,
                     "method": "btree",
                     "with": {}
+                },
+                "users_email_verification_token_idx": {
+                    "name": "users_email_verification_token_idx",
+                    "columns": [
+                        {
+                            "expression": "email_verification_token",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
+                    "isUnique": false,
+                    "concurrently": false,
+                    "method": "btree",
+                    "with": {}
                 }
             },
             "foreignKeys": {},
@@ -878,6 +842,11 @@
                     "name": "users_username_unique",
                     "nullsNotDistinct": false,
                     "columns": ["username"]
+                },
+                "users_email_verification_token_unique": {
+                    "name": "users_email_verification_token_unique",
+                    "nullsNotDistinct": false,
+                    "columns": ["email_verification_token"]
                 }
             },
             "policies": {},
