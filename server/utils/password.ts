@@ -25,7 +25,7 @@ export async function customVerifyPassword(
 ): Promise<boolean> {
     try {
         const parts = hash.split("$");
-        if (parts.length !== 5 || parts[1] !== "scrypt") {
+        if (parts.length !== 5 || parts[1] !== "scrypt" || !parts[2]) {
             return false; // Not a valid scrypt hash format
         }
 
@@ -50,10 +50,13 @@ export async function customVerifyPassword(
         const saltBuffer = Buffer.from(saltString, "base64");
         const storedKey = Buffer.from(storedKeyString, "base64");
 
-        const derivedKey = (await scryptAsync(
+        // TypeScript types for promisified scrypt don't include the options parameter,
+        // but the runtime function does support it. We use type assertion to work around this.
+        const derivedKey = (await (scryptAsync as any)(
             password,
             saltBuffer,
             storedKey.length,
+            { N: n, r, p },
         )) as Buffer;
 
         // Use timingSafeEqual to prevent timing attacks
@@ -81,7 +84,14 @@ export async function customHashPassword(password: string): Promise<string> {
     const n = 16384;
     const r = 8;
     const p = 1;
-    const derivedKey = (await scryptAsync(password, saltBuffer, 32)) as Buffer;
+    // TypeScript types for promisified scrypt don't include the options parameter,
+    // but the runtime function does support it. We use type assertion to work around this.
+    const derivedKey = (await (scryptAsync as any)(
+        password,
+        saltBuffer,
+        32,
+        { N: n, r, p },
+    )) as Buffer;
 
     return `$scrypt$n=${n},r=${r},p=${p}$${saltBuffer.toString("base64")}$${derivedKey.toString("base64")}`;
 }
