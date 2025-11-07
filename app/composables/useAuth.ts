@@ -1,4 +1,5 @@
 import { navigateTo, useLogger, useUserSession } from "#imports";
+import type { LoginCredentials } from "#shared/types/auth";
 
 /**
  * @file Composable for handling authentication logic.

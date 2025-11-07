@@ -9,8 +9,9 @@
             </template>
 
             <client-only>
-                <span v-if="loggedIn" class="user-name"
-                    >hallo, {{ user.name }}</span
+                <span v-if="loggedIn && user" class="user-name"
+                    >hallo,
+                    {{ user.display_name || user.username || "user" }}</span
                 >
                 <button-base v-if="loggedIn" @click="handleLogout">
                     Logout
@@ -33,6 +34,7 @@
 import { useRuntimeConfig, navigateTo, useUserSession } from "#imports";
 import { useAuth } from "#composables/useAuth";
 import { useLogger } from "#composables/useLogger";
+import type { UserResponse } from "#shared/types/user";
 
 const {
     public: { appName, appVersion },

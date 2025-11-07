@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { ref } from "vue";
 import { useRuntimeConfig } from "#app";
 import { useLogger } from "~/composables/useLogger";
+import type { RoleResponse, CreateRole, UpdateRole } from "#shared/types/role";
 
 export const useRolesStore = defineStore("roles", () => {
     const roles = ref<RoleResponse[]>([]);
@@ -60,7 +61,7 @@ export const useRolesStore = defineStore("roles", () => {
      * @param id The ID of the role to fetch.
      * @returns The fetched role, or null if not found.
      */
-    async function fetchRoleById(id: string): Promise<RoleResponse> {
+    async function fetchRoleById(id: string): Promise<RoleResponse | undefined> {
         loading.value = true;
         error.value = null;
         try {

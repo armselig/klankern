@@ -12,8 +12,8 @@
 
 <script setup lang="ts">
 import { useAdminUserStore } from "~/stores/admin/users";
-import type { CreateUserFormData } from "#imports";
-import { definePageMeta } from "#imports";
+import { definePageMeta, navigateTo } from "#imports";
+import type { CreateUserFormData } from "#shared/types/user";
 
 definePageMeta({
     middleware: "admin",

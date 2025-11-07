@@ -56,6 +56,7 @@ import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useRolesStore } from "~/stores/admin/roles";
 import { definePageMeta } from "#imports";
+import type { RoleResponse, UpdateRole } from "#shared/types/role";
 
 definePageMeta({ middleware: "auth" });
 
