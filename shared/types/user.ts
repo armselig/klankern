@@ -36,6 +36,16 @@ export const userResponseSchema = z.object({
 
 export type UserResponse = z.infer<typeof userResponseSchema>;
 
+// Schema for user with roles (used for authentication)
+export const userWithRolesSchema = z.object({
+    id: z.string().uuid(),
+    email: z.string().email(),
+    password: z.string(),
+    roles: z.array(roleSchema),
+});
+
+export type UserWithRoles = z.infer<typeof userWithRolesSchema>;
+
 export const updateUserSchema = z.object({
     email: z.string().email().optional(),
     username: z.string().min(3).optional(),

@@ -1,25 +1,10 @@
 import { eq, sql } from "drizzle-orm";
 import { db } from "#server/db";
 import { roles, userRoles, users } from "#server/db/schema";
+import type { Role, UserWithRoles } from "#shared/types/user";
 
-/**
- * Role type definition for role objects
- */
-export interface Role {
-    id: string;
-    name: string;
-    description: string | null;
-}
-
-/**
- * UserWithRoles type definition for user objects with their associated roles
- */
-export interface UserWithRoles {
-    id: string;
-    email: string;
-    password: string;
-    roles: Role[];
-}
+// Re-export types for convenience
+export type { Role, UserWithRoles };
 
 /**
  * @function getUserWithRolesByEmail
