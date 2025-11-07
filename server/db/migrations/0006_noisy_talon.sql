@@ -1,8 +1,10 @@
+CREATE TYPE "public"."audit_action" AS ENUM('create', 'update', 'delete', 'login', 'logout', 'export', 'anonymize');--> statement-breakpoint
+CREATE TYPE "public"."audit_entity_type" AS ENUM('user', 'family', 'corkboard_post', 'invitation', 'session', 'consent');--> statement-breakpoint
 CREATE TABLE "audit_log" (
 	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
 	"user_id" uuid,
-	"action" text NOT NULL,
-	"entity_type" text NOT NULL,
+	"action" "audit_action" NOT NULL,
+	"entity_type" "audit_entity_type" NOT NULL,
 	"entity_id" uuid NOT NULL,
 	"old_values" jsonb,
 	"new_values" jsonb,

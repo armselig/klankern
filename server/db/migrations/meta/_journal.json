@@ -43,6 +43,13 @@
       "when": 1762459928231,
       "tag": "0005_flawless_demogoblin",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1762515824406,
+      "tag": "0006_noisy_talon",
+      "breakpoints": true
     }
   ]
 }

@@ -27,6 +27,25 @@ export const corkboardPostTypeEnum = pgEnum("corkboard_post_type", [
     "photo",
 ]);
 
+export const auditActionEnum = pgEnum("audit_action", [
+    "create",
+    "update",
+    "delete",
+    "login",
+    "logout",
+    "export",
+    "anonymize",
+]);
+
+export const auditEntityTypeEnum = pgEnum("audit_entity_type", [
+    "user",
+    "family",
+    "corkboard_post",
+    "invitation",
+    "session",
+    "consent",
+]);
+
 // Tables
 export const roles = pgTable("roles", {
     id: uuid("id")
@@ -242,8 +261,8 @@ export const auditLog = pgTable(
         user_id: uuid("user_id").references(() => users.id, {
             onDelete: "set null",
         }),
-        action: text("action").notNull(), // 'create', 'update', 'delete'
-        entity_type: text("entity_type").notNull(), // 'user', 'family', etc.
+        action: auditActionEnum("action").notNull(),
+        entity_type: auditEntityTypeEnum("entity_type").notNull(),
         entity_id: uuid("entity_id").notNull(),
         old_values: jsonb("old_values"),
         new_values: jsonb("new_values"),

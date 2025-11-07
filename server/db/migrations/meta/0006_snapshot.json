@@ -1,5 +1,5 @@
 {
-  "id": "04db1651-25bd-468e-8536-025ac07dcf62",
+  "id": "c677267b-4f4c-4768-a889-f513d863d116",
   "prevId": "52c4d981-2198-47d3-a92c-cedaaef75ea5",
   "version": "7",
   "dialect": "postgresql",
@@ -23,13 +23,15 @@
         },
         "action": {
           "name": "action",
-          "type": "text",
+          "type": "audit_action",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         },
         "entity_type": {
           "name": "entity_type",
-          "type": "text",
+          "type": "audit_entity_type",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         },
@@ -1167,6 +1169,31 @@
     }
   },
   "enums": {
+    "public.audit_action": {
+      "name": "audit_action",
+      "schema": "public",
+      "values": [
+        "create",
+        "update",
+        "delete",
+        "login",
+        "logout",
+        "export",
+        "anonymize"
+      ]
+    },
+    "public.audit_entity_type": {
+      "name": "audit_entity_type",
+      "schema": "public",
+      "values": [
+        "user",
+        "family",
+        "corkboard_post",
+        "invitation",
+        "session",
+        "consent"
+      ]
+    },
     "public.corkboard_post_type": {
       "name": "corkboard_post_type",
       "schema": "public",
