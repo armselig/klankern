@@ -60,6 +60,13 @@ export const auditEntityTypeEnum = pgEnum("audit_entity_type", [
     "consent",
 ]);
 
+export const consentTypeEnum = pgEnum("consent_type", [
+    "marketing",
+    "analytics",
+    "data_processing",
+    "third_party_sharing",
+]);
+
 // Tables
 export const roles = pgTable("roles", {
     id: uuid("id")
@@ -315,7 +322,7 @@ export const userConsents = pgTable(
         user_id: uuid("user_id")
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
-        consent_type: text("consent_type").notNull(), // 'marketing', 'analytics', etc.
+        consent_type: consentTypeEnum("consent_type").notNull(),
         granted: boolean("granted").notNull(),
         granted_at: timestamp("granted_at").notNull().defaultNow(),
         revoked_at: timestamp("revoked_at"),
