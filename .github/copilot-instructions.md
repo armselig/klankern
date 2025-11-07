@@ -23,12 +23,14 @@ Klankern is a Progressive Web App (PWA) designed as a family's digital hub for m
 The project supports two development setups:
 
 ### Containerized Development (Default)
+
 - Both Nuxt and PostgreSQL run in containers
 - Container names: `klankern_nuxt` (app), `klankern_db` (database)
 - Source code is bind-mounted for hot-reloading
 - **Important**: Do NOT start, stop, or restart containers without user approval
 
 ### Traditional Local Development
+
 - Nuxt runs locally, PostgreSQL in container
 - Standard pnpm commands work directly
 
@@ -37,6 +39,7 @@ The project supports two development setups:
 ### Development
 
 **For Traditional Local Setup:**
+
 ```bash
 pnpm install                 # Install dependencies
 pnpm run dev                # Start development server (http://localhost:3000)
@@ -45,6 +48,7 @@ pnpm run preview            # Preview production build
 ```
 
 **For Containerized Setup:**
+
 ```bash
 pnpm run dev:container            # Start all services
 pnpm run dev:container:build      # Rebuild and start
@@ -57,6 +61,7 @@ pnpm run dev:container:shell      # Open shell in container
 ### Database Management
 
 **Traditional Local:**
+
 ```bash
 pnpm run db:start           # Start database container
 pnpm run db:stop            # Stop database container
@@ -66,6 +71,7 @@ pnpm run db:seed            # Seed database with test data
 ```
 
 **Containerized:**
+
 ```bash
 pnpm run db:migrate:container    # Run migrations in container
 pnpm run db:seed:container       # Seed database in container
@@ -81,6 +87,7 @@ pnpm run test:ui            # Open Vitest UI
 ```
 
 **Test Structure:**
+
 - `test/nuxt/` - Tests requiring Nuxt runtime (components, composables, server)
 - `test/e2e/` - End-to-end tests
 
@@ -99,13 +106,13 @@ pnpm run typecheck          # Run TypeScript type checking
 ### Naming Conventions
 
 - **Files and Components**: Use kebab-case
-  - ✅ `utility-file.ts`, `<my-component />`
-  - ❌ `utility_file.ts`, `<MyComponent />`
+    - ✅ `utility-file.ts`, `<my-component />`
+    - ❌ `utility_file.ts`, `<MyComponent />`
 - **Functions/Methods**: Use clear, descriptive names
-  - ✅ `createUser`, `fetchProductById`
-  - ❌ `handleData`, `doStuff`
+    - ✅ `createUser`, `fetchProductById`
+    - ❌ `handleData`, `doStuff`
 - **Component IDs**: Use BEM-inspired naming
-  - Example: `component-name__element-name`
+    - Example: `component-name__element-name`
 
 ### TypeScript
 
@@ -119,8 +126,8 @@ pnpm run typecheck          # Run TypeScript type checking
 - **Auto-Imports**: Nuxt auto-imports are **DISABLED**. Always explicitly import what you need.
 - **Path Aliases**: Always use custom path aliases defined in `nuxt.config.ts`
 - **Separation of Concerns**: Keep presentation separate from business logic
-  - API calls should be in Pinia stores or composables, not components
-  - Use composables for reusable logic
+    - API calls should be in Pinia stores or composables, not components
+    - Use composables for reusable logic
 - **Exports**: Prefer named exports over default exports
 
 ### Logging
@@ -137,18 +144,21 @@ pnpm run typecheck          # Run TypeScript type checking
 ## Project-Specific Guidelines
 
 ### Authentication
+
 - Uses `nuxt-security` and `nuxt-auth-utils`
 - Server-side utilities like `setUserSession` are auto-imported in `server/` directory
 - Login/logout logic handled by `useAuth` composable
 
 ### Database Schema
+
 - Located in `server/db/schema.ts`
 - After modifying schema:
-  1. Run `pnpm run db:generate` to create migration
-  2. Run `pnpm run db:migrate` to apply migration
-  3. Test thoroughly
+    1. Run `pnpm run db:generate` to create migration
+    2. Run `pnpm run db:migrate` to apply migration
+    3. Test thoroughly
 
 ### Progressive Enhancement
+
 - Start with semantic HTML (WCAG compliant)
 - Add JavaScript/TypeScript functionality
 - Address CSS/styles last
@@ -158,11 +168,13 @@ pnpm run typecheck          # Run TypeScript type checking
 The database seed script creates default test users:
 
 ### Admin User
+
 - **Username**: `admin`
 - **Email**: `admin@example.com`
 - **Password**: `password123`
 
 ### Standard Test User (for E2E tests)
+
 - **ID**: `a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11`
 - **Username**: `testuser`
 - **Email**: `user@example.com`
@@ -171,6 +183,7 @@ The database seed script creates default test users:
 ## Version Control
 
 ### Commit Messages
+
 - **Must follow** [Conventional Commits](https://www.conventionalcommits.org/)
 - Format: `type(scope): description`
 - First line in **lowercase**
@@ -179,6 +192,7 @@ The database seed script creates default test users:
 - Flag breaking changes with `BREAKING CHANGE:` footer
 
 Examples:
+
 ```
 feat(auth): add password reset functionality
 
@@ -192,15 +206,17 @@ international email addresses.
 ```
 
 ### Branching Strategy
+
 - **`main`**: Production branch - **NEVER push directly**
 - **`develop`**: Development branch - all work happens here
 - **Feature branches**: `type/brief-task-description`
-  - Examples: `feature/add-pwa-functionality`, `bugfix/repair-broken-event-bus`
-  - Require PR to merge into `develop`
+    - Examples: `feature/add-pwa-functionality`, `bugfix/repair-broken-event-bus`
+    - Require PR to merge into `develop`
 
 ## Common Workflows
 
 ### Adding a New Feature
+
 1. Create feature branch from `develop`
 2. Implement feature with tests
 3. Run `pnpm run lint:fix && pnpm run typecheck && pnpm run test`
@@ -208,6 +224,7 @@ international email addresses.
 5. Create PR to `develop`
 
 ### Fixing a Bug
+
 1. Create bugfix branch from `develop`
 2. Write test that reproduces the bug
 3. Fix the bug
@@ -216,6 +233,7 @@ international email addresses.
 6. Commit and create PR
 
 ### Modifying Database Schema
+
 1. Update `server/db/schema.ts`
 2. Generate migration: `pnpm run db:generate`
 3. Review generated migration file
@@ -224,6 +242,7 @@ international email addresses.
 6. Commit both schema and migration files
 
 ### Adding a New API Endpoint
+
 1. Create endpoint in `server/api/` or `server/routes/`
 2. Add Zod validation schema if needed
 3. Implement business logic

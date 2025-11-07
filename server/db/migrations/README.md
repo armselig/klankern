@@ -62,6 +62,7 @@ The feature is implemented across two migration files:
 **File**: `0004_needy_black_cat.sql`
 
 Adds `created_at` and `updated_at` columns to junction tables:
+
 - `family_members`
 - `user_roles`
 
@@ -120,16 +121,16 @@ SELECT updated_at FROM users WHERE id = '<some-uuid>';
 -- updated_at should show current timestamp
 
 -- Test junction table timestamps
-INSERT INTO family_members (family_id, user_id, role) 
+INSERT INTO family_members (family_id, user_id, role)
 VALUES ('<family-uuid>', '<user-uuid>', 'member');
-SELECT created_at, updated_at FROM family_members 
+SELECT created_at, updated_at FROM family_members
 WHERE family_id = '<family-uuid>' AND user_id = '<user-uuid>';
 -- Both should show current timestamp
 
 -- Test junction table update trigger
 UPDATE family_members SET role = 'manager'
 WHERE family_id = '<family-uuid>' AND user_id = '<user-uuid>';
-SELECT created_at, updated_at FROM family_members 
+SELECT created_at, updated_at FROM family_members
 WHERE family_id = '<family-uuid>' AND user_id = '<user-uuid>';
 -- created_at should remain unchanged, updated_at should be newer
 ```
@@ -137,9 +138,11 @@ WHERE family_id = '<family-uuid>' AND user_id = '<user-uuid>';
 ### Automated Tests
 
 Schema validation tests are located at:
+
 - `test/nuxt/db-timestamps.spec.ts`
 
 Run tests with:
+
 ```bash
 pnpm run test
 ```

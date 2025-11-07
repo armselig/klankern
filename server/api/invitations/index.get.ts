@@ -3,6 +3,7 @@ import { defineEventHandler, createError } from "h3";
 import { db } from "#server/db";
 import { familyInvitations } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
+import { notDeleted } from "#server/db/helpers";
 
 export default defineEventHandler(async (event) => {
     const user = event.context.user;
@@ -16,6 +17,7 @@ export default defineEventHandler(async (event) => {
             where: and(
                 eq(familyInvitations.invited_email, user.email),
                 eq(familyInvitations.status, "pending"),
+                notDeleted(familyInvitations),
             ),
             // Include related family and inviter names for display on the frontend
             with: {
@@ -34,7 +36,12 @@ export default defineEventHandler(async (event) => {
             orderBy: (invitations, { desc }) => [desc(invitations.created_at)],
         });
 
-        return pendingInvitations;
+        // Filter out invitations where the family itself is soft-deleted
+        const activeInvitations = pendingInvitations.filter(
+            (invitation) => invitation.family && !invitation.family.deleted_at,
+        );
+
+        return activeInvitations;
     } catch (error) {
         logger.error(`Error fetching invitations for user ${user.id}:`, error);
         throw createError({

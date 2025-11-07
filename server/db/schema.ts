@@ -156,6 +156,7 @@ export const corkboardPosts = pgTable(
         data: jsonb("data"), // JSONB for content (note text or photo URL/caption)
         created_at: timestamp("created_at").notNull().defaultNow(),
         updated_at: timestamp("updated_at").notNull().defaultNow(),
+        deleted_at: timestamp("deleted_at"),
     },
     (table) => {
         return {
@@ -166,6 +167,9 @@ export const corkboardPosts = pgTable(
             typeIndex: index("corkboard_posts_type_idx").on(table.type),
             createdAtIndex: index("corkboard_posts_created_at_idx").on(
                 table.created_at,
+            ),
+            deletedAtIndex: index("corkboard_posts_deleted_at_idx").on(
+                table.deleted_at,
             ),
             // Composite index for family timeline queries
             // Note: PostgreSQL can scan indexes backward efficiently, so explicit DESC
@@ -229,11 +233,15 @@ export const familyMembers = pgTable(
         updated_at: timestamp("updated_at")
             .notNull()
             .default(sql`now()`),
+        deleted_at: timestamp("deleted_at"),
     },
     (table) => {
         return {
             pk: primaryKey({ columns: [table.family_id, table.user_id] }),
             userIdIndex: index("family_members_user_id_idx").on(table.user_id),
+            deletedAtIndex: index("family_members_deleted_at_idx").on(
+                table.deleted_at,
+            ),
         };
     },
 );
@@ -258,6 +266,7 @@ export const familyInvitations = pgTable(
         updated_at: timestamp("updated_at")
             .notNull()
             .default(sql`now()`),
+        deleted_at: timestamp("deleted_at"),
     },
     (table) => {
         return {
@@ -266,6 +275,9 @@ export const familyInvitations = pgTable(
             ),
             invitedEmailIndex: index("family_invitations_invited_email_idx").on(
                 table.invited_email,
+            ),
+            deletedAtIndex: index("family_invitations_deleted_at_idx").on(
+                table.deleted_at,
             ),
             // Composite index for pending family invitations
             familyStatusIndex: index("family_invitations_family_status_idx")

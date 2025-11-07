@@ -1,8 +1,9 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { defineEventHandler, createError, getRouterParams } from "h3";
 import { db } from "#server/db";
 import { familyInvitations } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
+import { notDeleted } from "#server/db/helpers";
 
 export default defineEventHandler(async (event) => {
     logger.http(`${event.method} ${event.path}`);
@@ -18,9 +19,12 @@ export default defineEventHandler(async (event) => {
     }
 
     try {
-        // 1. Find the invitation
+        // 1. Find the invitation (checking it's not soft-deleted)
         const invitation = await db.query.familyInvitations.findFirst({
-            where: eq(familyInvitations.token, invitationToken),
+            where: and(
+                eq(familyInvitations.token, invitationToken),
+                notDeleted(familyInvitations),
+            ),
         });
 
         if (!invitation) {

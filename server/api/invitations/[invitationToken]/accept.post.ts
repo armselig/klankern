@@ -1,8 +1,9 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { defineEventHandler, createError, getRouterParams } from "h3";
 import { db } from "#server/db";
 import { familyInvitations, familyMembers } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
+import { notDeleted } from "#server/db/helpers";
 
 export default defineEventHandler(async (event) => {
     logger.http(`${event.method} ${event.path}`);
@@ -20,7 +21,13 @@ export default defineEventHandler(async (event) => {
     try {
         // 1. Find the invitation
         const invitation = await db.query.familyInvitations.findFirst({
-            where: eq(familyInvitations.token, invitationToken),
+            where: and(
+                eq(familyInvitations.token, invitationToken),
+                notDeleted(familyInvitations),
+            ),
+            with: {
+                family: true,
+            },
         });
 
         if (!invitation) {
@@ -30,7 +37,16 @@ export default defineEventHandler(async (event) => {
             });
         }
 
-        // 2. Validate the invitation
+        // 2. Check if the family is soft-deleted
+        if (invitation.family.deleted_at) {
+            throw createError({
+                statusCode: 400,
+                statusMessage:
+                    "The family associated with this invitation no longer exists.",
+            });
+        }
+
+        // 3. Validate the invitation
         if (invitation.status !== "pending") {
             throw createError({
                 statusCode: 400,
@@ -52,7 +68,7 @@ export default defineEventHandler(async (event) => {
             });
         }
 
-        // 3. Perform actions in a transaction
+        // 4. Perform actions in a transaction
         await db.transaction(async (tx) => {
             // Add user to the family
             await tx.insert(familyMembers).values({

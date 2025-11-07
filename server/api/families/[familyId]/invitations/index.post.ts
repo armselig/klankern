@@ -11,6 +11,7 @@ import { familyInvitations, familyMembers, users } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
 import { sendInvitationEmail } from "#server/utils/email-sender";
 import { InvitationCreateSchema } from "~~/shared/types/invitation";
+import { notDeleted } from "#server/db/helpers";
 
 export default defineEventHandler(async (event) => {
     const { familyId } = await getRouterParams(event);
@@ -36,6 +37,7 @@ export default defineEventHandler(async (event) => {
             where: and(
                 eq(familyMembers.family_id, familyId),
                 eq(familyMembers.user_id, user.id),
+                notDeleted(familyMembers),
             ),
             with: {
                 family: { columns: { name: true } },
@@ -46,12 +48,15 @@ export default defineEventHandler(async (event) => {
             throw createError({ statusCode: 403, statusMessage: "Forbidden" });
         }
 
-        // 2. Conflict Check: See if a user with this email is already in the family.
+        // 2. Conflict Check: See if a user with this email is already in the family (and not soft-deleted).
         const existingMember = await db.query.users.findFirst({
             where: eq(users.email, invitedEmail),
             with: {
                 familyMembers: {
-                    where: eq(familyMembers.family_id, familyId),
+                    where: and(
+                        eq(familyMembers.family_id, familyId),
+                        notDeleted(familyMembers),
+                    ),
                 },
             },
         });
