@@ -2,11 +2,8 @@ import { registerEndpoint } from "@nuxt/test-utils/runtime";
 import { createError, readBody } from "h3";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-// Mock the email sender utility
-const mockSendInvitationEmail = vi.fn();
-vi.mock("~/server/utils/email-sender", () => ({
-    sendInvitationEmail: mockSendInvitationEmail,
-}));
+// The email sender utility is mocked in the global setup file (test/setup.ts)
+import { mockSendInvitationEmail } from "../../../setup";
 
 // Mock the database dependency
 const mockDb = {

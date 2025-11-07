@@ -1,5 +1,11 @@
 import { vi } from "vitest";
 
+// Mock the email sender utility globally to prevent server re-initialization
+export const mockSendInvitationEmail = vi.fn();
+vi.mock("~/server/utils/email-sender", () => ({
+    sendInvitationEmail: mockSendInvitationEmail,
+}));
+
 vi.mock("#server/db", () => ({
     db: {
         query: {

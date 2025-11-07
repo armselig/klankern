@@ -6,7 +6,7 @@ import { setup } from "@nuxt/test-utils/e2e";
  */
 describe("E2E: Family Creation", async () => {
     // This sets up the Nuxt environment in development mode, which enables hot-reloading for new files.
-    await setup({ browser: true, dev: true });
+    await setup({ browser: true });
 
     test("authentication endpoint should not exist yet", async () => {
         // This test is the "Red" step. It proves the endpoint doesn't exist.
