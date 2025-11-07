@@ -1,6 +1,6 @@
 import { defineEventHandler, readValidatedBody, createError } from "h3";
 import { z } from "zod";
-import { createUserFormSchema } from "#imports";
+import { createUserFormSchema } from "#shared/types/user";
 import { db } from "#server/db";
 import { userRoles, users } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
@@ -28,6 +28,10 @@ export default defineEventHandler(async (event) => {
                 })
                 .returning();
 
+            if (!createdUser) {
+                throw new Error("Failed to create user");
+            }
+
             if (body.roleIds && body.roleIds.length > 0) {
                 await tx.insert(userRoles).values(
                     body.roleIds.map((roleId) => ({
@@ -40,9 +44,13 @@ export default defineEventHandler(async (event) => {
             return createdUser;
         });
 
+        if (!newUser) {
+            throw new Error("Failed to create user");
+        }
+
         logger.info(`User created: ${newUser.email}`);
-        const userWithoutPassword = { ...newUser };
-        delete userWithoutPassword.password;
+        // Omit password from response
+        const { password: _, ...userWithoutPassword } = newUser;
         return userWithoutPassword;
     } catch (error: unknown) {
         let errorToLog: Error;
@@ -88,7 +96,7 @@ export default defineEventHandler(async (event) => {
             throw createError({
                 statusCode: 400,
                 statusMessage: "Validation failed",
-                data: error.errors,
+                data: error.issues,
             });
         }
 

@@ -8,7 +8,7 @@ import {
 } from "h3";
 import { z } from "zod";
 import { setUserSession } from "#auth";
-import { getUserWithRolesByEmail } from "#server/db/utils";
+import { getUserWithRolesByEmail, type UserWithRoles, type Role } from "#server/db/utils";
 import { logger } from "#server/utils/logger";
 import { customVerifyPassword } from "#server/utils/password";
 
@@ -71,7 +71,7 @@ export default defineEventHandler(
                     roles: userRolesData,
                 },
                 loggedInAt: new Date(),
-            } as UserSession);
+            });
 
             return { message: "Login successful" };
         } catch (error: unknown) {

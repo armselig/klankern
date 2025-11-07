@@ -30,17 +30,30 @@ export async function customVerifyPassword(
         }
 
         const params = parts[2].split(",");
-        const n = parseInt(params[0].split("=")[1], 10);
-        const r = parseInt(params[1].split("=")[1], 10);
-        const p = parseInt(params[2].split("=")[1], 10);
-        const salt = Buffer.from(parts[3], "base64");
-        const storedKey = Buffer.from(parts[4], "base64");
+        if (params.length !== 3) {
+            return false;
+        }
+
+        const nParam = params[0]?.split("=")[1];
+        const rParam = params[1]?.split("=")[1];
+        const pParam = params[2]?.split("=")[1];
+        const saltString = parts[3];
+        const storedKeyString = parts[4];
+
+        if (!nParam || !rParam || !pParam || !saltString || !storedKeyString) {
+            return false;
+        }
+
+        const n = parseInt(nParam, 10);
+        const r = parseInt(rParam, 10);
+        const p = parseInt(pParam, 10);
+        const saltBuffer = Buffer.from(saltString, "base64");
+        const storedKey = Buffer.from(storedKeyString, "base64");
 
         const derivedKey = (await scryptAsync(
             password,
-            salt,
+            saltBuffer,
             storedKey.length,
-            { N: n, r: r, p: p },
         )) as Buffer;
 
         // Use timingSafeEqual to prevent timing attacks
@@ -64,15 +77,11 @@ export async function customVerifyPassword(
  * ```
  */
 export async function customHashPassword(password: string): Promise<string> {
-    const salt = randomBytes(16).toString("base64");
+    const saltBuffer = randomBytes(16);
     const n = 16384;
     const r = 8;
     const p = 1;
-    const derivedKey = (await scryptAsync(password, salt, 32, {
-        N: n,
-        r: r,
-        p: p,
-    })) as Buffer;
+    const derivedKey = (await scryptAsync(password, saltBuffer, 32)) as Buffer;
 
-    return `$scrypt$n=${n},r=${r},p=${p}$${Buffer.from(salt).toString("base64")}$${derivedKey.toString("base64")}`;
+    return `$scrypt$n=${n},r=${r},p=${p}$${saltBuffer.toString("base64")}$${derivedKey.toString("base64")}`;
 }

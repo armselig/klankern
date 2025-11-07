@@ -77,9 +77,6 @@ export default defineNuxtConfig({
     // },
     vite: {
         server: {
-            // Use the standard port
-            port: 3000,
-
             // Don't try other ports if 3000 is taken
             strictPort: true,
 
