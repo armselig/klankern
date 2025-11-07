@@ -81,7 +81,7 @@
         <div v-for="role in availableRoles.roles" :key="role.id">
             <input
                 :id="`role-${role.id}`"
-                :checked="props.user.roleIds.includes(role.id)"
+                :checked="(props.user.roleIds ?? []).includes(role.id)"
                 type="checkbox"
                 :value="role.id"
                 @change="
@@ -103,7 +103,8 @@
  * It is designed to be used by `form-user-create.vue` and `form-user-update.vue`.
  */
 
-import type { CreateUserFormData } from "#imports";
+import { reactive } from "vue";
+import type { CreateUserFormData } from "#shared/types/user";
 
 const props = defineProps<{
     user: CreateUserFormData;
@@ -119,9 +120,10 @@ const availableRoles = reactive({
 });
 
 function handleRoleChange(roleId: string, isChecked: boolean) {
+    const currentRoleIds = props.user.roleIds ?? [];
     const newRoleIds = isChecked
-        ? [...props.user.roleIds, roleId]
-        : props.user.roleIds.filter((id) => id !== roleId);
+        ? [...currentRoleIds, roleId]
+        : currentRoleIds.filter((id) => id !== roleId);
     emit("update:user", { ...props.user, roleIds: newRoleIds });
 }
 </script>

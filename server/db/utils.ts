@@ -3,6 +3,25 @@ import { db } from "#server/db";
 import { roles, userRoles, users } from "#server/db/schema";
 
 /**
+ * Role type definition for role objects
+ */
+export interface Role {
+    id: string;
+    name: string;
+    description: string | null;
+}
+
+/**
+ * UserWithRoles type definition for user objects with their associated roles
+ */
+export interface UserWithRoles {
+    id: string;
+    email: string;
+    password: string;
+    roles: Role[];
+}
+
+/**
  * @function getUserWithRolesByEmail
  * @description Fetches a user from the database along with their associated roles, given the user's email.
  * This function encapsulates the complex Drizzle ORM query involving joins and aggregation to retrieve

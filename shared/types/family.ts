@@ -8,7 +8,7 @@ import { z } from "zod";
 export const FamilyCreateSchema = z.object({
     name: z
         .string({
-            required_error: "Family name is required.",
+            message: "Family name is required.",
         })
         .min(1, "Family name cannot be empty.")
         .max(100, "Family name cannot exceed 100 characters."),
@@ -28,7 +28,7 @@ export const FamilySchema = z.object({
 export const FamilyTransferOwnershipSchema = z.object({
     newOwnerId: z
         .string({
-            required_error: "New owner ID is required.",
+            message: "New owner ID is required.",
         })
         .uuid("New owner ID must be a valid UUID."),
 });

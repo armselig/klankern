@@ -18,6 +18,8 @@ export const roleSchema = z.object({
     description: z.string().nullable(),
 });
 
+export type Role = z.infer<typeof roleSchema>;
+
 export const userResponseSchema = z.object({
     id: z.string().uuid(),
     email: z.string().email(),
@@ -62,6 +64,7 @@ export const baseUserFormSchema = z.object({
     display_name: z.string().optional(),
     first_name: z.string().optional(),
     last_name: z.string().optional(),
+    is_active: z.boolean().optional(),
     roleIds: z.array(z.string().uuid()).optional(),
 });
 

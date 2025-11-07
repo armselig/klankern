@@ -77,9 +77,6 @@ export default defineNuxtConfig({
     // },
     vite: {
         server: {
-            // Listen on all network interfaces (required for container access)
-            host: "0.0.0.0",
-
             // Use the standard port
             port: 3000,
 

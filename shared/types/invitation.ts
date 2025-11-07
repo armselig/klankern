@@ -8,7 +8,7 @@ import { z } from "zod";
 export const InvitationCreateSchema = z.object({
     email: z
         .string({
-            required_error: "Email address is required.",
+            message: "Email address is required.",
         })
         .email("Invalid email address provided."),
 });
