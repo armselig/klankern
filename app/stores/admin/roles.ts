@@ -61,7 +61,9 @@ export const useRolesStore = defineStore("roles", () => {
      * @param id The ID of the role to fetch.
      * @returns The fetched role, or null if not found.
      */
-    async function fetchRoleById(id: string): Promise<RoleResponse | undefined> {
+    async function fetchRoleById(
+        id: string,
+    ): Promise<RoleResponse | undefined> {
         loading.value = true;
         error.value = null;
         try {

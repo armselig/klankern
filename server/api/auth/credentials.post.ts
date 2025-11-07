@@ -8,7 +8,11 @@ import {
 } from "h3";
 import { z } from "zod";
 import { setUserSession } from "#auth";
-import { getUserWithRolesByEmail, type UserWithRoles, type Role } from "#server/db/utils";
+import {
+    getUserWithRolesByEmail,
+    type UserWithRoles,
+    type Role,
+} from "#server/db/utils";
 import { logger } from "#server/utils/logger";
 import { customVerifyPassword } from "#server/utils/password";
 
@@ -51,9 +55,11 @@ export default defineEventHandler(
                     statusMessage: "Invalid credentials",
                 });
             }
-            
+
             const userRolesData: Role[] =
-                user.roles && user.roles.length > 0 && user.roles[0]?.id !== null
+                user.roles &&
+                user.roles.length > 0 &&
+                user.roles[0]?.id !== null
                     ? user.roles
                     : [];
 

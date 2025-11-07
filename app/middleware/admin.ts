@@ -12,7 +12,7 @@ export default defineNuxtRouteMiddleware(async () => {
         return await navigateTo("/auth/login");
     }
 
-    const userValue = user.value as UserResponse | null;
+    const userValue = user.value;
     const isAdmin = userValue?.roles.some(
         (role: { id: string; name: string; description: string | null }) =>
             role.name === "admin",
