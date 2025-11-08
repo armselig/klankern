@@ -203,10 +203,9 @@ export const corkboardPosts = pgTable(
             createdAtIndex: index("corkboard_posts_created_at_idx").on(
                 table.created_at,
             ),
-            familyTimelineIndex: index("corkboard_posts_family_timeline_idx").on(
-                table.family_id,
-                table.created_at,
-            ),
+            familyTimelineIndex: index(
+                "corkboard_posts_family_timeline_idx",
+            ).on(table.family_id, table.created_at),
             dataGinIndex: index("corkboard_posts_data_gin_idx")
                 .on(table.data)
                 .using(sql`gin`),
@@ -241,7 +240,9 @@ export const families = pgTable(
             deletedAtIndex: index("families_deleted_at_idx").on(
                 table.deleted_at,
             ),
-            activeFamiliesByCreationIndex: index("families_active_by_creation_idx")
+            activeFamiliesByCreationIndex: index(
+                "families_active_by_creation_idx",
+            )
                 .on(table.created_at)
                 .where(sql`deleted_at IS NULL`),
         };
@@ -259,7 +260,7 @@ export const familyMembers = pgTable(
             .references(() => users.id, { onDelete: "cascade" }),
         role: familyRoleEnum("role").notNull().default("member"),
         created_at: timestamp("created_at").notNull().defaultNow(),
-        deleted_at: timestamp("deleted_at"),  
+        deleted_at: timestamp("deleted_at"),
     },
     (table) => {
         return {
@@ -306,9 +307,10 @@ export const familyInvitations = pgTable(
                 table.family_id,
                 table.status,
             ),
-            uniquePendingInvitation: index(
-                "family_invitations_unique_pending",
-            ).on(table.family_id, table.invited_email).where(sql`status = 'pending'`).unique(),
+            uniquePendingInvitation: index("family_invitations_unique_pending")
+                .on(table.family_id, table.invited_email)
+                .where(sql`status = 'pending'`)
+                .unique(),
             deletedAtIndex: index("family_invitations_deleted_at_idx").on(
                 table.deleted_at,
             ),
