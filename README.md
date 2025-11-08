@@ -16,6 +16,9 @@ Welcome to Klankern, a Progressive Web App (PWA) designed to bring families clos
 - **Shared Notes:** A central place for important information.
 - **User Management:** Admin panel for managing users and roles.
 - **Robust Authentication:** Secure login and session management.
+- **Family Ownership Transfer:** Transfer ownership of a family to another user.
+- **Email Verification:** Secure your account with email verification.
+- **Soft-Delete:** Data is never truly deleted, allowing for easy recovery.
 
 ## 🛠️ Tech Stack
 
