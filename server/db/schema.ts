@@ -113,6 +113,9 @@ export const users = pgTable(
             usernameIndex: index("users_username_idx").on(table.username),
             isActiveIndex: index("users_is_active_idx").on(table.is_active),
             createdAtIndex: index("users_created_at_idx").on(table.created_at),
+            dashboardConfigGinIndex: index("users_dashboard_config_gin_idx")
+                .on(table.dashboard_config)
+                .using(sql`gin`),
             emailVerificationTokenIndex: index(
                 "users_email_verification_token_idx",
             ).on(table.email_verification_token),
@@ -164,6 +167,10 @@ export const sessions = pgTable(
             expiresAtIndex: index("sessions_expires_at_idx").on(
                 table.expires_at,
             ),
+            userActiveSessionsIndex: index("sessions_user_active_idx").on(
+                table.user_id,
+                table.expires_at,
+            ),
         };
     },
 );
@@ -184,6 +191,7 @@ export const corkboardPosts = pgTable(
         data: jsonb("data"), // JSONB for content (note text or photo URL/caption)
         created_at: timestamp("created_at").notNull().defaultNow(),
         updated_at: timestamp("updated_at").notNull().defaultNow(),
+        deleted_at: timestamp("deleted_at"),
     },
     (table) => {
         return {
@@ -194,6 +202,16 @@ export const corkboardPosts = pgTable(
             typeIndex: index("corkboard_posts_type_idx").on(table.type),
             createdAtIndex: index("corkboard_posts_created_at_idx").on(
                 table.created_at,
+            ),
+            familyTimelineIndex: index("corkboard_posts_family_timeline_idx").on(
+                table.family_id,
+                table.created_at,
+            ),
+            dataGinIndex: index("corkboard_posts_data_gin_idx")
+                .on(table.data)
+                .using(sql`gin`),
+            deletedAtIndex: index("corkboard_posts_deleted_at_idx").on(
+                table.deleted_at,
             ),
         };
     },
@@ -223,6 +241,9 @@ export const families = pgTable(
             deletedAtIndex: index("families_deleted_at_idx").on(
                 table.deleted_at,
             ),
+            activeFamiliesByCreationIndex: index("families_active_by_creation_idx")
+                .on(table.created_at)
+                .where(sql`deleted_at IS NULL`),
         };
     },
 );
@@ -237,11 +258,16 @@ export const familyMembers = pgTable(
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
         role: familyRoleEnum("role").notNull().default("member"),
+        created_at: timestamp("created_at").notNull().defaultNow(),
+        deleted_at: timestamp("deleted_at"),  
     },
     (table) => {
         return {
             pk: primaryKey({ columns: [table.family_id, table.user_id] }),
             userIdIndex: index("family_members_user_id_idx").on(table.user_id),
+            deletedAtIndex: index("family_members_deleted_at_idx").on(
+                table.deleted_at,
+            ),
         };
     },
 );
@@ -266,6 +292,7 @@ export const familyInvitations = pgTable(
         updated_at: timestamp("updated_at")
             .notNull()
             .default(sql`now()`),
+        deleted_at: timestamp("deleted_at"),
     },
     (table) => {
         return {
@@ -274,6 +301,16 @@ export const familyInvitations = pgTable(
             ),
             invitedEmailIndex: index("family_invitations_invited_email_idx").on(
                 table.invited_email,
+            ),
+            familyStatusIndex: index("family_invitations_family_status_idx").on(
+                table.family_id,
+                table.status,
+            ),
+            uniquePendingInvitation: index(
+                "family_invitations_unique_pending",
+            ).on(table.family_id, table.invited_email).where(sql`status = 'pending'`).unique(),
+            deletedAtIndex: index("family_invitations_deleted_at_idx").on(
+                table.deleted_at,
             ),
         };
     },
