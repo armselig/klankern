@@ -27,6 +27,20 @@ export const corkboardPostTypeEnum = pgEnum("corkboard_post_type", [
     "photo",
 ]);
 
+export const familyRoleEnum = pgEnum("family_role", [
+    "manager",
+    "member",
+    "viewer",
+]);
+
+export const invitationStatusEnum = pgEnum("invitation_status", [
+    "pending",
+    "accepted",
+    "declined",
+    "expired",
+    "cancelled",
+]);
+
 export const auditActionEnum = pgEnum("audit_action", [
     "create",
     "update",
@@ -44,6 +58,13 @@ export const auditEntityTypeEnum = pgEnum("audit_entity_type", [
     "invitation",
     "session",
     "consent",
+]);
+
+export const consentTypeEnum = pgEnum("consent_type", [
+    "marketing",
+    "analytics",
+    "data_processing",
+    "third_party_sharing",
 ]);
 
 // Tables
@@ -69,6 +90,10 @@ export const users = pgTable(
         last_name: text("last_name"),
         is_active: boolean("is_active").default(true),
         dashboard_config: jsonb("dashboard_config"), // JSONB for dashboard preferences
+        // Email verification fields
+        email_verified: boolean("email_verified").default(false),
+        email_verified_at: timestamp("email_verified_at"),
+        email_verification_token: text("email_verification_token").unique(),
         // Failed login tracking fields
         // Note: Consider adding CHECK constraint: failed_login_attempts >= 0
         // Note: Consider adding CHECK constraint: locked_until > last_failed_login_at when both are set
@@ -91,6 +116,9 @@ export const users = pgTable(
             dashboardConfigGinIndex: index("users_dashboard_config_gin_idx")
                 .on(table.dashboard_config)
                 .using(sql`gin`),
+            emailVerificationTokenIndex: index(
+                "users_email_verification_token_idx",
+            ).on(table.email_verification_token),
         };
     },
 );
@@ -229,9 +257,9 @@ export const familyMembers = pgTable(
         user_id: uuid("user_id")
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
-        role: text("role").notNull(), // e.g., 'manager', 'member'
+        role: familyRoleEnum("role").notNull().default("member"),
         created_at: timestamp("created_at").notNull().defaultNow(),
-        deleted_at: timestamp("deleted_at"),
+        deleted_at: timestamp("deleted_at"),  
     },
     (table) => {
         return {
@@ -258,7 +286,7 @@ export const familyInvitations = pgTable(
             .references(() => users.id, { onDelete: "cascade" }),
         invited_email: text("invited_email").notNull(),
         token: text("token").notNull().unique(),
-        status: text("status").notNull().default("pending"), // e.g., 'pending', 'accepted', 'declined'
+        status: invitationStatusEnum("status").notNull().default("pending"),
         expires_at: timestamp("expires_at").notNull(),
         created_at: timestamp("created_at").notNull().defaultNow(),
         updated_at: timestamp("updated_at")
@@ -331,7 +359,7 @@ export const userConsents = pgTable(
         user_id: uuid("user_id")
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
-        consent_type: text("consent_type").notNull(), // 'marketing', 'analytics', etc.
+        consent_type: consentTypeEnum("consent_type").notNull(),
         granted: boolean("granted").notNull(),
         granted_at: timestamp("granted_at").notNull().defaultNow(),
         revoked_at: timestamp("revoked_at"),
