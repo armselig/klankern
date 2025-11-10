@@ -815,7 +815,8 @@
         },
         "consent_type": {
           "name": "consent_type",
-          "type": "text",
+          "type": "consent_type",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         },
@@ -1233,6 +1234,16 @@
         "invitation",
         "session",
         "consent"
+      ]
+    },
+    "public.consent_type": {
+      "name": "consent_type",
+      "schema": "public",
+      "values": [
+        "marketing",
+        "analytics",
+        "data_processing",
+        "third_party_sharing"
       ]
     },
     "public.corkboard_post_type": {
