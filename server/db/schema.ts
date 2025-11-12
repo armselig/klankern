@@ -18,6 +18,7 @@ import {
     primaryKey,
     text,
     timestamp,
+    uniqueIndex,
     uuid,
 } from "drizzle-orm/pg-core";
 
@@ -113,9 +114,9 @@ export const users = pgTable(
             usernameIndex: index("users_username_idx").on(table.username),
             isActiveIndex: index("users_is_active_idx").on(table.is_active),
             createdAtIndex: index("users_created_at_idx").on(table.created_at),
-            dashboardConfigGinIndex: index("users_dashboard_config_gin_idx")
-                .on(table.dashboard_config)
-                .using(sql`gin`),
+            dashboardConfigGinIndex: index(
+                "users_dashboard_config_gin_idx",
+            ).using("gin", table.dashboard_config),
             emailVerificationTokenIndex: index(
                 "users_email_verification_token_idx",
             ).on(table.email_verification_token),
@@ -206,9 +207,10 @@ export const corkboardPosts = pgTable(
             familyTimelineIndex: index(
                 "corkboard_posts_family_timeline_idx",
             ).on(table.family_id, table.created_at),
-            dataGinIndex: index("corkboard_posts_data_gin_idx")
-                .on(table.data)
-                .using(sql`gin`),
+            dataGinIndex: index("corkboard_posts_data_gin_idx").using(
+                "gin",
+                table.data,
+            ),
             deletedAtIndex: index("corkboard_posts_deleted_at_idx").on(
                 table.deleted_at,
             ),
@@ -307,10 +309,11 @@ export const familyInvitations = pgTable(
                 table.family_id,
                 table.status,
             ),
-            uniquePendingInvitation: index("family_invitations_unique_pending")
+            uniquePendingInvitation: uniqueIndex(
+                "family_invitations_unique_pending",
+            )
                 .on(table.family_id, table.invited_email)
-                .where(sql`status = 'pending'`)
-                .unique(),
+                .where(sql`status = 'pending'`),
             deletedAtIndex: index("family_invitations_deleted_at_idx").on(
                 table.deleted_at,
             ),
