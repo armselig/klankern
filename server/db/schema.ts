@@ -11,21 +11,26 @@ import { relations, sql } from "drizzle-orm";
 import {
     boolean,
     index,
+    integer,
     jsonb,
     pgEnum,
     pgTable,
     primaryKey,
     text,
     timestamp,
-    uniqueIndex,
     uuid,
-    varchar,
 } from "drizzle-orm/pg-core";
 
 // Enums
 export const corkboardPostTypeEnum = pgEnum("corkboard_post_type", [
     "note",
     "photo",
+]);
+
+export const familyRoleEnum = pgEnum("family_role", [
+    "manager",
+    "member",
+    "viewer",
 ]);
 
 export const invitationStatusEnum = pgEnum("invitation_status", [
@@ -36,10 +41,30 @@ export const invitationStatusEnum = pgEnum("invitation_status", [
     "cancelled",
 ]);
 
-export const familyRoleEnum = pgEnum("family_role", [
-    "manager",
-    "member",
-    "viewer",
+export const auditActionEnum = pgEnum("audit_action", [
+    "create",
+    "update",
+    "delete",
+    "login",
+    "logout",
+    "export",
+    "anonymize",
+]);
+
+export const auditEntityTypeEnum = pgEnum("audit_entity_type", [
+    "user",
+    "family",
+    "corkboard_post",
+    "invitation",
+    "session",
+    "consent",
+]);
+
+export const consentTypeEnum = pgEnum("consent_type", [
+    "marketing",
+    "analytics",
+    "data_processing",
+    "third_party_sharing",
 ]);
 
 // Tables
@@ -47,8 +72,8 @@ export const roles = pgTable("roles", {
     id: uuid("id")
         .primaryKey()
         .default(sql`uuidv7()`),
-    name: varchar("name", { length: 50 }).notNull().unique(),
-    description: varchar("description", { length: 500 }),
+    name: text("name").notNull().unique(),
+    description: text("description"),
 });
 
 export const users = pgTable(
@@ -57,17 +82,26 @@ export const users = pgTable(
         id: uuid("id")
             .primaryKey()
             .default(sql`uuidv7()`),
-        email: varchar("email", { length: 255 }).notNull().unique(),
-        username: varchar("username", { length: 50 }).notNull().unique(),
-        display_name: varchar("display_name", { length: 100 }),
+        email: text("email").notNull().unique(),
+        username: text("username").notNull().unique(),
+        display_name: text("display_name"),
         password: text("password").notNull(),
-        first_name: varchar("first_name", { length: 100 }),
-        last_name: varchar("last_name", { length: 100 }),
+        first_name: text("first_name"),
+        last_name: text("last_name"),
         is_active: boolean("is_active").default(true),
+        dashboard_config: jsonb("dashboard_config"), // JSONB for dashboard preferences
+        // Email verification fields
         email_verified: boolean("email_verified").default(false),
         email_verified_at: timestamp("email_verified_at"),
         email_verification_token: text("email_verification_token").unique(),
-        dashboard_config: jsonb("dashboard_config"), // JSONB for dashboard preferences
+        // Failed login tracking fields
+        // Note: Consider adding CHECK constraint: failed_login_attempts >= 0
+        // Note: Consider adding CHECK constraint: locked_until > last_failed_login_at when both are set
+        failed_login_attempts: integer("failed_login_attempts").default(0),
+        last_failed_login_at: timestamp("last_failed_login_at"),
+        locked_until: timestamp("locked_until"),
+        // GDPR compliance field
+        anonymized_at: timestamp("anonymized_at"),
         created_at: timestamp("created_at").notNull().defaultNow(),
         updated_at: timestamp("updated_at")
             .notNull()
@@ -79,13 +113,12 @@ export const users = pgTable(
             usernameIndex: index("users_username_idx").on(table.username),
             isActiveIndex: index("users_is_active_idx").on(table.is_active),
             createdAtIndex: index("users_created_at_idx").on(table.created_at),
+            dashboardConfigGinIndex: index("users_dashboard_config_gin_idx")
+                .on(table.dashboard_config)
+                .using(sql`gin`),
             emailVerificationTokenIndex: index(
                 "users_email_verification_token_idx",
             ).on(table.email_verification_token),
-            // GIN index for JSONB dashboard_config field
-            dashboardConfigGinIndex: index("users_dashboard_config_gin_idx")
-                .using("gin", table.dashboard_config)
-                .concurrently(),
         };
     },
 );
@@ -99,10 +132,6 @@ export const userRoles = pgTable(
         role_id: uuid("role_id")
             .notNull()
             .references(() => roles.id, { onDelete: "cascade" }),
-        created_at: timestamp("created_at").notNull().defaultNow(),
-        updated_at: timestamp("updated_at")
-            .notNull()
-            .default(sql`now()`),
     },
     (table) => {
         return {
@@ -125,6 +154,11 @@ export const sessions = pgTable(
         token: text("token").notNull().unique(),
         expires_at: timestamp("expires_at").notNull(),
         created_at: timestamp("created_at").notNull().defaultNow(),
+        // Session metadata tracking fields
+        ip_address: text("ip_address"),
+        user_agent: text("user_agent"),
+        last_activity_at: timestamp("last_activity_at"),
+        device_fingerprint: text("device_fingerprint"),
     },
     (table) => {
         return {
@@ -133,15 +167,10 @@ export const sessions = pgTable(
             expiresAtIndex: index("sessions_expires_at_idx").on(
                 table.expires_at,
             ),
-            // Composite index for active sessions per user
-            userActiveSessionsIndex: index("sessions_user_active_idx")
-                .on(table.user_id, table.expires_at)
-                .concurrently(),
-            // Partial index for active sessions only
-            activeSessionsIndex: index("sessions_active_idx")
-                .on(table.expires_at)
-                .where(sql`${table.expires_at} > now()`)
-                .concurrently(),
+            userActiveSessionsIndex: index("sessions_user_active_idx").on(
+                table.user_id,
+                table.expires_at,
+            ),
         };
     },
 );
@@ -174,20 +203,15 @@ export const corkboardPosts = pgTable(
             createdAtIndex: index("corkboard_posts_created_at_idx").on(
                 table.created_at,
             ),
+            familyTimelineIndex: index(
+                "corkboard_posts_family_timeline_idx",
+            ).on(table.family_id, table.created_at),
+            dataGinIndex: index("corkboard_posts_data_gin_idx")
+                .on(table.data)
+                .using(sql`gin`),
             deletedAtIndex: index("corkboard_posts_deleted_at_idx").on(
                 table.deleted_at,
             ),
-            // Composite index for family timeline queries
-            // Note: PostgreSQL can scan indexes backward efficiently, so explicit DESC
-            // ordering is not required. Queries with ORDER BY created_at DESC will
-            // still benefit from this index.
-            familyTimelineIndex: index("corkboard_posts_family_timeline_idx")
-                .on(table.family_id, table.created_at)
-                .concurrently(),
-            // GIN index for JSONB data field
-            dataGinIndex: index("corkboard_posts_data_gin_idx")
-                .using("gin", table.data)
-                .concurrently(),
         };
     },
 );
@@ -198,7 +222,7 @@ export const families = pgTable(
         id: uuid("id")
             .primaryKey()
             .default(sql`uuidv7()`),
-        name: varchar("name", { length: 100 }).notNull(),
+        name: text("name").notNull(),
         creator_id: uuid("creator_id")
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
@@ -216,11 +240,11 @@ export const families = pgTable(
             deletedAtIndex: index("families_deleted_at_idx").on(
                 table.deleted_at,
             ),
-            // Partial index for active families only
-            activeFamiliesIndex: index("families_active_idx")
+            activeFamiliesByCreationIndex: index(
+                "families_active_by_creation_idx",
+            )
                 .on(table.created_at)
-                .where(sql`${table.deleted_at} IS NULL`)
-                .concurrently(),
+                .where(sql`deleted_at IS NULL`),
         };
     },
 );
@@ -236,9 +260,6 @@ export const familyMembers = pgTable(
             .references(() => users.id, { onDelete: "cascade" }),
         role: familyRoleEnum("role").notNull().default("member"),
         created_at: timestamp("created_at").notNull().defaultNow(),
-        updated_at: timestamp("updated_at")
-            .notNull()
-            .default(sql`now()`),
         deleted_at: timestamp("deleted_at"),
     },
     (table) => {
@@ -264,7 +285,7 @@ export const familyInvitations = pgTable(
         invited_by_user_id: uuid("invited_by_user_id")
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
-        invited_email: varchar("invited_email", { length: 255 }).notNull(),
+        invited_email: text("invited_email").notNull(),
         token: text("token").notNull().unique(),
         status: invitationStatusEnum("status").notNull().default("pending"),
         expires_at: timestamp("expires_at").notNull(),
@@ -282,24 +303,75 @@ export const familyInvitations = pgTable(
             invitedEmailIndex: index("family_invitations_invited_email_idx").on(
                 table.invited_email,
             ),
+            familyStatusIndex: index("family_invitations_family_status_idx").on(
+                table.family_id,
+                table.status,
+            ),
+            uniquePendingInvitation: index("family_invitations_unique_pending")
+                .on(table.family_id, table.invited_email)
+                .where(sql`status = 'pending'`)
+                .unique(),
             deletedAtIndex: index("family_invitations_deleted_at_idx").on(
                 table.deleted_at,
             ),
-            // Composite index for pending family invitations
-            familyStatusIndex: index("family_invitations_family_status_idx")
-                .on(table.family_id, table.status)
-                .concurrently(),
-            // Partial index for pending invitations only
-            pendingInvitationsIndex: index("family_invitations_pending_idx")
-                .on(table.family_id, table.invited_email)
-                .where(sql`${table.status} = 'pending'`)
-                .concurrently(),
-            // Unique constraint to prevent duplicate pending invitations
-            uniquePendingInvitation: uniqueIndex(
-                "family_invitations_unique_pending",
-            )
-                .on(table.family_id, table.invited_email)
-                .where(sql`status = 'pending'`),
+        };
+    },
+);
+
+// Audit Log Table
+export const auditLog = pgTable(
+    "audit_log",
+    {
+        id: uuid("id")
+            .primaryKey()
+            .default(sql`uuidv7()`),
+        user_id: uuid("user_id").references(() => users.id, {
+            onDelete: "set null",
+        }),
+        action: auditActionEnum("action").notNull(),
+        entity_type: auditEntityTypeEnum("entity_type").notNull(),
+        entity_id: uuid("entity_id").notNull(),
+        old_values: jsonb("old_values"),
+        new_values: jsonb("new_values"),
+        ip_address: text("ip_address"),
+        user_agent: text("user_agent"),
+        created_at: timestamp("created_at").notNull().defaultNow(),
+    },
+    (table) => {
+        return {
+            userIdIndex: index("audit_log_user_id_idx").on(table.user_id),
+            entityTypeIndex: index("audit_log_entity_type_idx").on(
+                table.entity_type,
+            ),
+            entityIdIndex: index("audit_log_entity_id_idx").on(table.entity_id),
+            createdAtIndex: index("audit_log_created_at_idx").on(
+                table.created_at,
+            ),
+        };
+    },
+);
+
+// User Consents Table (GDPR)
+export const userConsents = pgTable(
+    "user_consents",
+    {
+        id: uuid("id")
+            .primaryKey()
+            .default(sql`uuidv7()`),
+        user_id: uuid("user_id")
+            .notNull()
+            .references(() => users.id, { onDelete: "cascade" }),
+        consent_type: consentTypeEnum("consent_type").notNull(),
+        granted: boolean("granted").notNull(),
+        granted_at: timestamp("granted_at").notNull().defaultNow(),
+        revoked_at: timestamp("revoked_at"),
+    },
+    (table) => {
+        return {
+            userIdIndex: index("user_consents_user_id_idx").on(table.user_id),
+            consentTypeIndex: index("user_consents_consent_type_idx").on(
+                table.consent_type,
+            ),
         };
     },
 );
@@ -314,6 +386,8 @@ export const usersRelations = relations(users, ({ many }) => ({
     sentFamilyInvitations: many(familyInvitations, {
         relationName: "inviter",
     }),
+    auditLogs: many(auditLog),
+    consents: many(userConsents),
 }));
 
 export const rolesRelations = relations(roles, ({ many }) => ({
@@ -385,3 +459,17 @@ export const familyInvitationsRelations = relations(
         }),
     }),
 );
+
+export const auditLogRelations = relations(auditLog, ({ one }) => ({
+    user: one(users, {
+        fields: [auditLog.user_id],
+        references: [users.id],
+    }),
+}));
+
+export const userConsentsRelations = relations(userConsents, ({ one }) => ({
+    user: one(users, {
+        fields: [userConsents.user_id],
+        references: [users.id],
+    }),
+}));

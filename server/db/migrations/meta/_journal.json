@@ -64,6 +64,27 @@
             "when": 1762437165727,
             "tag": "0008_acoustic_lady_mastermind",
             "breakpoints": true
+        },
+        {
+            "idx": 9,
+            "version": "7",
+            "when": 1762523257589,
+            "tag": "0009_flippant_human_robot",
+            "breakpoints": true
+        },
+        {
+            "idx": 10,
+            "version": "7",
+            "when": 1762525174740,
+            "tag": "0010_restore_email_verification",
+            "breakpoints": true
+        },
+        {
+            "idx": 11,
+            "version": "7",
+            "when": 1762525174741,
+            "tag": "0011_add_consent_type_enum",
+            "breakpoints": true
         }
     ]
 }

@@ -1,12 +1,21 @@
+<!--
+Suggestions for improvement:
+- Add a screenshot or GIF of the application in action below.
+- Update the placeholder badges with actual URLs from your CI/CD provider.
+-->
+
 # 🏡 Klankern: Your Family's Digital Hub
 
 Welcome to Klankern, a Progressive Web App (PWA) designed to bring families closer and keep them organized! 🚀 This project aims to provide a central, intuitive platform for managing shared tasks, appointments, and notes, fostering seamless collaboration and simplifying daily family life.
 
-![Nuxt.js](https://img.shields.io/badge/Nuxt.js-4.x-00DC82?style=for-the-badge&logo=nuxt.js&logoColor=white)
-![Node.js](https://img.shields.io/badge/Node.js-20.x-339933?style=for-the-badge&logo=node.js&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18.x-316192?style=for-the-badge&logo=postgresql&logoColor=white)
-![Drizzle ORM](https://img.shields.io/badge/Drizzle_ORM-0.44.x-F3722C?style=for-the-badge&logo=drizzle&logoColor=white)
-![pnpm](https://img.shields.io/badge/pnpm-10.x-F69220?style=for-the-badge&logo=pnpm&logoColor=white)
+<!-- BADGE PLACEHOLDERS - UPDATE WITH ACTUAL URLS -->
+<p align="left">
+    <img src="https://img.shields.io/badge/Nuxt.js-4.x-00DC82?style=for-the-badge&logo=nuxt.js&logoColor=white" alt="Nuxt.js">
+    <img src="https://img.shields.io/badge/Node.js-20.x-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js">
+    <img src="https://img.shields.io/badge/PostgreSQL-18.x-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL">
+    <img src="https://img.shields.io/badge/Drizzle_ORM-0.44.x-F3722C?style=for-the-badge&logo=drizzle&logoColor=white" alt="Drizzle ORM">
+    <img src="https://img.shields.io/badge/pnpm-10.x-F69220?style=for-the-badge&logo=pnpm&logoColor=white" alt="pnpm">
+</p>
 
 ## ✨ Features
 
@@ -38,222 +47,157 @@ Klankern is built with modern, efficient, and developer-friendly technologies:
 
 ## 🚀 Getting Started
 
-You can set up your development environment in two ways: **fully containerized** (recommended for consistency) or **traditional local setup** (for more control).
+This guide will help you set up your development environment. We recommend the **fully containerized** approach for consistency.
 
-### Option 1: Fully Containerized Development (Recommended)
+### Prerequisites
 
-This setup runs both the Nuxt application and PostgreSQL database in containers, ensuring a consistent environment across all developers.
+- **Podman & Podman-Compose:** For container management.
+- **pnpm:** Our preferred package manager.
+- **Node.js:** We recommend the LTS version specified in `.nvmrc`.
 
-1. **Install Tools:**
-    - Ensure you have `podman` and `podman-compose` installed on your system.
+### Default Test Users
 
-2. **Environment Variables:**
-    - Copy the example environment file:
+The database seed script creates the following default users:
 
-        ```bash
-        cp .env.example .env
-        ```
+- **Admin User:**
+    - **Email:** `admin@example.com`
+    - **Password:** `password123`
+- **Standard Test User (for E2E tests):**
+    - **Email:** `user@example.com`
+    - **Password:** `password123`
 
-    - Open `.env` and update the values as needed. The default values work out-of-the-box for containerized development.
+### Setup: Fully Containerized (Recommended)
 
-3. **Start All Services:**
-    - Build and start both the database and Nuxt application containers:
+This setup runs both the Nuxt application and PostgreSQL database in containers.
 
-        ```bash
-        pnpm run dev:container
-        ```
+1. **Environment Variables:**
+   Copy the example environment file and update it if needed. The defaults are configured for this setup.
 
-        Or with forced rebuild:
+    ```bash
+    cp .env.example .env
+    ```
 
-        ```bash
-        pnpm run dev:container:build
-        ```
+2. **Start Services:**
+   Build and start the containers. The first build may take a few minutes.
 
-    - The first build may take a few minutes as dependencies are installed inside the container.
+    ```bash
+    pnpm run dev:container
+    ```
 
-4. **Run Database Migrations:**
-    - Execute migrations inside the running Nuxt container:
+    To force a rebuild, use `pnpm run dev:container:build`.
 
-        ```bash
-        pnpm run db:migrate:container
-        ```
+3. **Run Database Migrations:**
+   Execute migrations inside the running Nuxt container.
 
-5. **Access the Application:**
-    - Your app will be available at `http://localhost:3000`
-    - The database is accessible at `localhost:5432`
+    ```bash
+    pnpm run db:migrate:container
+    ```
 
-6. **Useful Container Commands:**
-    - View logs: `pnpm run dev:container:logs`
-    - Restart Nuxt container: `pnpm run dev:container:restart`
-    - Open shell in container: `pnpm run dev:container:shell`
-    - Stop all containers: `pnpm run dev:container:stop`
-    - Seed database: `pnpm run db:seed:container`
+4. **Access the Application:**
+    - **App:** `http://localhost:3000`
+    - **Database:** `localhost:5432`
 
-**Note:** Your source code is bind-mounted into the container, so changes you make locally are immediately reflected in the running application with hot-reloading enabled.
+Your source code is bind-mounted, so local changes will trigger hot-reloading in the container.
 
-### Option 2: Traditional Local Development
+### Setup: Traditional Local Development
 
-This setup runs the Nuxt application locally on your machine while using a containerized PostgreSQL database.
+This setup runs Nuxt locally and uses a container for the PostgreSQL database.
 
-1. **Install Tools:**
-    - Ensure you have `pnpm` (our preferred package manager) and `podman` (for database containerization) installed on your system.
-    - We recommend using Node.js LTS. Check `.nvmrc` for the recommended version.
-
-2. **Install Dependencies:**
+1. **Install Dependencies:**
 
     ```bash
     pnpm install
     ```
 
-3. **Environment Variables:**
-    - Copy the example environment file:
+2. **Environment Variables:**
+   Copy the `.env.example` file and ensure `DB_HOST=localhost`.
 
-        ```bash
-        cp .env.example .env
-        ```
+    ```bash
+    cp .env.example .env
+    ```
 
-    - Open `.env` and ensure `DB_HOST=localhost` (default for local development).
+3. **Start Database & Migrate:**
 
-4. **Start Database:**
-    - Spin up only the PostgreSQL database container:
+    ```bash
+    pnpm run db:start
+    pnpm run db:migrate
+    ```
 
-        ```bash
-        pnpm run db:start
-        ```
+4. **Start Development Server:**
 
-    - Run database migrations to set up the schema:
+    ```bash
+    pnpm run dev
+    ```
 
-        ```bash
-        pnpm run db:migrate
-        ```
+## 👨‍💻 Development Scripts
 
-    - To stop the database: `pnpm run db:stop`
+All `pnpm run` scripts can be executed directly in a local setup. For a containerized setup, prefix commands with `podman exec klankern_nuxt`, or use the dedicated container scripts.
 
-## 👨‍💻 Development
+### Container Management
 
-### Container Management Scripts
+- `pnpm run dev:container`: Start all services (DB + Nuxt).
+- `pnpm run dev:container:build`: Rebuild and start all services.
+- `pnpm run dev:container:stop`: Stop all containers.
+- `pnpm run dev:container:restart`: Restart the Nuxt container.
+- `pnpm run dev:container:logs`: View Nuxt application logs.
+- `pnpm run dev:container:shell`: Open a shell inside the Nuxt container.
+- `pnpm run db:start` / `db:stop`: Start/stop the database container only.
 
-These scripts simplify working with the containerized environment:
+### Database & Application
 
-- `pnpm run dev:container`: Start all services (database + Nuxt)
-- `pnpm run dev:container:build`: Rebuild and start all services
-- `pnpm run dev:container:stop`: Stop all containers
-- `pnpm run dev:container:restart`: Restart the Nuxt container only
-- `pnpm run dev:container:logs`: View live Nuxt application logs
-- `pnpm run dev:container:shell`: Open an interactive shell in the Nuxt container
-- `pnpm run db:start`: Start only the PostgreSQL database container
-- `pnpm run db:stop`: Stop the PostgreSQL database container
-- `pnpm run db:migrate:container`: Run database migrations inside the container
-- `pnpm run db:seed:container`: Seed the database inside the container
-
-### Application Development Scripts
-
-**For Traditional Local Setup:**
-
-- `pnpm run dev`: Starts the development server with hot-reloading. Your app will typically be available at `http://localhost:3000`.
-- `pnpm run build`: Builds the application for production deployment.
-- `pnpm run preview`: Previews the production build locally.
-- `pnpm run db:generate`: Generates new Drizzle ORM migrations after schema changes in `server/db/schema.ts`.
-- `pnpm run db:migrate`: Applies pending database migrations.
-- `pnpm run db:seed`: Seeds the database with initial data (if a seed file exists).
-
-**For Containerized Setup:**
-
-The Nuxt dev server runs automatically inside the container when you start it with `pnpm run dev:container`. All development scripts are available through the dedicated container commands listed above. For ad-hoc commands not covered by npm scripts, use:
-
-- `podman exec klankern_nuxt pnpm run <script-name>`
+- `pnpm run dev`: Start the Nuxt dev server.
+- `pnpm run build`: Build the application for production.
+- `pnpm run db:generate`: Create a new migration from schema changes.
+- `pnpm run db:migrate`: Apply pending migrations.
+- `pnpm run db:seed`: Seed the database with test data.
+- `pnpm run test`: Run all unit and Nuxt tests.
+- `pnpm run lint`: Check for linting errors.
+- `pnpm run format`: Format the codebase with Prettier.
 
 ## 🧪 Testing
 
-We use [Vitest](https://vitest.dev/) with [`@nuxt/test-utils`](https://nuxt.com/docs/getting-started/testing) for comprehensive testing.
+We use [Vitest](https://vitest.dev/) with [`@nuxt/test-utils`](https://nuxt.com/docs/getting-started/testing).
 
-### Test Environments
+- **`unit`**: For isolated unit tests (`test/unit/`).
+- **`nuxt`**: For tests requiring the Nuxt runtime context (`test/nuxt/`).
 
-- **`unit`**: For simple, isolated unit tests that run in a standard Node.js environment. Place these in `test/unit/`.
-- **`nuxt`**: For tests requiring the Nuxt runtime context (e.g., components, composables, server utilities). **Place these in `test/nuxt/`.**
+**Run tests locally:**
 
-### Running Tests
+- `pnpm run test`: Runs all tests.
+- `pnpm run test:nuxt`: Runs only Nuxt environment tests.
+- `pnpm run test:ui`: Opens the Vitest UI.
 
-**Traditional Local Setup:**
+**Run tests in container:**
 
-- `pnpm run test`: Runs all tests (unit and Nuxt).
-- `pnpm run test:nuxt`: Runs only tests in the `nuxt` environment.
-- `pnpm run test:ui`: Starts the Vitest UI for interactive test development.
+- `podman exec klankern_nuxt pnpm run test`
 
-**Containerized Setup:**
+## 🤝 Contributing
 
-- `podman exec klankern_nuxt pnpm run test`: Runs all tests inside the container.
-- `podman exec klankern_nuxt pnpm run test:nuxt`: Runs only tests in the `nuxt` environment.
-- `podman exec klankern_nuxt pnpm run test:ui`: Starts the Vitest UI (accessible at the exposed port).
+We welcome contributions! Please follow these steps:
 
-## 🗄️ Database Management
+1. **Open an Issue:** Discuss the change you wish to make.
+2. **Fork & Branch:** Create a new branch for your feature or bugfix.
+3. **Develop:** Adhere to the [Coding Guidelines](#-coding-guidelines) and [Version Control](#-version-control) practices.
+4. **Submit a Pull Request:** Ensure your PR is well-documented and references the original issue.
 
-- **Schema Definition:** Located in `server/db/schema.ts`.
-
-**Traditional Local Setup:**
-
-- **Generate Migrations:** After modifying `server/db/schema.ts`, run `pnpm run db:generate` to create a new migration file.
-- **Apply Migrations:** To apply pending migrations to your database, use `pnpm run db:migrate`.
-- **Seed Database:** Populate the database with initial test data using `pnpm run db:seed`.
-
-**Containerized Setup:**
-
-- **Generate Migrations:** `podman exec klankern_nuxt pnpm run db:generate`
-- **Apply Migrations:** `pnpm run db:migrate:container`
-- **Seed Database:** `pnpm run db:seed:container`
-
-## 🧹 Linting and Formatting
-
-Maintain code quality and consistency with:
-
-- `pnpm run lint`: Lints the entire codebase to catch errors and style violations.
-- `pnpm run lint:fix`: Automatically fixes linting issues where possible.
-- `pnpm run format`: Formats the entire codebase using Prettier.
-
-## 📜 Version Control
-
-- **Commit Messages:** Please adhere to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for all commit messages. This helps with automated changelog generation and understanding project history.
-- **Branches**:
-    - **NEVER** push to `main` directly! It is the production branch. Only PRs from `develop` are allowed to go into `main`.
-    - All development happens in `develop`.
-    - If a task is more complex or might introduce breaking changes, it will be handled in a separate branch derived from `develop`. Naming convention: `type/brief-task-description`. Examples: `feature/add-pwa-functionality`, `bugfix/repair-broken-event-bus`. A PR to merge into `develop` is required.
-
-## 🔑 Default Admin Login
-
-For local development and testing, you can use the following credentials:
-
-- **Email:** `test@example.com`
-- **Password:** `password123`
-
-## 🔑 Default Test User Login
-
-For E2E testing and general user-level feature development, you can use the following credentials:
-
-- **Email:** `user@example.com`
-- **Password:** `password123`
+For more detailed instructions, especially for AI agents, please see [AGENTS.md](./AGENTS.md).
 
 ## ✍️ Coding Guidelines
 
-To ensure a consistent, maintainable, and high-quality codebase, please follow these guidelines:
+- **Naming:** Use descriptive names (e.g., `createUser`) and avoid generics.
+- **Documentation:** Add JSDoc/TSDoc to explain the _why_ of your code.
+- **Typing:** Use TypeScript and shared types for consistency.
+- **Separation of Concerns:** Keep business logic out of UI components.
+- **Exports:** Prefer named exports over default exports.
+- **Logging:** Use the `Winston` logger on the server and the `useLogger` composable on the client. No `console.log`!
 
-### General
+## 🗄️ Version Control
 
-- **Naming Conventions:** Function and method names should clearly describe their purpose (e.g., `createUser`, `fetchProductById`), avoiding generic names like `handleData`.
-- **Documentation:** Add JSDoc/TSDoc comments to explain the _why_ behind a function's existence or complex implementation details. The _how_ should be clear from the code itself.
-- **Typing:** Always use proper TypeScript typing and share types/interfaces across the project for consistency.
-- **Component IDs:** Use BEM-inspired naming for component IDs (e.g., `component-name__element-name`) to prevent conflicts.
-- **Separation of Concerns:** Keep presentational logic separate from business logic. UI components should not directly handle API calls or complex data manipulation.
-- **Exports:** Prefer explicit named exports over default exports.
-
-### Frontend Specific
-
-- **Progressive Enhancement:** When building components, start with semantic HTML (WCAG compliant) first. Add JavaScript/TypeScript functionality next. Address CSS/styles only when necessary, focusing on functionality before aesthetics.
-
-### Project-Specific Nuxt Guidelines
-
-- **Server-Side Logging:** Always use the `Winston` logger for server-side logging. Direct `console.log` usage is prohibited on the server.
-- **Client-Side Logging:** Always use the `useLogger` composable for client-side logging. Direct `console.log` usage is prohibited in the frontend.
-- **Authentication:** We use `nuxt-security` and `nuxt-auth-utils`. Server-side utilities like `setUserSession` are auto-imported in the `server/` directory. Login/logout logic is handled by the `useAuth` composable.
+- **Commits:** Follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification.
+- **Branches:**
+    - `main`: Production branch. Do not push directly.
+    - `develop`: Main development branch. All feature branches merge into this.
+    - `feature/*` or `bugfix/*`: Create branches from `develop` for new work.
 
 ---
 
