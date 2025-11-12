@@ -9,17 +9,18 @@
 
 import { relations, sql } from "drizzle-orm";
 import {
-    boolean,
-    index,
-    integer,
-    jsonb,
     pgEnum,
     pgTable,
-    primaryKey,
-    text,
     timestamp,
-    uniqueIndex,
+    text,
+    primaryKey,
+    integer,
+    boolean,
+    varchar,
     uuid,
+    jsonb,
+    index,
+    uniqueIndex,
 } from "drizzle-orm/pg-core";
 
 // Enums
@@ -73,8 +74,8 @@ export const roles = pgTable("roles", {
     id: uuid("id")
         .primaryKey()
         .default(sql`uuidv7()`),
-    name: text("name").notNull().unique(),
-    description: text("description"),
+    name: varchar("name", { length: 50 }).notNull().unique(),
+    description: varchar("description", { length: 500 }).notNull(),
 });
 
 export const users = pgTable(
@@ -83,12 +84,12 @@ export const users = pgTable(
         id: uuid("id")
             .primaryKey()
             .default(sql`uuidv7()`),
-        email: text("email").notNull().unique(),
-        username: text("username").notNull().unique(),
-        display_name: text("display_name"),
+        email: varchar("email", { length: 255 }).notNull().unique(),
+        username: varchar("username", { length: 50 }).notNull().unique(),
+        display_name: varchar("display_name", { length: 100 }),
         password: text("password").notNull(),
-        first_name: text("first_name"),
-        last_name: text("last_name"),
+        first_name: varchar("first_name", { length: 100 }),
+        last_name: varchar("last_name", { length: 100 }),
         is_active: boolean("is_active").default(true),
         dashboard_config: jsonb("dashboard_config"), // JSONB for dashboard preferences
         // Email verification fields
@@ -224,7 +225,7 @@ export const families = pgTable(
         id: uuid("id")
             .primaryKey()
             .default(sql`uuidv7()`),
-        name: text("name").notNull(),
+        name: varchar("name", { length: 100 }).notNull(),
         creator_id: uuid("creator_id")
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
@@ -287,7 +288,7 @@ export const familyInvitations = pgTable(
         invited_by_user_id: uuid("invited_by_user_id")
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
-        invited_email: text("invited_email").notNull(),
+        invited_email: varchar("invited_email", { length: 255 }).notNull(),
         token: text("token").notNull().unique(),
         status: invitationStatusEnum("status").notNull().default("pending"),
         expires_at: timestamp("expires_at").notNull(),

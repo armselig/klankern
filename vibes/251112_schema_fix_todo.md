@@ -1,0 +1,5 @@
+- [x] Update the schema.ts file to use `varchar` with appropriate lengths
+- [ ] Create a new migration to alter these columns from text to varchar (Not needed, already done by previous migrations)
+- [ ] Apply the migration (Already applied)
+- [ ] Re-run tests (Still failing, likely caching issue)
+- [ ] Investigate why tests are not picking up the updated schema.ts file
