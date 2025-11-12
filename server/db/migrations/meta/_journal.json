@@ -1,90 +1,90 @@
 {
-    "version": "7",
-    "dialect": "postgresql",
+    "version": "5",
+    "dialect": "pg",
     "entries": [
         {
             "idx": 0,
-            "version": "7",
-            "when": 1759778404604,
+            "version": "5",
+            "when": 1762437165700,
             "tag": "0000_plain_the_fury",
-            "breakpoints": true
+            "breakpoints": false
         },
         {
             "idx": 1,
-            "version": "7",
-            "when": 1759842468492,
+            "version": "5",
+            "when": 1762437165710,
             "tag": "0001_optimal_pestilence",
-            "breakpoints": true
+            "breakpoints": false
         },
         {
             "idx": 2,
-            "version": "7",
-            "when": 1759862956493,
+            "version": "5",
+            "when": 1762437165720,
             "tag": "0002_elite_firebird",
-            "breakpoints": true
+            "breakpoints": false
         },
         {
             "idx": 3,
-            "version": "7",
-            "when": 1759916120260,
+            "version": "5",
+            "when": 1762437165730,
             "tag": "0003_amused_jack_flag",
-            "breakpoints": true
+            "breakpoints": false
         },
         {
             "idx": 4,
-            "version": "7",
-            "when": 1762462399245,
+            "version": "5",
+            "when": 1762437165740,
             "tag": "0004_shocking_molecule_man",
-            "breakpoints": true
+            "breakpoints": false
         },
         {
             "idx": 5,
-            "version": "7",
-            "when": 1762437140496,
+            "version": "5",
+            "when": 1762437165750,
             "tag": "0005_needy_black_cat",
-            "breakpoints": true
+            "breakpoints": false
         },
         {
             "idx": 6,
-            "version": "7",
-            "when": 1762437200000,
+            "version": "5",
+            "when": 1762437165760,
             "tag": "0006_add_updated_at_triggers",
-            "breakpoints": true
+            "breakpoints": false
         },
         {
             "idx": 7,
-            "version": "7",
-            "when": 1762469089980,
+            "version": "5",
+            "when": 1762437165770,
             "tag": "0007_mysterious_sasquatch",
-            "breakpoints": true
+            "breakpoints": false
         },
         {
             "idx": 8,
-            "version": "7",
-            "when": 1762437165727,
+            "version": "5",
+            "when": 1762437165780,
             "tag": "0008_acoustic_lady_mastermind",
-            "breakpoints": true
+            "breakpoints": false
         },
         {
             "idx": 9,
-            "version": "7",
-            "when": 1762523257589,
+            "version": "5",
+            "when": 1762437165790,
             "tag": "0009_flippant_human_robot",
-            "breakpoints": true
+            "breakpoints": false
         },
         {
             "idx": 10,
-            "version": "7",
-            "when": 1762525174740,
-            "tag": "0010_restore_email_verification",
-            "breakpoints": true
+            "version": "5",
+            "when": 1762462399245,
+            "tag": "0010_soft_delete_users",
+            "breakpoints": false
         },
         {
             "idx": 11,
-            "version": "7",
-            "when": 1762525174741,
-            "tag": "0011_add_consent_type_enum",
-            "breakpoints": true
+            "version": "5",
+            "when": 1762462399246,
+            "tag": "0011_add_user_login_attempts",
+            "breakpoints": false
         }
     ]
 }

@@ -21,6 +21,15 @@ describe("Database Schema Enhancements", () => {
             .delete(userConsents)
             .where(eq(userConsents.user_id, testUserId));
         await db.delete(auditLog).where(eq(auditLog.user_id, testUserId));
+        // Add cleanup for audit logs with null user_id
+        await db
+            .delete(auditLog)
+            .where(
+                and(
+                    eq(auditLog.entity_id, testUserId),
+                    isNull(auditLog.user_id),
+                ),
+            );
         await db.delete(users).where(eq(users.id, testUserId));
     });
 
@@ -31,6 +40,15 @@ describe("Database Schema Enhancements", () => {
             .delete(userConsents)
             .where(eq(userConsents.user_id, testUserId));
         await db.delete(auditLog).where(eq(auditLog.user_id, testUserId));
+        // Add cleanup for audit logs with null user_id
+        await db
+            .delete(auditLog)
+            .where(
+                and(
+                    eq(auditLog.entity_id, testUserId),
+                    isNull(auditLog.user_id),
+                ),
+            );
         await db.delete(users).where(eq(users.id, testUserId));
     });
 

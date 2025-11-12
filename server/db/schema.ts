@@ -134,6 +134,12 @@ export const userRoles = pgTable(
         role_id: uuid("role_id")
             .notNull()
             .references(() => roles.id, { onDelete: "cascade" }),
+        created_at: timestamp("created_at", { withTimezone: true })
+            .notNull()
+            .defaultNow(),
+        updated_at: timestamp("updated_at", { withTimezone: true })
+            .notNull()
+            .defaultNow(),
     },
     (table) => {
         return {
@@ -263,6 +269,9 @@ export const familyMembers = pgTable(
             .references(() => users.id, { onDelete: "cascade" }),
         role: familyRoleEnum("role").notNull().default("member"),
         created_at: timestamp("created_at").notNull().defaultNow(),
+        updated_at: timestamp("updated_at", { withTimezone: true })
+            .notNull()
+            .defaultNow(),
         deleted_at: timestamp("deleted_at"),
     },
     (table) => {
