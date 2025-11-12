@@ -76,14 +76,14 @@
             "idx": 10,
             "version": "5",
             "when": 1762462399245,
-            "tag": "0010_soft_delete_users",
+            "tag": "0010_restore_email_verification",
             "breakpoints": false
         },
         {
             "idx": 11,
             "version": "5",
             "when": 1762462399246,
-            "tag": "0011_add_user_login_attempts",
+            "tag": "0011_add_consent_type_enum",
             "breakpoints": false
         }
     ]
