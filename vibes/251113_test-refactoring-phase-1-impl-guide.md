@@ -19,12 +19,76 @@ The goal of this phase is to build the foundational components required for runn
 
 ### Checklist
 
-- [ ] Create `test/utils/db.ts` for the transaction wrapper.
-- [ ] Create `test/utils/fixtures.ts` for data factories.
-- [ ] Create `test/utils/auth.ts` for authentication helpers.
-- [ ] Create a test-only login endpoint.
-- [ ] Configure Vitest `setupFiles` to use the new helpers.
-- [ ] Create temporary tests for all new helper functions (withTestTransaction, db, fixtures, auth) to ensure they work as expected.
+- [x] Create `test/utils/db.ts` for the transaction wrapper.
+- [x] Create `test/utils/fixtures.ts` for data factories.
+- [x] Create `test/utils/auth.ts` for authentication helpers.
+- [x] Create a test-only login endpoint.
+- [x] Configure Vitest `setupFiles` to use the new helpers.
+- [x] Create temporary tests for all new helper functions (withTestTransaction, db, fixtures, auth) to ensure they work as expected.
+
+**Status:** ✅ Phase 1 Complete (2025-11-13)
+
+- All files created and pass typecheck
+- All files pass linter
+- Comprehensive test suite created in `test/nuxt/utils.spec.ts`
+- **All 125 tests passing** (4 Phase 1 tests + 121 existing tests)
+
+### Critical Learnings & Implementation Notes
+
+**1. Drizzle Transaction Rollback Handling**
+
+- Calling `tx.rollback()` throws a `DrizzleError` with message "Rollback"
+- This is expected behavior - must catch and ignore this specific error
+- Implementation pattern:
+
+```typescript
+try {
+    await db.transaction(async (tx) => {
+        await testFn(tx);
+        tx.rollback(); // Throws "Rollback" error
+    });
+} catch (error) {
+    if (error instanceof Error && error.message !== "Rollback") {
+        throw error; // Re-throw non-rollback errors
+    }
+}
+```
+
+**2. Environment Variable Configuration**
+
+- `.env.test` must use `override: true` in dotenv config to override `.env` values
+- Critical for database host: `.env` has `DB_HOST=db` (Docker), `.env.test` needs `DB_HOST=localhost`
+- `NODE_ENV=test` must be set both in `.env.test` and `vitest.config.ts` env property
+- Configuration in `vitest.config.ts:6`:
+
+```typescript
+dotenv.config({ path: ".env.test", override: true });
+```
+
+**3. Schema Type Safety**
+
+- Use Drizzle's `$inferInsert` type instead of custom types
+- Example: `typeof users.$inferInsert` provides correct insert types
+- Ensures fixtures match actual database schema
+- Prevents field name mismatches (e.g., `name` vs `username`, `passwordHash` vs `password`)
+
+**4. Test Data Uniqueness**
+
+- Always use timestamps for unique values: `username: \`testuser${Date.now()}\``
+- Prevents conflicts from previous test runs where rollback may have failed
+- Critical for email and username fields with unique constraints
+
+**5. Mock Management**
+
+- Old global mocks in `test/setup.ts` removed for cleaner Phase 1 implementation
+- Tests needing mocks should define them locally in the test file
+- Pattern: Define mock function and vi.mock() at top of test file
+
+**6. Test Endpoint Security**
+
+- `/api/test/login` endpoint checks `NODE_ENV !== 'test'` and returns 404 in production
+- Only available when `NODE_ENV=test` is properly configured
+- Prevents accidental exposure of test-only authentication bypass in production
 
 ---
 
