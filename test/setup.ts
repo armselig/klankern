@@ -1,18 +1,11 @@
-import { vi } from "vitest";
+import { beforeAll, afterAll } from "vitest";
 
-// Mock the email sender utility globally to prevent server re-initialization
-export const mockSendInvitationEmail = vi.fn();
-vi.mock("~/server/utils/email-sender", () => ({
-    sendInvitationEmail: mockSendInvitationEmail,
-}));
+beforeAll(() => {
+    // Runs once before all tests
+    // Setup code can go here
+});
 
-import type { EventHandler } from "h3"; // Added import for EventHandler
-
-vi.mock("#imports", () => ({
-    customHashPassword: vi.fn().mockResolvedValue("hashed_password"),
-    customVerifyPassword: vi.fn().mockResolvedValue(true),
-    defineEventHandler: vi.fn((handler: EventHandler): EventHandler => handler), // Explicitly typed handler and return type
-    readBody: vi.fn(),
-    createError: vi.fn(),
-    setUserSession: vi.fn(),
-}));
+afterAll(() => {
+    // Runs once after all tests
+    // Cleanup code can go here
+});
