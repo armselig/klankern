@@ -1,13 +1,61 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, beforeAll } from "vitest";
+import { setup, $fetch } from "@nuxt/test-utils/e2e";
+import { registerEndpoint } from "@nuxt/test-utils/runtime";
+import { readBody, createError } from "h3";
+import { setUserSession } from "#auth";
+import { db } from "~~/server/db";
 import {
     withTestTransaction,
-    createAndLoginUser,
+    createTestUser,
     createTestFamily,
 } from "#test/utils";
 import { eq, and } from "drizzle-orm";
-import { families, familyMembers } from "~~/server/db/schema";
+import { families, familyMembers, users } from "~~/server/db/schema";
 
-describe("Families API Endpoints", () => {
+describe("Families API Endpoints (Real Server)", async () => {
+    // Start a real Nuxt server for these tests
+    await setup({ server: true, browser: false });
+
+    // Register ONLY the test login endpoint to enable authentication in tests
+    // All other endpoints will use real implementations
+    beforeAll(() => {
+        registerEndpoint("/api/test/login", {
+            method: "POST",
+            handler: async (event) => {
+                const { userId } = await readBody(event);
+                if (!userId) {
+                    throw createError({
+                        statusCode: 400,
+                        statusMessage: "userId is required",
+                    });
+                }
+
+                const user = await db.query.users.findFirst({
+                    where: eq(users.id, userId),
+                });
+
+                if (!user) {
+                    throw createError({
+                        statusCode: 404,
+                        statusMessage: "User not found",
+                    });
+                }
+
+                const session = {
+                    user: {
+                        id: user.id,
+                        username: user.username,
+                        email: user.email,
+                        display_name: user.display_name,
+                    },
+                };
+                await setUserSession(event, session);
+
+                return { message: `Session created for user ${userId}` };
+            },
+        });
+    });
+
     describe("GET /api/families", () => {
         it("should return 401 for unauthenticated users", async () => {
             await withTestTransaction(async () => {
@@ -21,9 +69,14 @@ describe("Families API Endpoints", () => {
         it("should return an array of families for an authenticated user", async () => {
             await withTestTransaction(async (tx) => {
                 // 1. Setup: Create and authenticate a user
-                const { user } = await createAndLoginUser(tx, {
+                const user = await createTestUser(tx, {
                     email: "test@example.com",
                     username: "testuser",
+                });
+                // Login using the mocked test endpoint
+                await $fetch("/api/test/login", {
+                    method: "POST",
+                    body: { userId: user.id },
                 });
 
                 // 2. Setup: Create two families for the user
@@ -67,7 +120,11 @@ describe("Families API Endpoints", () => {
         it("should return 400 for invalid data (e.g., missing name)", async () => {
             await withTestTransaction(async (tx) => {
                 // 1. Setup: Create and authenticate a user
-                await createAndLoginUser(tx);
+                const user = await createTestUser(tx);
+                await $fetch("/api/test/login", {
+                    method: "POST",
+                    body: { userId: user.id },
+                });
 
                 // 2. Action: Try to create a family with empty name
                 await expect(
@@ -82,9 +139,13 @@ describe("Families API Endpoints", () => {
         it("should create a family and return it", async () => {
             await withTestTransaction(async (tx) => {
                 // 1. Setup: Create and authenticate a user
-                const { user } = await createAndLoginUser(tx, {
+                const user = await createTestUser(tx, {
                     email: "creator@example.com",
                     username: "creator",
+                });
+                await $fetch("/api/test/login", {
+                    method: "POST",
+                    body: { userId: user.id },
                 });
 
                 // 2. Action: Create a family via API
