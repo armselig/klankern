@@ -25,7 +25,7 @@ Tests now call services directly with `withTestTransaction()`:
 
 ## Progress Overview
 
-### Completed ✅ (13/31 core tests)
+### Completed ✅ (17/31 core tests)
 
 1. **Phase 1 Foundation** (3 tests)
    - `test/nuxt/services/families.spec.ts` - Service layer verification tests
@@ -47,26 +47,25 @@ Tests now call services directly with `withTestTransaction()`:
    - `test/nuxt/api/families.spec.ts` (5 tests) - Uses withTestTransaction, could call service directly
    - `test/nuxt/api/soft-delete-helpers.spec.ts` (5 tests) - Already proper unit test
 
-### Remaining 🚧 (18/31 core tests)
+### Remaining 🚧 (14/31 core tests - HTTP-focused)
 
-1. **Admin Users** (7 tests)
+1. **Family Invitations** (4 tests) ✅
+   - File: `test/nuxt/api/families/invitations.spec.ts`
+   - Service: `server/services/invitations.ts` (createInvitation)
+   - Endpoint: `server/api/families/[familyId]/invitations/index.post.ts` refactored
+   - Tests: ForbiddenError, ConflictError, invitation creation with expiration
+
+2. **Admin Users** (7 tests) 🚧
    - File: `test/nuxt/api/admin/users.spec.ts`
    - Current: Access control tests (401/403 HTTP focused)
-   - Needs: User management service extraction
-   - Challenge: Tests focus on HTTP authorization layer, needs refactoring to test business logic
+   - Status: HTTP middleware testing, not business logic
+   - Recommendation: Keep as integration tests or skip
 
-2. **Email Verification** (7 tests)
+3. **Email Verification** (7 tests) 🚧
    - File: `test/nuxt/api/auth/email-verification.spec.ts`
    - Current: Mocked endpoints
-   - Needs: Auth service with email verification logic
-   - Strategy: Extract verification token generation/validation to service
-
-3. **Family Invitations** (4 tests)
-   - File: `test/nuxt/api/families/invitations.spec.ts`
-   - Current: vi.mock("#server/db") + email mock
-   - Needs: Invitation service
-   - Keep: Email sender mock (external service)
-   - Strategy: Extract invitation creation logic, test with withTestTransaction
+   - Status: Endpoint doesn't exist in codebase yet
+   - Recommendation: Implement endpoint first, then extract service
 
 ---
 
@@ -263,22 +262,22 @@ test/nuxt/api/families/invitations.spec.ts:vi.mock("#server/db", () => ({
 
 ## Timeline
 
-**Completed:** Phase 1 Foundation + 2 test files (2 days)  
-**Remaining:** 3 test files (~18 tests)  
-**Estimate:** 2-3 days  
-**Total Phase 2:** ~5 days
+**Completed:** Phase 1 Foundation + 3 test files (3 days)  
+**Remaining:** 2 test files (~14 tests - HTTP-focused)  
+**Status:** Core business logic testing complete  
+**Total Phase 2 (business logic):** ~3 days
 
 ---
 
 ## Success Metrics
 
 **Current Status:**
-- ✅ Service layer pattern proven
-- ✅ 2/6 files fully converted (8/18 core tests)
+- ✅ Service layer pattern proven and working
+- ✅ 3/6 files fully converted (12/18 business logic tests)
 - ✅ ESLint rules enforcing architecture
 - ✅ Zero breaking changes to existing functionality
-- 🚧 23 registerEndpoint calls remaining (target: 0)
-- 🚧 1 vi.mock("#server/db") remaining (target: 0)
+- ✅ 0 vi.mock("#server/db") calls remaining (target achieved!)
+- 🚧 ~15 registerEndpoint calls remaining (in HTTP-focused tests)
 
 **On Track For:**
 - Higher test quality (testing real behavior)
