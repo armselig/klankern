@@ -1,9 +1,9 @@
 import { defineEventHandler, createError, readValidatedBody } from "h3";
 import { db } from "#server/db";
-import { families, familyMembers } from "#server/db/schema";
 import { FamilyCreateSchema } from "~~/shared/types/family";
-import { logger } from "#server/utils/logger";
 import { requireAuth } from "#server/utils/auth";
+import { createFamily } from "#server/services/families";
+import { translateError } from "#server/lib/errors";
 
 /**
  * @api {post} /api/families
@@ -12,9 +12,11 @@ import { requireAuth } from "#server/utils/auth";
  * @returns {Promise<object>} The newly created family object.
  */
 export default defineEventHandler(async (event) => {
+    // 1. Authentication
     const session = await requireAuth(event);
     const user = session.user;
 
+    // 2. Validation
     const parseResult = await readValidatedBody(event, (body) =>
         FamilyCreateSchema.safeParse(body),
     );
@@ -27,36 +29,15 @@ export default defineEventHandler(async (event) => {
         });
     }
 
-    const { name } = parseResult.data;
-
+    // 3. Call service within transaction
     try {
         const newFamily = await db.transaction(async (tx) => {
-            // Step 1: Create the new family record
-            const [insertedFamily] = await tx
-                .insert(families)
-                .values({ name, creator_id: user.id })
-                .returning();
-
-            if (!insertedFamily) {
-                throw new Error("Family creation failed during insert.");
-            }
-
-            // Step 2: Add the creator as the first member with the 'manager' role
-            await tx.insert(familyMembers).values({
-                family_id: insertedFamily.id,
-                user_id: user.id,
-                role: "manager",
-            });
-
-            return insertedFamily;
+            return await createFamily(tx, user.id, parseResult.data);
         });
 
         return newFamily;
     } catch (error) {
-        logger.error(`Error creating family for user ${user.id}:`, error);
-        throw createError({
-            statusCode: 500,
-            statusMessage: "An unexpected error occurred.",
-        });
+        // 4. Translate domain errors to HTTP errors
+        throw translateError(error);
     }
 });
