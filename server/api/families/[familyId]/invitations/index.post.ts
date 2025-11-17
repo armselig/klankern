@@ -15,6 +15,13 @@ export default defineEventHandler(async (event) => {
     const { familyId } = await getRouterParams(event);
     const user = event.context.user;
 
+    if (!familyId) {
+        throw createError({
+            statusCode: 400,
+            statusMessage: "Family ID is required",
+        });
+    }
+
     if (!user) {
         throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
     }
@@ -33,12 +40,7 @@ export default defineEventHandler(async (event) => {
     // 3. Call service within transaction
     try {
         const invitation = await db.transaction(async (tx) => {
-            return await createInvitation(
-                tx,
-                familyId,
-                user.id,
-                invitedEmail,
-            );
+            return await createInvitation(tx, familyId, user.id, invitedEmail);
         });
 
         // 4. Send email (external service, outside transaction)

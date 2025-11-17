@@ -1,4 +1,9 @@
-import { defineEventHandler, createError, getRouterParams, readValidatedBody } from "h3";
+import {
+    defineEventHandler,
+    createError,
+    getRouterParams,
+    readValidatedBody,
+} from "h3";
 import { db } from "#server/db";
 import { FamilyTransferOwnershipSchema } from "#shared/types/family";
 import { transferOwnership } from "#server/services/families";
@@ -42,46 +47,12 @@ export default defineEventHandler(async (event) => {
     // 3. Call service within transaction
     try {
         const result = await db.transaction(async (tx) => {
-            return await transferOwnership(
-                tx,
-                user.id,
-                familyId,
-                newOwnerId,
-            );
+            return await transferOwnership(tx, user.id, familyId, newOwnerId);
         });
 
         return result;
     } catch (error) {
         // 4. Translate domain errors to HTTP errors
         throw translateError(error);
-    }
-});
-                creator_id: newOwnerId,
-                updated_at: sql`now()`,
-            })
-            .where(eq(families.id, familyId));
-
-        logger.info(
-            `Family ${familyId} ownership transferred from ${user.id} to ${newOwnerId}`,
-        );
-
-        return { success: true };
-    } catch (error) {
-        if (
-            typeof error === "object" &&
-            error !== null &&
-            "statusCode" in error
-        ) {
-            throw error;
-        }
-
-        logger.error(
-            `Error transferring ownership for family ${familyId}:`,
-            error,
-        );
-        throw createError({
-            statusCode: 500,
-            statusMessage: "An unexpected error occurred.",
-        });
     }
 });

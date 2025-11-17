@@ -1,9 +1,10 @@
 import { createError, defineEventHandler, readBody } from "h3";
 import { z } from "zod";
 import { db } from "#server/db/index";
-import { roles } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
 import { createRoleSchema, type RoleResponse } from "#shared/types/role";
+import { createRole } from "#server/services/roles";
+import { translateError } from "#server/lib/errors";
 
 export default defineEventHandler(
     async (event): Promise<{ role: RoleResponse }> => {
@@ -12,17 +13,9 @@ export default defineEventHandler(
             const body = await readBody(event);
             const newRoleData = createRoleSchema.parse(body);
 
-            const [newRole] = await db
-                .insert(roles)
-                .values(newRoleData)
-                .returning();
-
-            if (!newRole) {
-                throw createError({
-                    statusCode: 500,
-                    statusMessage: "Failed to create role.",
-                });
-            }
+            const newRole = await db.transaction(async (tx) => {
+                return await createRole(tx, newRoleData);
+            });
 
             return { role: newRole };
         } catch (error) {
@@ -34,10 +27,7 @@ export default defineEventHandler(
                     data: error.issues,
                 });
             }
-            throw createError({
-                statusCode: 500,
-                statusMessage: "Failed to create role.",
-            });
+            throw translateError(error);
         }
     },
 );

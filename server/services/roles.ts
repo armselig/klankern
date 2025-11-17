@@ -1,5 +1,6 @@
 import { roles } from "#server/db/schema";
 import type { DbConnection } from "#server/lib/types";
+import { InternalError } from "#server/lib/errors";
 import { logger } from "#server/utils/logger";
 
 /**
@@ -35,7 +36,7 @@ export async function createRole(
 
     if (!newRole) {
         logger.error(`Role creation failed for name ${data.name}`);
-        throw new Error("Role creation failed during insert");
+        throw new InternalError("Role creation failed during insert");
     }
 
     logger.info(`Role created: ${newRole.id} (${newRole.name})`);
