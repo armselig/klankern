@@ -46,6 +46,15 @@ Klankern is a Progressive Web App (PWA) for families to manage shared tasks, app
 - **Never** make direct database connections outside Drizzle ORM context
 - **Never** assume user permissions without proper checks
 
+- **Agent-Relevant Files**: Keep all files relevant for AI agents within the `./vibes/` directory. All filenames start with a datestamp prefix. Example: `YYMMDD_topic_brief-description.md`.
+- **Markdown files** must include YAML Frontmatter, which includes information about who created the file when, as well as who updated the file when.
+- **Knowledge Graph**: If the MCP server `memory` is available, proactively and autonomously read the graph at the beginning of each session and keep it updated and maintained as you go.
+    - **Graph Structure**: All entries in the knowledge graph MUST be connected or related to the base parent entity "Klankern project" (lowercase 'p'). This ensures a coherent, searchable graph structure.
+    - **Avoid Duplicates**: Before creating new entities, always search for existing ones. Add observations to existing entities instead of creating duplicates. Never create new project entities—use the existing "Klankern project" parent.
+    - **Naming Convention**: Use the exact entity names from the existing graph (e.g., "Klankern project", not "Klankern Project").
+- **NEVER** assume! **ALWAYS** ask clarifying questions.
+- **NEVER** (re-)start, stop etc. any services on your own. Managing containers and dev servers is solely in the domain of the user. You may ask the user at any time to perform such tasks on your behalf.
+
 ## UNIQUE STYLES
 
 - **Database**: UUID v7 primary keys for better performance and sorting
