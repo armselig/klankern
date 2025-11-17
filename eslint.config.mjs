@@ -5,10 +5,16 @@ import vue from "eslint-plugin-vue";
 import vueParser from "vue-eslint-parser";
 import importPlugin from "eslint-plugin-import";
 import vueA11y from "eslint-plugin-vuejs-accessibility"; // New import
+import customRules from "./eslint-rules/index.js"; // Custom architecture rules
 
 export default withNuxt([
     {
-        ignores: [".nuxt/**", "eslint.config.mjs", ".output/**"],
+        ignores: [
+            ".nuxt/**",
+            "eslint.config.mjs",
+            ".output/**",
+            "eslint-rules/**", // Custom ESLint rules (plain JS, not TypeScript)
+        ],
     },
     ...tseslint.configs.recommendedTypeChecked, // Added
     ...vue.configs["flat/recommended"],
@@ -19,6 +25,7 @@ export default withNuxt([
             vue: vue,
             import: importPlugin,
             "vuejs-accessibility": vueA11y, // Add the new plugin
+            "custom-arch": customRules, // Custom architecture rules
         },
         languageOptions: {
             parser: vueParser,
@@ -55,6 +62,10 @@ export default withNuxt([
                     },
                 },
             ],
+            // Custom architecture rules for service layer
+            "custom-arch/no-global-db-in-services": "error",
+            "custom-arch/no-db-transaction-in-services": "error",
+            "custom-arch/require-db-connection-param": "error",
         },
     },
     {
