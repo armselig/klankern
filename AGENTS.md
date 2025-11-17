@@ -39,6 +39,7 @@ The database seed script creates the following default users:
 ## AI Agent Collaboration
 
 - **Agent-Relevant Files**: Keep all files relevant for AI agents within the `./vibes/` directory. All filenames start with a datestamp prefix. Example: `YYMMDD_topic_brief-description.md`.
+- **Markdown files** must include YAML Frontmatter, which includes information about who created the file when, as well as who updated the file when.
 - **Knowledge Graph**: If the MCP server `memory` is available, proactively and autonomously read the graph at the beginning of each session and keep it updated and maintained as you go.
     - **Graph Structure**: All entries in the knowledge graph MUST be connected or related to the base parent entity "Klankern project" (lowercase 'p'). This ensures a coherent, searchable graph structure.
     - **Avoid Duplicates**: Before creating new entities, always search for existing ones. Add observations to existing entities instead of creating duplicates. Never create new project entities—use the existing "Klankern project" parent.

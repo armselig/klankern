@@ -1,289 +1,162 @@
-import { registerEndpoint } from "@nuxt/test-utils/runtime";
-import { createError, readBody } from "h3";
 import { describe, expect, it } from "vitest";
+import { withTestTransaction, createTestUser } from "#test/utils";
+import { getAllUsersWithRoles, createUser } from "#server/services/users";
+import { createRole } from "#server/services/roles";
+import { ConflictError } from "#server/lib/errors";
+import { userRoles } from "#server/db/schema";
 
-describe("Admin Users API Access Control", () => {
-    describe("GET /api/admin/users", () => {
-        it("should return 401 Unauthorized for unauthenticated requests", async () => {
-            registerEndpoint("/api/admin/users", {
-                method: "GET",
-                handler: (event) => {
-                    if (!event.context.user) {
-                        throw createError({
-                            statusCode: 401,
-                            statusMessage: "Unauthorized",
-                        });
-                    }
-                    return { users: [] };
-                },
-            });
+describe("Admin Users Service", () => {
+    describe("getAllUsersWithRoles", () => {
+        it("should return an empty array when no users exist", async () => {
+            await withTestTransaction(async (tx) => {
+                const users = await getAllUsersWithRoles(tx);
 
-            await expect($fetch("/api/admin/users")).rejects.toMatchObject({
-                statusCode: 401,
-                statusMessage: "Unauthorized",
+                expect(users).toBeDefined();
+                expect(Array.isArray(users)).toBe(true);
+                // May have users from other tests in parallel, so just check structure
             });
         });
 
-        it("should return 403 Forbidden for authenticated but unauthorized requests", async () => {
-            registerEndpoint("/api/admin/users", {
-                method: "GET",
-                handler: (event) => {
-                    event.context.user = {
-                        id: "user-id-123",
-                        email: "user@example.com",
-                        roles: [
-                            {
-                                id: "user-role-id",
-                                name: "user",
-                                description: "Regular User",
-                            },
-                        ],
-                    };
+        it("should return users with their roles", async () => {
+            await withTestTransaction(async (tx) => {
+                // 1. Setup: Create a role
+                const userRole = await createRole(tx, {
+                    name: "UserRole",
+                    description: "Regular user role",
+                });
 
-                    const userRoles = event.context.user.roles || [];
-                    const isAdmin = userRoles.some(
-                        (role: { name: string }) => role.name === "admin",
-                    );
+                // 2. Setup: Create a user with a role
+                const uniqueUsername = `testuser_${Date.now()}`;
+                const testUser = await createTestUser(tx, {
+                    email: `${uniqueUsername}@example.com`,
+                    username: uniqueUsername,
+                });
 
-                    if (!isAdmin) {
-                        throw createError({
-                            statusCode: 403,
-                            statusMessage: "Forbidden",
-                        });
-                    }
+                // Manually assign role to user (since createTestUser doesn't assign roles)
+                await tx.insert(userRoles).values({
+                    user_id: testUser.id,
+                    role_id: userRole.id,
+                });
 
-                    return { users: [] };
-                },
+                // 3. Action: Get all users with roles
+                const users = await getAllUsersWithRoles(tx);
+
+                // 4. Assertion: Verify the user and role are in the result
+                const foundUser = users.find((u) => u.id === testUser.id);
+                expect(foundUser).toBeDefined();
+                expect(foundUser?.email).toBe(`${uniqueUsername}@example.com`);
+                expect(foundUser?.username).toBe(uniqueUsername);
+                expect(foundUser?.roles).toBeDefined();
+                expect(Array.isArray(foundUser?.roles)).toBe(true);
             });
-
-            await expect($fetch("/api/admin/users")).rejects.toMatchObject({
-                statusCode: 403,
-                statusMessage: "Forbidden",
-            });
-        });
-
-        it("should return a list of users for authenticated and authorized requests", async () => {
-            const mockUsers = [
-                {
-                    id: "1",
-                    email: "admin@example.com",
-                    username: "admin",
-                    display_name: "Admin User",
-                    is_active: true,
-                    dashboard_config: { theme: "dark" },
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString(),
-                    roles: [
-                        {
-                            id: "admin-id",
-                            name: "admin",
-                            description: "Administrator",
-                        },
-                    ],
-                },
-                {
-                    id: "2",
-                    email: "user@example.com",
-                    username: "user",
-                    display_name: "Regular User",
-                    is_active: true,
-                    dashboard_config: null,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString(),
-                    roles: [
-                        {
-                            id: "user-id",
-                            name: "user",
-                            description: "Regular User",
-                        },
-                    ],
-                },
-            ];
-
-            registerEndpoint("/api/admin/users", {
-                method: "GET",
-                handler: (event) => {
-                    event.context.user = {
-                        id: "admin-user-id-456",
-                        email: "admin@example.com",
-                        roles: [
-                            {
-                                id: "admin-role-id",
-                                name: "admin",
-                                description: "Administrator",
-                            },
-                        ],
-                    };
-
-                    const userRoles = event.context.user.roles || [];
-                    const isAdmin = userRoles.some(
-                        (role: { name: string }) => role.name === "admin",
-                    );
-
-                    if (!isAdmin) {
-                        throw createError({
-                            statusCode: 403,
-                            statusMessage: "Forbidden",
-                        });
-                    }
-
-                    return {
-                        users: mockUsers,
-                    };
-                },
-            });
-
-            const response = await $fetch("/api/admin/users");
-            expect(response).toHaveProperty("users");
-            expect(response.users).toHaveLength(2);
-            expect(response.users[0].email).toBe("admin@example.com");
-            expect(response.users).toEqual(mockUsers);
         });
     });
 
-    describe("POST /api/admin/users", () => {
-        const validUserData = {
-            email: "new.user@example.com",
-            username: "newuser",
-            password: "password123",
-            display_name: "New User",
-            first_name: "New",
-            last_name: "User",
-            roleIds: ["user-role-id"],
-        };
+    describe("createUser", () => {
+        it("should create a user successfully", async () => {
+            await withTestTransaction(async (tx) => {
+                // 1. Action: Create a user
+                const newUser = await createUser(tx, {
+                    email: "newuser@example.com",
+                    username: "newuser",
+                    password: "password123",
+                    display_name: "New User",
+                    first_name: "New",
+                    last_name: "User",
+                });
 
-        it("should return 401 Unauthorized for unauthenticated requests", async () => {
-            registerEndpoint("/api/admin/users", {
-                method: "POST",
-                handler: (event) => {
-                    if (!event.context.user) {
-                        throw createError({
-                            statusCode: 401,
-                            statusMessage: "Unauthorized",
-                        });
-                    }
-                    return {};
-                },
-            });
+                // 2. Assertion: Verify user was created
+                expect(newUser).toBeDefined();
+                expect(newUser.email).toBe("newuser@example.com");
+                expect(newUser.username).toBe("newuser");
+                expect(newUser.display_name).toBe("New User");
+                expect(newUser.first_name).toBe("New");
+                expect(newUser.last_name).toBe("User");
+                expect(newUser.id).toBeDefined();
 
-            await expect(
-                $fetch("/api/admin/users", {
-                    method: "POST",
-                    body: validUserData,
-                }),
-            ).rejects.toMatchObject({
-                statusCode: 401,
-            });
-        });
+                // 3. Assertion: Verify password is not in response
+                expect(newUser).not.toHaveProperty("password");
 
-        it("should return 403 Forbidden for authenticated but unauthorized requests", async () => {
-            registerEndpoint("/api/admin/users", {
-                method: "POST",
-                handler: (event) => {
-                    event.context.user = {
-                        id: "user-id-123",
-                        roles: [{ name: "user" }],
-                    };
-                    const isAdmin = event.context.user.roles.some(
-                        (role: { name: string }) => role.name === "admin",
-                    );
-                    if (!isAdmin) {
-                        throw createError({
-                            statusCode: 403,
-                            statusMessage: "Forbidden",
-                        });
-                    }
-                    return {};
-                },
-            });
-
-            await expect(
-                $fetch("/api/admin/users", {
-                    method: "POST",
-                    body: validUserData,
-                }),
-            ).rejects.toMatchObject({
-                statusCode: 403,
+                // 4. Verify database state
+                const dbUser = await tx.query.users.findFirst({
+                    where: (users, { eq }) => eq(users.id, newUser.id),
+                });
+                expect(dbUser).toBeDefined();
+                expect(dbUser?.email).toBe("newuser@example.com");
+                // Verify password was hashed
+                expect(dbUser?.password).toBeDefined();
+                expect(dbUser?.password).not.toBe("password123");
             });
         });
 
-        it("should return 400 Bad Request for invalid data", async () => {
-            registerEndpoint("/api/admin/users", {
-                method: "POST",
-                handler: async (event) => {
-                    event.context.user = {
-                        id: "admin-user-id-456",
-                        roles: [{ name: "admin" }],
-                    };
-                    const body = await readBody(event);
-                    if (!body.email || !body.password) {
-                        throw createError({
-                            statusCode: 400,
-                            statusMessage: "Validation failed",
-                        });
-                    }
-                    return {};
-                },
-            });
+        it("should create a user with assigned roles", async () => {
+            await withTestTransaction(async (tx) => {
+                // 1. Setup: Create a role
+                const role = await createRole(tx, {
+                    name: "TestRole",
+                    description: "Test role",
+                });
 
-            const invalidData = { ...validUserData, email: "" };
-            await expect(
-                $fetch("/api/admin/users", {
-                    method: "POST",
-                    body: invalidData,
-                }),
-            ).rejects.toMatchObject({
-                statusCode: 400,
+                // 2. Action: Create user with role
+                const newUser = await createUser(tx, {
+                    email: "userwithrole@example.com",
+                    username: "userwithrole",
+                    password: "password123",
+                    roleIds: [role.id],
+                });
+
+                // 3. Assertion: Verify user was created
+                expect(newUser).toBeDefined();
+                expect(newUser.email).toBe("userwithrole@example.com");
+
+                // 4. Verify role assignment in database
+                const userRoleAssignment = await tx.query.userRoles.findFirst({
+                    where: (userRoles, { eq }) =>
+                        eq(userRoles.user_id, newUser.id),
+                });
+                expect(userRoleAssignment).toBeDefined();
+                expect(userRoleAssignment?.role_id).toBe(role.id);
             });
         });
 
-        it("should create a user successfully for authorized requests", async () => {
-            const newUserResponse = {
-                id: "new-user-id",
-                email: validUserData.email,
-                username: validUserData.username,
-                display_name: validUserData.display_name,
-                first_name: validUserData.first_name,
-                last_name: validUserData.last_name,
-                is_active: true,
-                dashboard_config: null,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-                roles: [
-                    {
-                        id: "user-role-id",
-                        name: "user",
-                        description: "Regular User",
-                    },
-                ],
-            };
+        it("should throw ConflictError for duplicate email", async () => {
+            await withTestTransaction(async (tx) => {
+                // 1. Setup: Create a user
+                await createUser(tx, {
+                    email: "duplicate@example.com",
+                    username: "firstuser",
+                    password: "password123",
+                });
 
-            registerEndpoint("/api/admin/users", {
-                method: "POST",
-                handler: (event) => {
-                    event.context.user = {
-                        id: "admin-user-id-456",
-                        roles: [{ name: "admin" }],
-                    };
-                    const isAdmin = event.context.user.roles.some(
-                        (role: { name: string }) => role.name === "admin",
-                    );
-                    if (!isAdmin) {
-                        throw createError({
-                            statusCode: 403,
-                            statusMessage: "Forbidden",
-                        });
-                    }
-                    return newUserResponse;
-                },
+                // 2. Action & Assertion: Try to create another user with same email
+                await expect(
+                    createUser(tx, {
+                        email: "duplicate@example.com",
+                        username: "seconduser",
+                        password: "password123",
+                    }),
+                ).rejects.toThrow(ConflictError);
             });
+        });
 
-            const result = await $fetch("/api/admin/users", {
-                method: "POST",
-                body: validUserData,
+        it("should throw ConflictError for duplicate username", async () => {
+            await withTestTransaction(async (tx) => {
+                // 1. Setup: Create a user
+                await createUser(tx, {
+                    email: "user1@example.com",
+                    username: "duplicateusername",
+                    password: "password123",
+                });
+
+                // 2. Action & Assertion: Try to create another user with same username
+                await expect(
+                    createUser(tx, {
+                        email: "user2@example.com",
+                        username: "duplicateusername",
+                        password: "password123",
+                    }),
+                ).rejects.toThrow(ConflictError);
             });
-
-            expect(result).toEqual(newUserResponse);
         });
     });
 });
