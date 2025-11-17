@@ -1,4 +1,3 @@
-import { and, eq, sql } from "drizzle-orm";
 import {
     defineEventHandler,
     createError,
@@ -6,9 +5,9 @@ import {
     readValidatedBody,
 } from "h3";
 import { db } from "#server/db";
-import { families, familyMembers } from "#server/db/schema";
 import { FamilyTransferOwnershipSchema } from "#shared/types/family";
-import { logger } from "#server/utils/logger";
+import { transferOwnership } from "#server/services/families";
+import { translateError } from "#server/lib/errors";
 
 /**
  * @api {post} /api/families/:id/transfer-ownership
@@ -19,6 +18,7 @@ import { logger } from "#server/utils/logger";
  * @returns {Promise<object>} Success response.
  */
 export default defineEventHandler(async (event) => {
+    // 1. Extract params and auth
     const { id: familyId } = getRouterParams(event);
     const user = event.context.user;
 
@@ -29,6 +29,7 @@ export default defineEventHandler(async (event) => {
         });
     }
 
+    // 2. Validation
     const parseResult = await readValidatedBody(event, (body) =>
         FamilyTransferOwnershipSchema.safeParse(body),
     );
@@ -43,67 +44,15 @@ export default defineEventHandler(async (event) => {
 
     const { newOwnerId } = parseResult.data;
 
+    // 3. Call service within transaction
     try {
-        // Verify current user is creator
-        const family = await db.query.families.findFirst({
-            where: and(
-                eq(families.id, familyId),
-                eq(families.creator_id, user.id),
-            ),
+        const result = await db.transaction(async (tx) => {
+            return await transferOwnership(tx, user.id, familyId, newOwnerId);
         });
 
-        if (!family) {
-            throw createError({
-                statusCode: 403,
-                statusMessage: "Only the family creator can transfer ownership",
-            });
-        }
-
-        // Verify new owner is a member
-        const membership = await db.query.familyMembers.findFirst({
-            where: and(
-                eq(familyMembers.family_id, familyId),
-                eq(familyMembers.user_id, newOwnerId),
-            ),
-        });
-
-        if (!membership) {
-            throw createError({
-                statusCode: 400,
-                statusMessage: "New owner must be a family member",
-            });
-        }
-
-        // Transfer ownership
-        await db
-            .update(families)
-            .set({
-                creator_id: newOwnerId,
-                updated_at: sql`now()`,
-            })
-            .where(eq(families.id, familyId));
-
-        logger.info(
-            `Family ${familyId} ownership transferred from ${user.id} to ${newOwnerId}`,
-        );
-
-        return { success: true };
+        return result;
     } catch (error) {
-        if (
-            typeof error === "object" &&
-            error !== null &&
-            "statusCode" in error
-        ) {
-            throw error;
-        }
-
-        logger.error(
-            `Error transferring ownership for family ${familyId}:`,
-            error,
-        );
-        throw createError({
-            statusCode: 500,
-            statusMessage: "An unexpected error occurred.",
-        });
+        // 4. Translate domain errors to HTTP errors
+        throw translateError(error);
     }
 });

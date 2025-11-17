@@ -1,13 +1,8 @@
 import { defineEventHandler, createError, readValidatedBody } from "h3";
 import { db } from "#server/db";
 import { FamilyCreateSchema } from "~~/shared/types/family";
-import { logger } from "#server/utils/logger";
 import { createFamily } from "#server/services/families";
-import {
-    UnauthorizedError,
-    ValidationError,
-    DomainError,
-} from "#server/lib/errors";
+import { translateError } from "#server/lib/errors";
 
 /**
  * @api {post} /api/families
@@ -16,8 +11,8 @@ import {
  * @returns {Promise<object>} The newly created family object.
  */
 export default defineEventHandler(async (event) => {
+    // 1. Authentication
     const user = event.context.user;
-
     if (!user) {
         throw createError({
             statusCode: 401,
@@ -25,6 +20,7 @@ export default defineEventHandler(async (event) => {
         });
     }
 
+    // 2. Validation
     const parseResult = await readValidatedBody(event, (body) =>
         FamilyCreateSchema.safeParse(body),
     );
@@ -37,46 +33,15 @@ export default defineEventHandler(async (event) => {
         });
     }
 
+    // 3. Call service within transaction
     try {
         const newFamily = await db.transaction(async (tx) => {
-            return await createFamily(tx, user.id, {
-                name: parseResult.data.name,
-            });
+            return await createFamily(tx, user.id, parseResult.data);
         });
 
         return newFamily;
     } catch (error) {
-        // Log the error
-        logger.error(`Error creating family for user ${user.id}:`, error);
-
-        // Translate domain errors to HTTP errors
-        if (error instanceof UnauthorizedError) {
-            throw createError({
-                statusCode: 401,
-                statusMessage: error.message,
-            });
-        }
-
-        if (error instanceof ValidationError) {
-            throw createError({
-                statusCode: 400,
-                statusMessage: error.message,
-                data: error.issues,
-            });
-        }
-
-        if (error instanceof DomainError) {
-            // Handle other domain errors
-            throw createError({
-                statusCode: 500,
-                statusMessage: error.message,
-            });
-        }
-
-        // Handle unexpected errors
-        throw createError({
-            statusCode: 500,
-            statusMessage: "An unexpected error occurred.",
-        });
+        // 4. Translate domain errors to HTTP errors
+        throw translateError(error);
     }
 });

@@ -9,9 +9,16 @@
  * - Transferring family ownership
  */
 
+import { and, eq } from "drizzle-orm";
 import { families, familyMembers } from "#server/db/schema";
 import type { DbConnection } from "#server/lib/types";
-import { InternalError, UnauthorizedError } from "#server/lib/errors";
+import {
+    ForbiddenError,
+    InternalError,
+    UnauthorizedError,
+    ValidationError,
+} from "#server/lib/errors";
+import { logger } from "#server/utils/logger";
 
 /**
  * Data required to create a new family.
@@ -77,5 +84,67 @@ export async function createFamily(
         role: "manager",
     });
 
+    logger.info(`Family created: ${insertedFamily.id} by user ${userId}`);
+
     return insertedFamily;
+}
+
+/**
+ * Transfers family ownership to another member.
+ *
+ * @param dbConnection - Database connection (db or transaction)
+ * @param currentUserId - ID of the current owner
+ * @param familyId - ID of the family
+ * @param newOwnerId - ID of the new owner
+ * @returns Success indicator
+ * @throws {ForbiddenError} If current user is not the creator
+ * @throws {NotFoundError} If family not found
+ * @throws {ValidationError} If new owner is not a family member
+ */
+export async function transferOwnership(
+    dbConnection: DbConnection,
+    currentUserId: string,
+    familyId: string,
+    newOwnerId: string,
+) {
+    // Authorization: Verify current user is creator
+    const family = await dbConnection.query.families.findFirst({
+        where: and(
+            eq(families.id, familyId),
+            eq(families.creator_id, currentUserId),
+        ),
+    });
+
+    if (!family) {
+        throw new ForbiddenError(
+            "Only the family creator can transfer ownership",
+        );
+    }
+
+    // Business rule: New owner must be a member
+    const membership = await dbConnection.query.familyMembers.findFirst({
+        where: and(
+            eq(familyMembers.family_id, familyId),
+            eq(familyMembers.user_id, newOwnerId),
+        ),
+    });
+
+    if (!membership) {
+        throw new ValidationError("New owner must be a family member");
+    }
+
+    // Transfer ownership
+    await dbConnection
+        .update(families)
+        .set({
+            creator_id: newOwnerId,
+            updated_at: new Date(),
+        })
+        .where(eq(families.id, familyId));
+
+    logger.info(
+        `Family ${familyId} ownership transferred from ${currentUserId} to ${newOwnerId}`,
+    );
+
+    return { success: true };
 }

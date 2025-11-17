@@ -16,6 +16,7 @@ The service layer architecture solves a critical testing problem: **transaction-
 ### 1. Accept Database Connection as Parameter
 
 Services MUST accept a `DbConnection` as their first parameter. This can be either:
+
 - Production: The global `db` object
 - Test: A transaction object `tx` from `withTestTransaction()`
 
@@ -30,7 +31,7 @@ export async function createFamily(
         .insert(families)
         .values({ name: input.name, creator_id: userId })
         .returning();
-    
+
     return family;
 }
 ```
@@ -38,6 +39,7 @@ export async function createFamily(
 ### 2. Throw Domain Errors, Not HTTP Errors
 
 Services throw domain-specific errors from `server/lib/errors.ts`:
+
 - `UnauthorizedError` - User not authenticated
 - `ForbiddenError` - User lacks permission
 - `NotFoundError` - Resource not found
@@ -58,6 +60,7 @@ throw new UnauthorizedError("User ID is required");
 ### 3. Framework-Agnostic
 
 Services must NOT depend on:
+
 - H3 event handlers
 - HTTP request/response objects
 - Session management
@@ -68,6 +71,7 @@ All necessary data is passed as parameters.
 ### 4. No Transaction Management
 
 Services MUST NOT call `db.transaction()`. Transactions are managed by:
+
 - **Route handlers** in production
 - **Test utilities** (`withTestTransaction()`) in tests
 
@@ -105,6 +109,7 @@ These rules apply ONLY to files in `server/services/` directory.
 ## How Route Handlers Use Services
 
 Route handlers remain thin and handle only:
+
 1. Authentication (check `event.context.user`)
 2. Input validation (Zod schemas)
 3. Transaction management
@@ -147,7 +152,10 @@ export default defineEventHandler(async (event) => {
 
         // 5. Error translation
         if (error instanceof UnauthorizedError) {
-            throw createError({ statusCode: 401, statusMessage: error.message });
+            throw createError({
+                statusCode: 401,
+                statusMessage: error.message,
+            });
         }
         if (error instanceof ValidationError) {
             throw createError({
@@ -240,6 +248,7 @@ server/services/
 This is Phase 1 of the service layer refactoring. See issue #[number] for complete plan.
 
 **Completed:**
+
 - ✅ Infrastructure files (`server/lib/types.ts`, `server/lib/errors.ts`)
 - ✅ ESLint rules for architecture enforcement
 - ✅ First service: `families.createFamily()`
@@ -253,6 +262,7 @@ See the full implementation plan in `vibes/251114_service-layer-refactoring-plan
 ## Questions or Issues?
 
 Refer to:
+
 - **Detailed Plan:** `vibes/251114_service-layer-refactoring-plan.md`
 - **ESLint Rules:** `vibes/251117_eslint-rules-implemented.md`
 - **Original Issue:** GitHub issue #[number]
