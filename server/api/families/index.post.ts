@@ -1,8 +1,13 @@
 import { defineEventHandler, createError, readValidatedBody } from "h3";
 import { db } from "#server/db";
-import { families, familyMembers } from "#server/db/schema";
 import { FamilyCreateSchema } from "~~/shared/types/family";
 import { logger } from "#server/utils/logger";
+import { createFamily } from "#server/services/families";
+import {
+    UnauthorizedError,
+    ValidationError,
+    DomainError,
+} from "#server/lib/errors";
 
 /**
  * @api {post} /api/families
@@ -32,33 +37,43 @@ export default defineEventHandler(async (event) => {
         });
     }
 
-    const { name } = parseResult.data;
-
     try {
         const newFamily = await db.transaction(async (tx) => {
-            // Step 1: Create the new family record
-            const [insertedFamily] = await tx
-                .insert(families)
-                .values({ name, creator_id: user.id })
-                .returning();
-
-            if (!insertedFamily) {
-                throw new Error("Family creation failed during insert.");
-            }
-
-            // Step 2: Add the creator as the first member with the 'manager' role
-            await tx.insert(familyMembers).values({
-                family_id: insertedFamily.id,
-                user_id: user.id,
-                role: "manager",
+            return await createFamily(tx, user.id, {
+                name: parseResult.data.name,
             });
-
-            return insertedFamily;
         });
 
         return newFamily;
     } catch (error) {
+        // Log the error
         logger.error(`Error creating family for user ${user.id}:`, error);
+
+        // Translate domain errors to HTTP errors
+        if (error instanceof UnauthorizedError) {
+            throw createError({
+                statusCode: 401,
+                statusMessage: error.message,
+            });
+        }
+
+        if (error instanceof ValidationError) {
+            throw createError({
+                statusCode: 400,
+                statusMessage: error.message,
+                data: error.issues,
+            });
+        }
+
+        if (error instanceof DomainError) {
+            // Handle other domain errors
+            throw createError({
+                statusCode: 500,
+                statusMessage: error.message,
+            });
+        }
+
+        // Handle unexpected errors
         throw createError({
             statusCode: 500,
             statusMessage: "An unexpected error occurred.",
