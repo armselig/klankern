@@ -1,4 +1,9 @@
-import { defineEventHandler, createError, getRouterParams, readValidatedBody } from "h3";
+import {
+    defineEventHandler,
+    createError,
+    getRouterParams,
+    readValidatedBody,
+} from "h3";
 import { db } from "#server/db";
 import { FamilyTransferOwnershipSchema } from "#shared/types/family";
 import { requireAuth } from "#server/utils/auth";
@@ -37,12 +42,7 @@ export default defineEventHandler(async (event) => {
     // 3. Call service within transaction
     try {
         const result = await db.transaction(async (tx) => {
-            return await transferOwnership(
-                tx,
-                user.id,
-                familyId,
-                newOwnerId,
-            );
+            return await transferOwnership(tx, user.id, familyId, newOwnerId);
         });
 
         return result;

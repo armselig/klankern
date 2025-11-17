@@ -31,12 +31,7 @@ export default defineEventHandler(async (event) => {
     // 3. Call service within transaction
     try {
         const invitation = await db.transaction(async (tx) => {
-            return await createInvitation(
-                tx,
-                familyId,
-                user.id,
-                invitedEmail,
-            );
+            return await createInvitation(tx, familyId, user.id, invitedEmail);
         });
 
         // 4. Send email (external service, outside transaction)

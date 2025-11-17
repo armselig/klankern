@@ -9,10 +9,7 @@ describe("Family Service", () => {
         it("should create a family with the user as creator and manager", async () => {
             await withTestTransaction(async (tx) => {
                 // 1. Setup: Create a test user
-                const user = await createTestUser(tx, {
-                    email: "test@example.com",
-                    username: "testuser",
-                });
+                const user = await createTestUser(tx);
 
                 // 2. Action: Call service directly with test transaction
                 const family = await createFamily(tx, user.id, {
