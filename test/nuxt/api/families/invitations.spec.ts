@@ -1,142 +1,172 @@
-import { registerEndpoint } from "@nuxt/test-utils/runtime";
-import { createError, readBody } from "h3";
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { describe, expect, it } from "vitest";
+import { withTestTransaction, createTestUser, createTestFamily } from "#test/utils";
+import { createInvitation } from "#server/services/invitations";
+import { eq, and } from "drizzle-orm";
+import { familyInvitations, familyMembers } from "~~/server/db/schema";
+import { ForbiddenError, ConflictError } from "#server/lib/errors";
 
-// Mock the email sender utility
-const mockSendInvitationEmail = vi.fn();
-vi.mock("~/server/utils/email-sender", () => ({
-    sendInvitationEmail: mockSendInvitationEmail,
-}));
+describe("Family Invitations Service", () => {
+    describe("createInvitation", () => {
+        it("should throw ForbiddenError if user is not a manager", async () => {
+            await withTestTransaction(async (tx) => {
+                // 1. Setup: Create family with a manager
+                const manager = await createTestUser(tx, {
+                    email: "manager@example.com",
+                    username: "manager",
+                });
+                const family = await createTestFamily(tx, manager.id);
 
-// Mock the database dependency
-const mockDb = {
-    insert: vi.fn().mockReturnThis(),
-    values: vi.fn().mockResolvedValue([{ id: "new-invitation-id" }]),
-    query: {
-        familyMembers: {
-            findFirst: vi.fn().mockResolvedValue(null), // Default to user not being a member
-        },
-    },
-};
+                // 2. Setup: Create a regular member
+                const member = await createTestUser(tx, {
+                    email: "member@example.com",
+                    username: "member",
+                });
+                await tx.insert(familyMembers).values({
+                    family_id: family.id,
+                    user_id: member.id,
+                    role: "member", // Not a manager
+                });
 
-vi.mock("#server/db", () => ({
-    db: mockDb,
-}));
-
-describe("POST /api/families/:familyId/invitations", () => {
-    const familyId = "family-123";
-    const managerUser = {
-        id: "user-manager-123",
-        roles: [{ name: "user" }],
-    };
-    const regularUser = {
-        id: "user-regular-456",
-        roles: [{ name: "user" }],
-    };
-    const validInvitationBody = { email: "new.member@example.com" };
-
-    // Reset mocks before each test
-    beforeEach(() => {
-        vi.clearAllMocks();
-    });
-
-    it("should return 401 for unauthenticated users", async () => {
-        registerEndpoint(`/api/families/${familyId}/invitations`, {
-            method: "POST",
-            handler: (event) => {
-                if (!event.context.user) {
-                    throw createError({ statusCode: 401 });
-                }
-                return {};
-            },
+                // 3. Action & Assertion: Regular member trying to invite should fail
+                await expect(
+                    createInvitation(
+                        tx,
+                        family.id,
+                        member.id,
+                        "invited@example.com",
+                    ),
+                ).rejects.toThrow(ForbiddenError);
+            });
         });
 
-        await expect(
-            $fetch(`/api/families/${familyId}/invitations`, {
-                method: "POST",
-                body: validInvitationBody,
-            }),
-        ).rejects.toMatchObject({ statusCode: 401 });
-    });
+        it("should throw ConflictError if invited email is already a member", async () => {
+            await withTestTransaction(async (tx) => {
+                // 1. Setup: Create family with a manager
+                const manager = await createTestUser(tx, {
+                    email: "manager@example.com",
+                    username: "manager",
+                });
+                const family = await createTestFamily(tx, manager.id);
 
-    it("should return 403 if the user is not a manager of the family", async () => {
-        // Mock DB to return that the user is a regular member, not a manager
-        mockDb.query.familyMembers.findFirst.mockResolvedValueOnce({
-            role: "member",
+                // 2. Setup: Create an existing member
+                const existingMember = await createTestUser(tx, {
+                    email: "existing@example.com",
+                    username: "existing",
+                });
+                await tx.insert(familyMembers).values({
+                    family_id: family.id,
+                    user_id: existingMember.id,
+                    role: "member",
+                });
+
+                // 3. Action & Assertion: Inviting existing member should fail
+                await expect(
+                    createInvitation(
+                        tx,
+                        family.id,
+                        manager.id,
+                        "existing@example.com",
+                    ),
+                ).rejects.toThrow(ConflictError);
+            });
         });
 
-        registerEndpoint(`/api/families/${familyId}/invitations`, {
-            method: "POST",
-            handler: async (event) => {
-                event.context.user = regularUser;
-                // Simplified mock of authorization logic
-                const membership = await mockDb.query.familyMembers.findFirst();
-                if (membership?.role !== "manager") {
-                    throw createError({ statusCode: 403 });
-                }
-                return {};
-            },
+        it("should successfully create an invitation", async () => {
+            await withTestTransaction(async (tx) => {
+                // 1. Setup: Create family with a manager
+                const manager = await createTestUser(tx, {
+                    email: "manager@example.com",
+                    username: "manager",
+                });
+                const family = await createTestFamily(tx, manager.id, {
+                    name: "Test Family",
+                });
+
+                // 2. Action: Create invitation
+                const invitedEmail = "newmember@example.com";
+                const result = await createInvitation(
+                    tx,
+                    family.id,
+                    manager.id,
+                    invitedEmail,
+                );
+
+                // 3. Assertion: Verify result
+                expect(result).toBeDefined();
+                expect(result.token).toBeDefined();
+                expect(result.expires_at).toBeDefined();
+                expect(result.family_name).toBe("Test Family");
+
+                // 4. Assertion: Verify database state
+                const invitation = await tx.query.familyInvitations.findFirst({
+                    where: and(
+                        eq(familyInvitations.family_id, family.id),
+                        eq(familyInvitations.invited_email, invitedEmail),
+                    ),
+                });
+                expect(invitation).toBeDefined();
+                expect(invitation?.invited_by_user_id).toBe(manager.id);
+                expect(invitation?.token).toBe(result.token);
+                expect(invitation?.invited_email).toBe(invitedEmail);
+
+                // Verify expiration is ~7 days from now
+                const daysDiff =
+                    (invitation!.expires_at.getTime() - new Date().getTime()) /
+                    (1000 * 60 * 60 * 24);
+                expect(daysDiff).toBeGreaterThan(6.9);
+                expect(daysDiff).toBeLessThan(7.1);
+            });
         });
 
-        await expect(
-            $fetch(`/api/families/${familyId}/invitations`, {
-                method: "POST",
-                body: validInvitationBody,
-            }),
-        ).rejects.toMatchObject({ statusCode: 403 });
-    });
+        it("should allow inviting the same email to different families", async () => {
+            await withTestTransaction(async (tx) => {
+                // 1. Setup: Create two families with managers
+                const manager1 = await createTestUser(tx, {
+                    email: "manager1@example.com",
+                    username: "manager1",
+                });
+                const family1 = await createTestFamily(tx, manager1.id, {
+                    name: "Family 1",
+                });
 
-    it("should return 400 for an invalid email", async () => {
-        registerEndpoint(`/api/families/${familyId}/invitations`, {
-            method: "POST",
-            handler: async (event) => {
-                event.context.user = managerUser;
-                const body = await readBody(event);
-                if (!body.email || !body.email.includes("@")) {
-                    throw createError({ statusCode: 400 });
-                }
-                return {};
-            },
-        });
+                const manager2 = await createTestUser(tx, {
+                    email: "manager2@example.com",
+                    username: "manager2",
+                });
+                const family2 = await createTestFamily(tx, manager2.id, {
+                    name: "Family 2",
+                });
 
-        await expect(
-            $fetch(`/api/families/${familyId}/invitations`, {
-                method: "POST",
-                body: { email: "invalid" },
-            }),
-        ).rejects.toMatchObject({ statusCode: 400 });
-    });
+                // 2. Action: Invite same email to both families
+                const invitedEmail = "shared@example.com";
+                const invitation1 = await createInvitation(
+                    tx,
+                    family1.id,
+                    manager1.id,
+                    invitedEmail,
+                );
+                const invitation2 = await createInvitation(
+                    tx,
+                    family2.id,
+                    manager2.id,
+                    invitedEmail,
+                );
 
-    it("should successfully create an invitation and send an email", async () => {
-        // Mock DB to return that the user is a manager
-        mockDb.query.familyMembers.findFirst.mockResolvedValueOnce({
-            role: "manager",
-        });
+                // 3. Assertion: Both invitations should be created
+                expect(invitation1.token).not.toBe(invitation2.token);
+                expect(invitation1.family_name).toBe("Family 1");
+                expect(invitation2.family_name).toBe("Family 2");
 
-        registerEndpoint(`/api/families/${familyId}/invitations`, {
-            method: "POST",
-            handler: async (event) => {
-                event.context.user = managerUser;
-                const body = await readBody(event);
-
-                // Simplified mock of the full logic
-                await mockDb.insert().values({}); // Mock DB insert
-                await mockSendInvitationEmail({ to: body.email }); // Mock email send
-
-                return { message: "Invitation sent successfully" };
-            },
-        });
-
-        const response = await $fetch(`/api/families/${familyId}/invitations`, {
-            method: "POST",
-            body: validInvitationBody,
-        });
-
-        expect(response.message).toBe("Invitation sent successfully");
-        // Verify that the email sending function was called
-        expect(mockSendInvitationEmail).toHaveBeenCalledOnce();
-        expect(mockSendInvitationEmail).toHaveBeenCalledWith({
-            to: validInvitationBody.email,
+                // 4. Verify both invitations in database
+                const allInvitations =
+                    await tx.query.familyInvitations.findMany({
+                        where: eq(
+                            familyInvitations.invited_email,
+                            invitedEmail,
+                        ),
+                    });
+                expect(allInvitations.length).toBe(2);
+            });
         });
     });
 });
