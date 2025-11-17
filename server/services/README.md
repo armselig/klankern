@@ -229,9 +229,11 @@ describe("Families Service", () => {
 ```
 server/services/
 ├── README.md           # This file
+├── auth.ts             # Email verification operations
 ├── families.ts         # Family management operations
-├── invitations.ts      # Invitation operations (coming soon)
-├── users.ts            # User operations (coming soon)
+├── invitations.ts      # Family invitation operations
+├── roles.ts            # Role management operations
+├── users.ts            # User management operations
 └── ...                 # More services as needed
 ```
 
@@ -245,19 +247,29 @@ server/services/
 
 ## Migration Status
 
-This is Phase 1 of the service layer refactoring. See issue #[number] for complete plan.
+**Phase 2 Completed (2025-11-17)** - See `vibes/251117_phase2-completion-report.md` for details.
 
 **Completed:**
 
 - ✅ Infrastructure files (`server/lib/types.ts`, `server/lib/errors.ts`)
 - ✅ ESLint rules for architecture enforcement
-- ✅ First service: `families.createFamily()`
-- ✅ Refactored endpoint: `POST /api/families`
-- ✅ Service tests: `test/unit/services/families.spec.ts`
-- ✅ Documentation
+- ✅ Service modules: `families.ts`, `invitations.ts`, `roles.ts`, `users.ts`, `auth.ts`
+- ✅ All API tests converted to service layer pattern
+- ✅ Zero `registerEndpoint()` usage in test files
+- ✅ 128 tests passing with transaction isolation
+- ✅ Test execution time: ~8.25 seconds
+
+**Service Functions:**
+
+- `families.ts`: createFamily, transferOwnership
+- `invitations.ts`: createInvitation
+- `roles.ts`: getAllRoles, createRole
+- `users.ts`: getAllUsersWithRoles, createUser
+- `auth.ts`: sendVerificationEmail, verifyEmail
 
 **Next Steps:**
-See the full implementation plan in `vibes/251114_service-layer-refactoring-plan.md`
+
+Phase 3: Security & Edge Cases (authorization testing, input validation, concurrency, session management)
 
 ## Questions or Issues?
 
