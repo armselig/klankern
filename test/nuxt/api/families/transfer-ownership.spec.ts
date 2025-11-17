@@ -1,134 +1,146 @@
-import { registerEndpoint } from "@nuxt/test-utils/runtime";
-import { createError, readBody } from "h3";
 import { describe, expect, it } from "vitest";
+import { withTestTransaction, createTestUser, createTestFamily } from "#test/utils";
+import { transferOwnership } from "#server/services/families";
+import { eq } from "drizzle-orm";
+import { families, familyMembers } from "~~/server/db/schema";
+import { ForbiddenError, ValidationError } from "#server/lib/errors";
 
-describe("Family Ownership Transfer API", () => {
-    const authenticatedUser = {
-        id: "creator-123",
-        email: "creator@example.com",
-        roles: [{ name: "user" }],
-    };
+describe("Family Ownership Transfer Service", () => {
+    describe("transferOwnership", () => {
+        it("should throw ForbiddenError if user is not the family creator", async () => {
+            await withTestTransaction(async (tx) => {
+                // 1. Setup: Create creator and family
+                const creator = await createTestUser(tx, {
+                    email: "creator@example.com",
+                    username: "creator",
+                });
+                const family = await createTestFamily(tx, creator.id);
 
-    const familyId = "family-123";
-    const newOwnerId = "member-456";
+                // 2. Setup: Create a different user (not creator)
+                const nonCreator = await createTestUser(tx, {
+                    email: "other@example.com",
+                    username: "other",
+                });
 
-    describe("POST /api/families/:id/transfer-ownership", () => {
-        it("should return 401 for unauthenticated users", async () => {
-            registerEndpoint(`/api/families/${familyId}/transfer-ownership`, {
-                method: "POST",
-                handler: (event) => {
-                    if (!event.context.user) {
-                        throw createError({ statusCode: 401 });
-                    }
-                    return { success: true };
-                },
+                // 3. Setup: Create a potential new owner
+                const newOwner = await createTestUser(tx, {
+                    email: "newowner@example.com",
+                    username: "newowner",
+                });
+                await tx.insert(familyMembers).values({
+                    family_id: family.id,
+                    user_id: newOwner.id,
+                    role: "member",
+                });
+
+                // 4. Action & Assertion: Non-creator trying to transfer should fail
+                await expect(
+                    transferOwnership(tx, nonCreator.id, family.id, newOwner.id),
+                ).rejects.toThrow(ForbiddenError);
             });
-
-            await expect(
-                $fetch(`/api/families/${familyId}/transfer-ownership`, {
-                    method: "POST",
-                    body: { newOwnerId },
-                }),
-            ).rejects.toMatchObject({ statusCode: 401 });
         });
 
-        it("should return 400 for invalid newOwnerId", async () => {
-            registerEndpoint(`/api/families/${familyId}/transfer-ownership`, {
-                method: "POST",
-                handler: async (event) => {
-                    event.context.user = authenticatedUser;
-                    const body = await readBody(event);
-                    if (
-                        !body.newOwnerId ||
-                        typeof body.newOwnerId !== "string"
-                    ) {
-                        throw createError({
-                            statusCode: 400,
-                            statusMessage: "Validation failed",
-                        });
-                    }
-                    return { success: true };
-                },
+        it("should throw ValidationError if new owner is not a family member", async () => {
+            await withTestTransaction(async (tx) => {
+                // 1. Setup: Create creator and family
+                const creator = await createTestUser(tx, {
+                    email: "creator@example.com",
+                    username: "creator",
+                });
+                const family = await createTestFamily(tx, creator.id);
+
+                // 2. Setup: Create a user who is NOT a family member
+                const nonMember = await createTestUser(tx, {
+                    email: "nonmember@example.com",
+                    username: "nonmember",
+                });
+
+                // 3. Action & Assertion: Transferring to non-member should fail
+                await expect(
+                    transferOwnership(tx, creator.id, family.id, nonMember.id),
+                ).rejects.toThrow(ValidationError);
             });
-
-            await expect(
-                $fetch(`/api/families/${familyId}/transfer-ownership`, {
-                    method: "POST",
-                    body: { newOwnerId: "" },
-                }),
-            ).rejects.toMatchObject({ statusCode: 400 });
-        });
-
-        it("should return 403 if user is not the family creator", async () => {
-            registerEndpoint(`/api/families/${familyId}/transfer-ownership`, {
-                method: "POST",
-                handler: async (event) => {
-                    event.context.user = {
-                        id: "non-creator-999",
-                        email: "non-creator@example.com",
-                        roles: [{ name: "user" }],
-                    };
-                    await readBody(event);
-                    // Simulate: user is not the creator
-                    throw createError({
-                        statusCode: 403,
-                        statusMessage:
-                            "Only the family creator can transfer ownership",
-                    });
-                },
-            });
-
-            await expect(
-                $fetch(`/api/families/${familyId}/transfer-ownership`, {
-                    method: "POST",
-                    body: { newOwnerId },
-                }),
-            ).rejects.toMatchObject({ statusCode: 403 });
-        });
-
-        it("should return 400 if new owner is not a family member", async () => {
-            registerEndpoint(`/api/families/${familyId}/transfer-ownership`, {
-                method: "POST",
-                handler: async (event) => {
-                    event.context.user = authenticatedUser;
-                    await readBody(event);
-                    // Simulate: new owner is not a member
-                    throw createError({
-                        statusCode: 400,
-                        statusMessage: "New owner must be a family member",
-                    });
-                },
-            });
-
-            await expect(
-                $fetch(`/api/families/${familyId}/transfer-ownership`, {
-                    method: "POST",
-                    body: { newOwnerId: "non-member-789" },
-                }),
-            ).rejects.toMatchObject({ statusCode: 400 });
         });
 
         it("should successfully transfer ownership", async () => {
-            registerEndpoint(`/api/families/${familyId}/transfer-ownership`, {
-                method: "POST",
-                handler: async (event) => {
-                    event.context.user = authenticatedUser;
-                    const body = await readBody(event);
-                    // Simulate successful transfer
-                    expect(body.newOwnerId).toBe(newOwnerId);
-                    return { success: true };
-                },
+            await withTestTransaction(async (tx) => {
+                // 1. Setup: Create creator and family
+                const creator = await createTestUser(tx, {
+                    email: "creator@example.com",
+                    username: "creator",
+                });
+                const family = await createTestFamily(tx, creator.id);
+
+                // 2. Setup: Create new owner and add as member
+                const newOwner = await createTestUser(tx, {
+                    email: "newowner@example.com",
+                    username: "newowner",
+                });
+                await tx.insert(familyMembers).values({
+                    family_id: family.id,
+                    user_id: newOwner.id,
+                    role: "member",
+                });
+
+                // 3. Action: Transfer ownership
+                const result = await transferOwnership(
+                    tx,
+                    creator.id,
+                    family.id,
+                    newOwner.id,
+                );
+
+                // 4. Assertion: Verify result
+                expect(result).toEqual({ success: true });
+
+                // 5. Assertion: Verify database state
+                const updatedFamily = await tx.query.families.findFirst({
+                    where: eq(families.id, family.id),
+                });
+                expect(updatedFamily?.creator_id).toBe(newOwner.id);
             });
+        });
 
-            const response = await $fetch(
-                `/api/families/${familyId}/transfer-ownership`,
-                {
-                    method: "POST",
-                    body: { newOwnerId },
-                },
-            );
+        it("should allow new owner to transfer ownership again", async () => {
+            await withTestTransaction(async (tx) => {
+                // 1. Setup: Create creator and family
+                const creator = await createTestUser(tx);
+                const family = await createTestFamily(tx, creator.id);
 
-            expect(response).toEqual({ success: true });
+                // 2. Setup: Create first new owner
+                const firstNewOwner = await createTestUser(tx);
+                await tx.insert(familyMembers).values({
+                    family_id: family.id,
+                    user_id: firstNewOwner.id,
+                    role: "member",
+                });
+
+                // 3. First transfer
+                await transferOwnership(tx, creator.id, family.id, firstNewOwner.id);
+
+                // 4. Setup: Create second new owner
+                const secondNewOwner = await createTestUser(tx);
+                await tx.insert(familyMembers).values({
+                    family_id: family.id,
+                    user_id: secondNewOwner.id,
+                    role: "member",
+                });
+
+                // 5. Action: Second transfer by first new owner
+                const result = await transferOwnership(
+                    tx,
+                    firstNewOwner.id,
+                    family.id,
+                    secondNewOwner.id,
+                );
+
+                // 6. Assertion
+                expect(result).toEqual({ success: true });
+                const updatedFamily = await tx.query.families.findFirst({
+                    where: eq(families.id, family.id),
+                });
+                expect(updatedFamily?.creator_id).toBe(secondNewOwner.id);
+            });
         });
     });
 });

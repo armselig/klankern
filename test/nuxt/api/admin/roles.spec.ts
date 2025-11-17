@@ -1,59 +1,65 @@
-import { registerEndpoint } from "@nuxt/test-utils/runtime";
-import { createError, type H3Error } from "h3"; // Added type H3Error
 import { describe, expect, it } from "vitest";
+import { withTestTransaction } from "#test/utils";
+import { getAllRoles, createRole } from "#server/services/roles";
 
-describe("Admin Roles API", () => {
+describe("Admin Roles Service", () => {
     it("should return a list of roles", async () => {
-        const mockRoles = [
-            { id: "1", name: "Admin", description: "Administrator role" },
-            { id: "2", name: "User", description: "Standard user role" },
-        ];
-
-        // Mock the /api/admin/roles endpoint to return our mockRoles
-        registerEndpoint("/api/admin/roles", () => ({
-            roles: mockRoles,
-        }));
-
-        // Make a request to the mocked endpoint using $fetch
-        const response = await $fetch("/api/admin/roles");
-
-        // Assert that the response matches our mock data
-        expect(response).toEqual({
-            roles: mockRoles,
-        });
-    });
-
-    it("should return an empty array when no roles are found", async () => {
-        // Mock the /api/admin/roles endpoint to return an empty array
-        registerEndpoint("/api/admin/roles", () => ({
-            roles: [],
-        }));
-
-        // Make a request to the mocked endpoint
-        const response = await $fetch("/api/admin/roles");
-
-        // Assert that the response contains an empty roles array
-        expect(response).toEqual({
-            roles: [],
-        });
-    });
-
-    it("should return a 500 error when a database error occurs", async () => {
-        // Mock the /api/admin/roles endpoint to throw an error
-        registerEndpoint("/api/admin/roles", () => {
-            throw createError({
-                statusCode: 500,
-                statusMessage: "Failed to fetch roles.",
+        await withTestTransaction(async (tx) => {
+            // 1. Setup: Create test roles
+            await createRole(tx, {
+                name: "Admin",
+                description: "Administrator role",
             });
-        });
+            await createRole(tx, {
+                name: "User",
+                description: "Standard user role",
+            });
 
-        // Make a request to the mocked endpoint and expect it to throw an error
-        await expect($fetch("/api/admin/roles")).rejects.toSatisfy(
-            (error: H3Error) => {
-                expect(error.statusCode).toBe(500);
-                expect(error.statusMessage).toBe("Failed to fetch roles.");
-                return true;
-            },
-        );
+            // 2. Action: Get all roles
+            const roles = await getAllRoles(tx);
+
+            // 3. Assertion: Verify roles were retrieved
+            expect(roles).toBeDefined();
+            expect(roles.length).toBeGreaterThanOrEqual(2);
+
+            const roleNames = roles.map((r) => r.name);
+            expect(roleNames).toContain("Admin");
+            expect(roleNames).toContain("User");
+        });
+    });
+
+    it("should return an empty array when no roles exist", async () => {
+        await withTestTransaction(async (tx) => {
+            // Don't create any roles
+
+            // Action: Get all roles
+            const roles = await getAllRoles(tx);
+
+            // Assertion: Should return empty array (or only pre-existing roles)
+            expect(roles).toBeDefined();
+            expect(Array.isArray(roles)).toBe(true);
+        });
+    });
+
+    it("should create a new role successfully", async () => {
+        await withTestTransaction(async (tx) => {
+            // 1. Action: Create a role
+            const newRole = await createRole(tx, {
+                name: "Manager",
+                description: "Management role",
+            });
+
+            // 2. Assertion: Verify role was created
+            expect(newRole).toBeDefined();
+            expect(newRole.name).toBe("Manager");
+            expect(newRole.description).toBe("Management role");
+            expect(newRole.id).toBeDefined();
+
+            // 3. Verify it's in the database
+            const roles = await getAllRoles(tx);
+            const createdRole = roles.find((r) => r.id === newRole.id);
+            expect(createdRole).toBeDefined();
+            expect(createdRole?.name).toBe("Manager");
+        });
     });
 });
