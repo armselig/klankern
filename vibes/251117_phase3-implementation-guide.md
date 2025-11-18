@@ -1628,7 +1628,7 @@ describe("Service Name", () => {
 
 ## Advanced Test Fixtures
 
-> **✅ STATUS UPDATE (2025-11-18):** User and role fixtures (`createTestAdminUser`, `createTestUserWithRole`) have been implemented and are ready to use. See PR #54 for details. Family and session fixtures remain to be implemented.
+> **✅ STATUS UPDATE (2025-11-18):** User and role fixtures (`createTestAdminUser`, `createTestUserWithRole`) have been implemented in PR #54. Family fixtures (`createFamilyWithMembers`, `createComplexFamily`) have been implemented in PR #55. All fixtures are ready to use. Session fixtures remain to be implemented.
 
 ### Overview
 
@@ -1704,12 +1704,55 @@ export async function createTestUserWithRole(
 
 #### Family Fixtures with Members
 
-```typescript
-import { familyMembers } from "#server/db/schema";
+> **✅ IMPLEMENTED (PR #55):** These fixtures are now available in `test/utils/fixtures.ts` and exported via `test/utils/index.ts`.
 
-/**
- * Create a family with multiple members and roles
- */
+**File:** `test/utils/fixtures.ts`
+
+**Implementation Details:**
+
+- `createFamilyWithMembers` accepts `creator` and optional `members`, `managers`, and `name` parameters
+- `createComplexFamily` auto-generates creator with defaults: 1 manager + 2 regular members
+- Returns categorized arrays: `{ family, members, managers, regularMembers }`
+- Creator is added to family as manager but not included in returned member arrays (arrays only contain additional members beyond creator)
+- Use timestamp-based default names for uniqueness (`Test Family ${Date.now()}`)
+- Maintains transaction isolation via `TestTransaction` parameter
+- 14 comprehensive tests in `test/nuxt/utils/advanced-fixtures.spec.ts`
+
+**Usage Example:**
+
+```typescript
+// Create family with custom member structure
+const creator = await createTestUser(tx);
+const { family, managers, regularMembers } = await createFamilyWithMembers(
+    tx,
+    creator,
+    { managers: 2, members: 3 },
+);
+
+// Test cross-family access control
+const family1 = await createComplexFamily(tx, { name: "Family 1" });
+const family2 = await createComplexFamily(tx, { name: "Family 2" });
+
+await expect(
+    someService(tx, family1.creator.id, family2.family.id),
+).rejects.toThrow(ForbiddenError);
+
+// Test role-based permissions
+const { family, managers, regularMembers } = await createFamilyWithMembers(
+    tx,
+    creator,
+    { managers: 2, members: 3 },
+);
+
+await performManagerAction(tx, managers[0].user.id, family.id); // succeeds
+await expect(
+    performManagerAction(tx, regularMembers[0].user.id, family.id),
+).rejects.toThrow(ForbiddenError);
+```
+
+**API Signature:**
+
+```typescript
 export async function createFamilyWithMembers(
     tx: TestTransaction,
     creator: { id: string },
@@ -1718,46 +1761,13 @@ export async function createFamilyWithMembers(
         managers?: number;
         name?: string;
     },
-) {
-    const family = await createTestFamily(tx, creator.id, {
-        name: options?.name || `Test Family ${Date.now()}`,
-    });
+): Promise<{
+    family: Family;
+    members: Array<{ user: User; role: string }>;
+    managers: Array<{ user: User; role: string }>;
+    regularMembers: Array<{ user: User; role: string }>;
+}>;
 
-    const createdMembers: Array<{ user: any; role: string }> = [];
-
-    // Add managers
-    for (let i = 0; i < (options?.managers || 0); i++) {
-        const manager = await createTestUser(tx);
-        await tx.insert(familyMembers).values({
-            family_id: family.id,
-            user_id: manager.id,
-            role: "manager",
-        });
-        createdMembers.push({ user: manager, role: "manager" });
-    }
-
-    // Add regular members
-    for (let i = 0; i < (options?.members || 0); i++) {
-        const member = await createTestUser(tx);
-        await tx.insert(familyMembers).values({
-            family_id: family.id,
-            user_id: member.id,
-            role: "member",
-        });
-        createdMembers.push({ user: member, role: "member" });
-    }
-
-    return {
-        family,
-        members: createdMembers,
-        managers: createdMembers.filter((m) => m.role === "manager"),
-        regularMembers: createdMembers.filter((m) => m.role === "member"),
-    };
-}
-
-/**
- * Create a family with a specific member structure for testing
- */
 export async function createComplexFamily(
     tx: TestTransaction,
     options?: {
@@ -1765,19 +1775,13 @@ export async function createComplexFamily(
         withManagers?: number;
         withMembers?: number;
     },
-) {
-    const creator = await createTestUser(tx);
-    const result = await createFamilyWithMembers(tx, creator, {
-        name: options?.name,
-        managers: options?.withManagers || 1,
-        members: options?.withMembers || 2,
-    });
-
-    return {
-        creator,
-        ...result,
-    };
-}
+): Promise<{
+    creator: User;
+    family: Family;
+    members: Array<{ user: User; role: string }>;
+    managers: Array<{ user: User; role: string }>;
+    regularMembers: Array<{ user: User; role: string }>;
+}>;
 ```
 
 #### Session and Token Fixtures
