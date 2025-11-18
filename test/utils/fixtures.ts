@@ -147,9 +147,13 @@ export async function createTestUserWithRole(
  * Create a family with multiple members in different roles
  *
  * @param tx - Test transaction
- * @param creator - User object with id who will be the family creator
+ * @param creator - User object with id who will be the family creator (accepts any object with an id property or a full user object)
  * @param options - Optional configuration for family and members
- * @returns Object containing the family, all members, and categorized members by role
+ * @returns Object containing the family and categorized members by role.
+ *          Note: The returned arrays (members, managers, regularMembers) contain only
+ *          the additional members created by this fixture. The creator is automatically
+ *          added to the family as a manager by createTestFamily but is NOT included in
+ *          these arrays.
  */
 export async function createFamilyWithMembers(
     tx: TestTransaction,
