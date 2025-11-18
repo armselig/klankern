@@ -47,10 +47,11 @@ This part focused on creating reusable helper functions (fixtures) that signific
 
 This part will implement comprehensive authorization tests, broken down by individual service to ensure focused development and review. Refer to the "Authorization Testing" section of the [Phase 3 Implementation Guide](vibes/251117_phase3-implementation-guide.md) for detailed patterns and categories.
 
-- **Issue #4: Authorization Tests for Family Service**
+- **✅ Issue #4: Authorization Tests for Family Service** _(Completed: PR #57, merged 2025-11-18)_
     - **Title:** `test(security): add authorization tests for families service`
     - **Description:** Implement all authorization test categories (unauthenticated access, insufficient permissions, resource ownership, role-based access, and cross-family access prevention) for the `server/services/families.ts` service.
     - **PR Scope:** Add a new `describe("Authorization", ...)` block within `test/nuxt/services/families.spec.ts` containing all relevant authorization tests.
+    - **Outcome:** Implemented with 12 comprehensive authorization tests (+436 lines). Test categories: Unauthenticated Access (3 tests - empty/null/undefined userId), Insufficient Permissions (2 tests - member/manager cannot transfer), Resource Ownership (2 tests - non-creator blocked), Cross-Family Access Prevention (2 tests - multi-tenant isolation), Role-Based Access (1 test - creator-only operations), Business Rule Validation (2 tests - new owner must be member). Tests cover `createFamily` and `transferOwnership` with proper error types (UnauthorizedError, ForbiddenError, ValidationError). Total test count: 192 passing.
 
 - **Issue #5: Authorization Tests for Invitation Service**
     - **Title:** `test(security): add authorization tests for invitations service`
