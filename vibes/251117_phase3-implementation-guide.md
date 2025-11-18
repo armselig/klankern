@@ -1628,6 +1628,8 @@ describe("Service Name", () => {
 
 ## Advanced Test Fixtures
 
+> **✅ STATUS UPDATE (2025-11-18):** User and role fixtures (`createTestAdminUser`, `createTestUserWithRole`) have been implemented and are ready to use. See PR #54 for details. Family and session fixtures remain to be implemented.
+
 ### Overview
 
 As Phase 3 tests grow in complexity, particularly for authorization and role-based access control, creating rich test data becomes repetitive. Advanced test fixtures provide reusable helpers that simplify test setup and keep tests focused on assertions.
@@ -1644,17 +1646,42 @@ As Phase 3 tests grow in complexity, particularly for authorization and role-bas
 
 #### User Fixtures with Roles
 
+> **✅ IMPLEMENTED (PR #54):** These fixtures are now available in `test/utils/fixtures.ts` and exported via `test/utils/index.ts`.
+
 **File:** `test/utils/fixtures.ts`
 
-```typescript
-import { eq } from "drizzle-orm";
-import type { TestTransaction } from "#test/utils/db";
-import { users, userRoles, roles } from "#server/db/schema";
-import { customHashPassword } from "#server/utils/password";
+**Implementation Details:**
 
-/**
- * Create a user with admin role
- */
+- Both functions accept optional `email`, `username`, and `password` parameters
+- Use timestamp-based defaults for uniqueness (`${roleName}${Date.now()}@example.com`)
+- Smart role reuse: checks for existing roles before creating new ones
+- Maintains transaction isolation via `TestTransaction` parameter
+- 18 comprehensive tests in `test/nuxt/utils/advanced-fixtures.spec.ts`
+
+**Usage Example:**
+
+```typescript
+// Create admin user with defaults
+const admin = await createTestAdminUser(tx);
+
+// Create admin user with custom options
+const customAdmin = await createTestAdminUser(tx, {
+    email: "admin@example.com",
+    username: "admin",
+    password: "secure123",
+});
+
+// Create user with specific role
+const manager = await createTestUserWithRole(tx, "manager");
+
+// Create multiple users with same role (role is reused)
+const dev1 = await createTestUserWithRole(tx, "developer");
+const dev2 = await createTestUserWithRole(tx, "developer");
+```
+
+**API Signature:**
+
+```typescript
 export async function createTestAdminUser(
     tx: TestTransaction,
     options?: Partial<{
@@ -1662,76 +1689,17 @@ export async function createTestAdminUser(
         username: string;
         password: string;
     }>,
-) {
-    const timestamp = Date.now();
-    const user = await createTestUser(tx, {
-        email: options?.email || `admin${timestamp}@example.com`,
-        username: options?.username || `admin${timestamp}`,
-        password: options?.password || "password123",
-    });
+): Promise<User>;
 
-    // Find or create admin role
-    let adminRole = await tx.query.roles.findFirst({
-        where: eq(roles.name, "admin"),
-    });
-
-    if (!adminRole) {
-        [adminRole] = await tx
-            .insert(roles)
-            .values({
-                name: "admin",
-                description: "Administrator role",
-            })
-            .returning();
-    }
-
-    // Assign admin role
-    await tx.insert(userRoles).values({
-        user_id: user.id,
-        role_id: adminRole.id,
-    });
-
-    return user;
-}
-
-/**
- * Create a user with a specific role
- */
 export async function createTestUserWithRole(
     tx: TestTransaction,
     roleName: string,
     options?: Partial<{
         email: string;
         username: string;
+        password: string;
     }>,
-) {
-    const timestamp = Date.now();
-    const user = await createTestUser(tx, {
-        email: options?.email || `${roleName}${timestamp}@example.com`,
-        username: options?.username || `${roleName}${timestamp}`,
-    });
-
-    let role = await tx.query.roles.findFirst({
-        where: eq(roles.name, roleName),
-    });
-
-    if (!role) {
-        [role] = await tx
-            .insert(roles)
-            .values({
-                name: roleName,
-                description: `${roleName} role`,
-            })
-            .returning();
-    }
-
-    await tx.insert(userRoles).values({
-        user_id: user.id,
-        role_id: role.id,
-    });
-
-    return user;
-}
+): Promise<User>;
 ```
 
 #### Family Fixtures with Members
