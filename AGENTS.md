@@ -79,6 +79,19 @@ For ad-hoc commands: `podman exec klankern_nuxt pnpm run <script-name>`
 - `pnpm run db:start`: Start database container
 - `pnpm run db:stop`: Stop database container
 
+## A Friendly Letter To GitHub Copilot
+
+My dearest Copilot,
+
+Please consider this when working on the project in your shiny Github world:
+
+- You need to install the Node.js version stated in `package.json` and `.nvmrc` using NVM **every time**!
+- **ALWAYS** install dependencies using the `pnpm` version stated in `package.json`!
+- Many tests require a real DB connection. **NEVER** attempt to run them!
+
+Love,
+armselig
+
 ## Further reading
 
 - [Initial project plan](./vibes/PROJECT.md)
