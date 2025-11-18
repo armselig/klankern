@@ -505,9 +505,17 @@ describe("Invitation Test Fixtures", () => {
 
         it("should work with existing fixtures", async () => {
             await withTestTransaction(async (tx) => {
-                // Setup: Create complex family
-                const user1 = await createTestUser(tx);
-                const user2 = await createTestUser(tx);
+                // Setup: Create complex family with explicit unique values to avoid timing issues
+                const timestamp1 = Date.now();
+                const timestamp2 = timestamp1 + 1;
+                const user1 = await createTestUser(tx, {
+                    email: `user1-${timestamp1}@example.com`,
+                    username: `user1-${timestamp1}`,
+                });
+                const user2 = await createTestUser(tx, {
+                    email: `user2-${timestamp2}@example.com`,
+                    username: `user2-${timestamp2}`,
+                });
                 const family1 = await createTestFamily(tx, user1.id);
                 const family2 = await createTestFamily(tx, user2.id);
 
