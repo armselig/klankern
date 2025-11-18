@@ -1,10 +1,12 @@
 import { eq } from "drizzle-orm";
+import { randomUUID } from "node:crypto";
 import {
     users,
     families,
     familyMembers,
     roles,
     userRoles,
+    familyInvitations,
 } from "~~/server/db/schema";
 import type { TestTransaction } from "./db";
 
@@ -229,4 +231,126 @@ export async function createComplexFamily(
         creator,
         ...result,
     };
+}
+
+/**
+ * Create a valid (unexpired, pending) family invitation for testing
+ *
+ * @param tx - Test transaction
+ * @param familyId - ID of the family to invite to
+ * @param invitedByUserId - ID of the user creating the invitation
+ * @param options - Optional configuration for invitation
+ * @returns The created invitation
+ */
+export async function createValidInvitation(
+    tx: TestTransaction,
+    familyId: string,
+    invitedByUserId: string,
+    options?: {
+        invitedEmail?: string;
+        expiresInDays?: number;
+    },
+) {
+    const timestamp = Date.now();
+    const invitedEmail =
+        options?.invitedEmail || `invited-${timestamp}@example.com`;
+    const token = randomUUID();
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + (options?.expiresInDays || 7));
+
+    const [invitation] = await tx
+        .insert(familyInvitations)
+        .values({
+            family_id: familyId,
+            invited_by_user_id: invitedByUserId,
+            invited_email: invitedEmail,
+            token,
+            expires_at: expiresAt,
+            status: "pending",
+        })
+        .returning();
+
+    return invitation;
+}
+
+/**
+ * Create an expired family invitation for testing
+ *
+ * @param tx - Test transaction
+ * @param familyId - ID of the family to invite to
+ * @param invitedByUserId - ID of the user creating the invitation
+ * @param options - Optional configuration for invitation
+ * @returns The created expired invitation
+ */
+export async function createExpiredInvitation(
+    tx: TestTransaction,
+    familyId: string,
+    invitedByUserId: string,
+    options?: {
+        invitedEmail?: string;
+        expiredDaysAgo?: number;
+    },
+) {
+    const timestamp = Date.now();
+    const invitedEmail =
+        options?.invitedEmail || `expired-${timestamp}@example.com`;
+    const token = randomUUID();
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() - (options?.expiredDaysAgo || 1));
+
+    const [invitation] = await tx
+        .insert(familyInvitations)
+        .values({
+            family_id: familyId,
+            invited_by_user_id: invitedByUserId,
+            invited_email: invitedEmail,
+            token,
+            expires_at: expiresAt,
+            status: "pending",
+        })
+        .returning();
+
+    return invitation;
+}
+
+/**
+ * Create a used (accepted or declined) family invitation for testing
+ *
+ * @param tx - Test transaction
+ * @param familyId - ID of the family to invite to
+ * @param invitedByUserId - ID of the user creating the invitation
+ * @param options - Optional configuration for invitation
+ * @returns The created used invitation
+ */
+export async function createUsedInvitation(
+    tx: TestTransaction,
+    familyId: string,
+    invitedByUserId: string,
+    options?: {
+        invitedEmail?: string;
+        status?: "accepted" | "declined" | "expired" | "cancelled";
+        expiresInDays?: number;
+    },
+) {
+    const timestamp = Date.now();
+    const invitedEmail =
+        options?.invitedEmail || `used-${timestamp}@example.com`;
+    const token = randomUUID();
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + (options?.expiresInDays || 7));
+    const status = options?.status || "accepted";
+
+    const [invitation] = await tx
+        .insert(familyInvitations)
+        .values({
+            family_id: familyId,
+            invited_by_user_id: invitedByUserId,
+            invited_email: invitedEmail,
+            token,
+            expires_at: expiresAt,
+            status,
+        })
+        .returning();
+
+    return invitation;
 }
