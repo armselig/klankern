@@ -111,12 +111,14 @@ export async function createTestUserWithRole(
     options?: Partial<{
         email: string;
         username: string;
+        password: string;
     }>,
 ) {
     const timestamp = Date.now();
     const user = await createTestUser(tx, {
         email: options?.email || `${roleName}${timestamp}@example.com`,
         username: options?.username || `${roleName}${timestamp}`,
+        password: options?.password || "hashedpassword",
     });
 
     let role = await tx.query.roles.findFirst({

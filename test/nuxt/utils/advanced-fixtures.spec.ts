@@ -318,6 +318,20 @@ describe("Advanced Test Fixtures", () => {
             });
         });
 
+        it("should accept custom password option", async () => {
+            await withTestTransaction(async (tx) => {
+                const customPassword = "custompassword789";
+
+                // Action: Create user with custom password
+                const user = await createTestUserWithRole(tx, "analyst", {
+                    password: customPassword,
+                });
+
+                // Assertions
+                expect(user.password).toBe(customPassword);
+            });
+        });
+
         it("should create multiple users with the same role", async () => {
             await withTestTransaction(async (tx) => {
                 const roleName = "developer";
