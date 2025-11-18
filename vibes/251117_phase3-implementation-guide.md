@@ -1628,7 +1628,7 @@ describe("Service Name", () => {
 
 ## Advanced Test Fixtures
 
-> **✅ STATUS UPDATE (2025-11-18):** User and role fixtures (`createTestAdminUser`, `createTestUserWithRole`) have been implemented in PR #54. Family fixtures (`createFamilyWithMembers`, `createComplexFamily`) have been implemented in PR #55. All fixtures are ready to use. Session fixtures remain to be implemented.
+> **✅ STATUS UPDATE (2025-11-18):** All Phase 3 advanced test fixtures have been implemented. User and role fixtures (`createTestAdminUser`, `createTestUserWithRole`) were implemented in PR #54. Family fixtures (`createFamilyWithMembers`, `createComplexFamily`) were implemented in PR #55. Invitation/session fixtures (`createValidInvitation`, `createExpiredInvitation`, `createUsedInvitation`) were implemented in PR #56. All fixtures are ready to use. **Part 1 (Foundational Work) of Phase 3 is now complete.**
 
 ### Overview
 
@@ -1786,80 +1786,98 @@ export async function createComplexFamily(
 
 #### Session and Token Fixtures
 
+> **✅ IMPLEMENTED (PR #56):** These fixtures are now available in `test/utils/fixtures.ts` and exported via `test/utils/index.ts`.
+
+**File:** `test/utils/fixtures.ts`
+
+**Implementation Details:**
+
+- All fixtures use `randomUUID()` from Node crypto module for secure token generation
+- Timestamp-based email uniqueness (`invited-${Date.now()}@example.com`) prevents collisions
+- Support flexible expiration timing via optional parameters
+- Maintain transaction isolation via `TestTransaction` parameter
+- 21 comprehensive tests in `test/nuxt/utils/invitation-fixtures.spec.ts`
+
+**Usage Examples:**
+
 ```typescript
-import { invitations, emailVerificationTokens } from "#server/db/schema";
-import { generateToken } from "#server/utils/tokens";
+// Create valid (unexpired, pending) invitation with defaults
+const validInvitation = await createValidInvitation(tx, familyId, managerId);
+expect(validInvitation.status).toBe("pending");
+expect(validInvitation.expires_at.getTime()).toBeGreaterThan(Date.now());
 
-/**
- * Create an expired invitation for testing
- */
-export async function createExpiredInvitation(
+// Create valid invitation with custom expiration and email
+const customInvitation = await createValidInvitation(tx, familyId, managerId, {
+    invitedEmail: "specific@example.com",
+    expiresInDays: 14,
+});
+
+// Create expired invitation for testing expiration validation
+const expiredInvitation = await createExpiredInvitation(
+    tx,
+    familyId,
+    managerId,
+);
+expect(expiredInvitation.expires_at.getTime()).toBeLessThan(Date.now());
+
+// Create invitation expired specific days ago
+const oldInvitation = await createExpiredInvitation(tx, familyId, managerId, {
+    expiredDaysAgo: 5,
+});
+
+// Create used invitation for testing reuse prevention
+const usedInvitation = await createUsedInvitation(tx, familyId, managerId, {
+    status: "accepted",
+});
+expect(usedInvitation.status).toBe("accepted");
+
+// Create invitation with different statuses
+const declinedInvitation = await createUsedInvitation(tx, familyId, managerId, {
+    status: "declined",
+});
+const cancelledInvitation = await createUsedInvitation(
+    tx,
+    familyId,
+    managerId,
+    {
+        status: "cancelled",
+    },
+);
+```
+
+**API Signatures:**
+
+```typescript
+createValidInvitation(
     tx: TestTransaction,
-    creatorId: string,
     familyId: string,
-    email?: string,
-) {
-    const [invitation] = await tx
-        .insert(invitations)
-        .values({
-            family_id: familyId,
-            email: email || `expired${Date.now()}@example.com`,
-            token: generateToken(),
-            expires_at: new Date(Date.now() - 86400000), // Expired yesterday
-            created_by: creatorId,
-        })
-        .returning();
+    invitedByUserId: string,
+    options?: {
+        invitedEmail?: string;
+        expiresInDays?: number; // Default: 7
+    }
+): Promise<FamilyInvitation>;
 
-    return invitation;
-}
-
-/**
- * Create a valid invitation for testing
- */
-export async function createValidInvitation(
+createExpiredInvitation(
     tx: TestTransaction,
-    creatorId: string,
     familyId: string,
-    email?: string,
-) {
-    const [invitation] = await tx
-        .insert(invitations)
-        .values({
-            family_id: familyId,
-            email: email || `invited${Date.now()}@example.com`,
-            token: generateToken(),
-            expires_at: new Date(Date.now() + 86400000 * 7), // Expires in 7 days
-            created_by: creatorId,
-        })
-        .returning();
+    invitedByUserId: string,
+    options?: {
+        invitedEmail?: string;
+        expiredDaysAgo?: number; // Default: 1
+    }
+): Promise<FamilyInvitation>;
 
-    return invitation;
-}
-
-/**
- * Create an already-used invitation for testing
- */
-export async function createUsedInvitation(
+createUsedInvitation(
     tx: TestTransaction,
-    creatorId: string,
     familyId: string,
-    acceptedBy: string,
-) {
-    const [invitation] = await tx
-        .insert(invitations)
-        .values({
-            family_id: familyId,
-            email: `used${Date.now()}@example.com`,
-            token: generateToken(),
-            expires_at: new Date(Date.now() + 86400000 * 7),
-            created_by: creatorId,
-            accepted_at: new Date(),
-            accepted_by: acceptedBy,
-        })
-        .returning();
-
-    return invitation;
-}
+    invitedByUserId: string,
+    options?: {
+        invitedEmail?: string;
+        status?: "accepted" | "declined" | "expired" | "cancelled"; // Default: "accepted"
+        expiresInDays?: number; // Default: 7
+    }
+): Promise<FamilyInvitation>;
 ```
 
 ### Using Advanced Fixtures in Tests
