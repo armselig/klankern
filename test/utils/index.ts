@@ -2,4 +2,9 @@
 export { withTestTransaction } from "./db";
 export type { TestTransaction } from "./db";
 export { loginAs, createAndLoginUser } from "./auth";
-export { createTestUser, createTestFamily } from "./fixtures";
+export {
+    createTestUser,
+    createTestFamily,
+    createTestAdminUser,
+    createTestUserWithRole,
+} from "./fixtures";
