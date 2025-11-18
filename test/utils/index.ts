@@ -7,4 +7,6 @@ export {
     createTestFamily,
     createTestAdminUser,
     createTestUserWithRole,
+    createFamilyWithMembers,
+    createComplexFamily,
 } from "./fixtures";
