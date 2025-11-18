@@ -142,3 +142,91 @@ export async function createTestUserWithRole(
 
     return user;
 }
+
+/**
+ * Create a family with multiple members in different roles
+ *
+ * @param tx - Test transaction
+ * @param creator - User object with id who will be the family creator (accepts any object with an id property or a full user object)
+ * @param options - Optional configuration for family and members
+ * @returns Object containing the family and categorized members by role.
+ *          Note: The returned arrays (members, managers, regularMembers) contain only
+ *          the additional members created by this fixture. The creator is automatically
+ *          added to the family as a manager by createTestFamily but is NOT included in
+ *          these arrays.
+ */
+export async function createFamilyWithMembers(
+    tx: TestTransaction,
+    creator: { id: string },
+    options?: {
+        members?: number;
+        managers?: number;
+        name?: string;
+    },
+) {
+    const family = await createTestFamily(tx, creator.id, {
+        name: options?.name || `Test Family ${Date.now()}`,
+    });
+
+    const createdMembers: Array<{
+        user: typeof users.$inferSelect;
+        role: string;
+    }> = [];
+
+    // Add managers
+    for (let i = 0; i < (options?.managers || 0); i++) {
+        const manager = await createTestUser(tx);
+        await tx.insert(familyMembers).values({
+            family_id: family.id,
+            user_id: manager.id,
+            role: "manager",
+        });
+        createdMembers.push({ user: manager, role: "manager" });
+    }
+
+    // Add regular members
+    for (let i = 0; i < (options?.members || 0); i++) {
+        const member = await createTestUser(tx);
+        await tx.insert(familyMembers).values({
+            family_id: family.id,
+            user_id: member.id,
+            role: "member",
+        });
+        createdMembers.push({ user: member, role: "member" });
+    }
+
+    return {
+        family,
+        members: createdMembers,
+        managers: createdMembers.filter((m) => m.role === "manager"),
+        regularMembers: createdMembers.filter((m) => m.role === "member"),
+    };
+}
+
+/**
+ * Create a complex family with creator and multiple members for testing
+ *
+ * @param tx - Test transaction
+ * @param options - Optional configuration for the family setup
+ * @returns Object containing creator, family, and all members
+ */
+export async function createComplexFamily(
+    tx: TestTransaction,
+    options?: {
+        name?: string;
+        withManagers?: number;
+        withMembers?: number;
+    },
+) {
+    const creator = await createTestUser(tx);
+    const result = await createFamilyWithMembers(tx, creator, {
+        name: options?.name,
+        managers: options?.withManagers ?? 1,
+        members: options?.withMembers ?? 2,
+    });
+
+    return {
+        creator,
+        ...result,
+    };
+}

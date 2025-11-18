@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { withTestTransaction } from "#test/utils";
 import {
     createTestAdminUser,
     createTestUserWithRole,
+    createTestUser,
+    createFamilyWithMembers,
+    createComplexFamily,
 } from "#test/utils/fixtures";
-import { users, roles, userRoles } from "#server/db/schema";
+import { users, roles, userRoles, familyMembers } from "#server/db/schema";
 
 describe("Advanced Test Fixtures", () => {
     describe("createTestAdminUser", () => {
@@ -452,6 +455,328 @@ describe("Advanced Test Fixtures", () => {
                     where: eq(userRoles.user_id, adminUser.id),
                 });
                 expect(adminUserRoles).toBeDefined();
+            });
+        });
+    });
+
+    describe("createFamilyWithMembers", () => {
+        it("should create a family with the creator as manager", async () => {
+            await withTestTransaction(async (tx) => {
+                // Setup: Create creator
+                const creator = await createTestUser(tx);
+
+                // Action: Create family with members
+                const result = await createFamilyWithMembers(tx, creator);
+
+                // Assertions: Verify family was created
+                expect(result.family).toBeDefined();
+                expect(result.family.id).toBeDefined();
+                expect(result.family.creator_id).toBe(creator.id);
+
+                // Verify creator is a member with manager role
+                const creatorMembership =
+                    await tx.query.familyMembers.findFirst({
+                        where: and(
+                            eq(familyMembers.family_id, result.family.id),
+                            eq(familyMembers.user_id, creator.id),
+                        ),
+                    });
+                expect(creatorMembership).toBeDefined();
+                expect(creatorMembership?.role).toBe("manager");
+            });
+        });
+
+        it("should create family with specified number of members", async () => {
+            await withTestTransaction(async (tx) => {
+                // Setup: Create creator
+                const creator = await createTestUser(tx);
+
+                // Action: Create family with 3 regular members
+                const result = await createFamilyWithMembers(tx, creator, {
+                    members: 3,
+                });
+
+                // Assertions: Verify 3 regular members were created
+                expect(result.regularMembers).toHaveLength(3);
+                expect(result.members).toHaveLength(3);
+
+                // Verify all members have member role
+                for (const { user, role } of result.regularMembers) {
+                    expect(role).toBe("member");
+                    const membership = await tx.query.familyMembers.findFirst({
+                        where: and(
+                            eq(familyMembers.family_id, result.family.id),
+                            eq(familyMembers.user_id, user.id),
+                        ),
+                    });
+                    expect(membership?.role).toBe("member");
+                }
+            });
+        });
+
+        it("should create family with specified number of managers", async () => {
+            await withTestTransaction(async (tx) => {
+                // Setup: Create creator
+                const creator = await createTestUser(tx);
+
+                // Action: Create family with 2 managers
+                const result = await createFamilyWithMembers(tx, creator, {
+                    managers: 2,
+                });
+
+                // Assertions: Verify 2 managers were created
+                expect(result.managers).toHaveLength(2);
+                expect(result.members).toHaveLength(2);
+
+                // Verify all have manager role
+                for (const { user, role } of result.managers) {
+                    expect(role).toBe("manager");
+                    const membership = await tx.query.familyMembers.findFirst({
+                        where: and(
+                            eq(familyMembers.family_id, result.family.id),
+                            eq(familyMembers.user_id, user.id),
+                        ),
+                    });
+                    expect(membership?.role).toBe("manager");
+                }
+            });
+        });
+
+        it("should create family with both members and managers", async () => {
+            await withTestTransaction(async (tx) => {
+                // Setup: Create creator
+                const creator = await createTestUser(tx);
+
+                // Action: Create family with 2 managers and 3 members
+                const result = await createFamilyWithMembers(tx, creator, {
+                    members: 3,
+                    managers: 2,
+                });
+
+                // Assertions: Verify correct counts
+                expect(result.managers).toHaveLength(2);
+                expect(result.regularMembers).toHaveLength(3);
+                expect(result.members).toHaveLength(5); // Total of both
+
+                // Verify roles are correct
+                expect(result.managers.every((m) => m.role === "manager")).toBe(
+                    true,
+                );
+                expect(
+                    result.regularMembers.every((m) => m.role === "member"),
+                ).toBe(true);
+            });
+        });
+
+        it("should accept custom family name", async () => {
+            await withTestTransaction(async (tx) => {
+                // Setup: Create creator
+                const creator = await createTestUser(tx);
+                const customName = "My Custom Family Name";
+
+                // Action: Create family with custom name
+                const result = await createFamilyWithMembers(tx, creator, {
+                    name: customName,
+                });
+
+                // Assertions: Verify family has custom name
+                expect(result.family.name).toBe(customName);
+            });
+        });
+
+        it("should return empty arrays when no members specified", async () => {
+            await withTestTransaction(async (tx) => {
+                // Setup: Create creator
+                const creator = await createTestUser(tx);
+
+                // Action: Create family with no additional members
+                const result = await createFamilyWithMembers(tx, creator);
+
+                // Assertions: Verify empty arrays
+                expect(result.members).toHaveLength(0);
+                expect(result.managers).toHaveLength(0);
+                expect(result.regularMembers).toHaveLength(0);
+
+                // Verify only creator is a member
+                const allMembers = await tx.query.familyMembers.findMany({
+                    where: eq(familyMembers.family_id, result.family.id),
+                });
+                expect(allMembers).toHaveLength(1);
+                expect(allMembers[0].user_id).toBe(creator.id);
+            });
+        });
+
+        it("should create distinct users for each member", async () => {
+            await withTestTransaction(async (tx) => {
+                // Setup: Create creator
+                const creator = await createTestUser(tx);
+
+                // Action: Create family with multiple members
+                const result = await createFamilyWithMembers(tx, creator, {
+                    members: 3,
+                    managers: 2,
+                });
+
+                // Assertions: All users should be distinct
+                const userIds = result.members.map((m) => m.user.id);
+                const uniqueUserIds = new Set(userIds);
+                expect(uniqueUserIds.size).toBe(5);
+
+                // None should be the creator
+                expect(userIds).not.toContain(creator.id);
+            });
+        });
+    });
+
+    describe("createComplexFamily", () => {
+        it("should create family with creator and default member counts", async () => {
+            await withTestTransaction(async (tx) => {
+                // Action: Create complex family with defaults
+                const result = await createComplexFamily(tx);
+
+                // Assertions: Verify creator was created
+                expect(result.creator).toBeDefined();
+                expect(result.creator.id).toBeDefined();
+
+                // Verify family was created with creator
+                expect(result.family).toBeDefined();
+                expect(result.family.creator_id).toBe(result.creator.id);
+
+                // Verify default counts (1 manager, 2 members)
+                expect(result.managers).toHaveLength(1);
+                expect(result.regularMembers).toHaveLength(2);
+            });
+        });
+
+        it("should create family with custom member counts", async () => {
+            await withTestTransaction(async (tx) => {
+                // Action: Create complex family with custom counts
+                const result = await createComplexFamily(tx, {
+                    withManagers: 3,
+                    withMembers: 5,
+                });
+
+                // Assertions: Verify custom counts
+                expect(result.managers).toHaveLength(3);
+                expect(result.regularMembers).toHaveLength(5);
+                expect(result.members).toHaveLength(8);
+            });
+        });
+
+        it("should accept custom family name", async () => {
+            await withTestTransaction(async (tx) => {
+                const customName = "Complex Test Family";
+
+                // Action: Create complex family with custom name
+                const result = await createComplexFamily(tx, {
+                    name: customName,
+                });
+
+                // Assertions: Verify family has custom name
+                expect(result.family.name).toBe(customName);
+            });
+        });
+
+        it("should create creator as family manager", async () => {
+            await withTestTransaction(async (tx) => {
+                // Action: Create complex family
+                const result = await createComplexFamily(tx);
+
+                // Assertions: Verify creator is a member with manager role
+                const creatorMembership =
+                    await tx.query.familyMembers.findFirst({
+                        where: and(
+                            eq(familyMembers.family_id, result.family.id),
+                            eq(familyMembers.user_id, result.creator.id),
+                        ),
+                    });
+                expect(creatorMembership).toBeDefined();
+                expect(creatorMembership?.role).toBe("manager");
+            });
+        });
+
+        it("should create family with zero additional members", async () => {
+            await withTestTransaction(async (tx) => {
+                // Action: Create complex family with zero additional members
+                const result = await createComplexFamily(tx, {
+                    withManagers: 0,
+                    withMembers: 0,
+                });
+
+                // Assertions: Verify only creator is a member
+                expect(result.managers).toHaveLength(0);
+                expect(result.regularMembers).toHaveLength(0);
+                expect(result.members).toHaveLength(0);
+
+                const allMembers = await tx.query.familyMembers.findMany({
+                    where: eq(familyMembers.family_id, result.family.id),
+                });
+                expect(allMembers).toHaveLength(1);
+                expect(allMembers[0].user_id).toBe(result.creator.id);
+            });
+        });
+
+        it("should create multiple distinct complex families", async () => {
+            await withTestTransaction(async (tx) => {
+                // Action: Create multiple complex families
+                const family1 = await createComplexFamily(tx, {
+                    name: "Family 1",
+                });
+                const family2 = await createComplexFamily(tx, {
+                    name: "Family 2",
+                });
+
+                // Assertions: All should be distinct
+                expect(family1.family.id).not.toBe(family2.family.id);
+                expect(family1.creator.id).not.toBe(family2.creator.id);
+                expect(family1.family.name).toBe("Family 1");
+                expect(family2.family.name).toBe("Family 2");
+
+                // Each family should have its own members
+                const family1Members = await tx.query.familyMembers.findMany({
+                    where: eq(familyMembers.family_id, family1.family.id),
+                });
+                const family2Members = await tx.query.familyMembers.findMany({
+                    where: eq(familyMembers.family_id, family2.family.id),
+                });
+
+                // Default is 1 manager + 2 members + creator = 4 total
+                expect(family1Members).toHaveLength(4);
+                expect(family2Members).toHaveLength(4);
+            });
+        });
+
+        it("should properly categorize members by role", async () => {
+            await withTestTransaction(async (tx) => {
+                // Action: Create complex family
+                const result = await createComplexFamily(tx, {
+                    withManagers: 2,
+                    withMembers: 3,
+                });
+
+                // Assertions: Verify all managers have manager role
+                for (const { user, role } of result.managers) {
+                    expect(role).toBe("manager");
+                    const membership = await tx.query.familyMembers.findFirst({
+                        where: and(
+                            eq(familyMembers.family_id, result.family.id),
+                            eq(familyMembers.user_id, user.id),
+                        ),
+                    });
+                    expect(membership?.role).toBe("manager");
+                }
+
+                // Verify all regular members have member role
+                for (const { user, role } of result.regularMembers) {
+                    expect(role).toBe("member");
+                    const membership = await tx.query.familyMembers.findFirst({
+                        where: and(
+                            eq(familyMembers.family_id, result.family.id),
+                            eq(familyMembers.user_id, user.id),
+                        ),
+                    });
+                    expect(membership?.role).toBe("member");
+                }
             });
         });
     });
