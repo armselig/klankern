@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { withTestTransaction, createTestUser, createTestFamily } from "#test/utils";
+import {
+    withTestTransaction,
+    createTestUser,
+    createTestFamily,
+} from "#test/utils";
 import { transferOwnership } from "#server/services/families";
 import { eq } from "drizzle-orm";
 import { families, familyMembers } from "~~/server/db/schema";
@@ -35,7 +39,12 @@ describe("Family Ownership Transfer Service", () => {
 
                 // 4. Action & Assertion: Non-creator trying to transfer should fail
                 await expect(
-                    transferOwnership(tx, nonCreator.id, family.id, newOwner.id),
+                    transferOwnership(
+                        tx,
+                        nonCreator.id,
+                        family.id,
+                        newOwner.id,
+                    ),
                 ).rejects.toThrow(ForbiddenError);
             });
         });
@@ -116,7 +125,12 @@ describe("Family Ownership Transfer Service", () => {
                 });
 
                 // 3. First transfer
-                await transferOwnership(tx, creator.id, family.id, firstNewOwner.id);
+                await transferOwnership(
+                    tx,
+                    creator.id,
+                    family.id,
+                    firstNewOwner.id,
+                );
 
                 // 4. Setup: Create second new owner
                 const secondNewOwner = await createTestUser(tx);
