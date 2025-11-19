@@ -67,6 +67,15 @@ export async function createFamily(
         throw new UnauthorizedError("User ID is required to create a family");
     }
 
+    // Input Validation
+    if (!input.name || input.name.trim() === "") {
+        throw new ValidationError("Family name cannot be empty");
+    }
+
+    if (input.name.length > 100) {
+        throw new ValidationError("Family name cannot exceed 100 characters");
+    }
+
     // Step 1: Create the new family record
     const [insertedFamily] = await dbConnection
         .insert(families)
