@@ -190,7 +190,10 @@ describe("Concurrency Tests", () => {
             });
         });
 
-        it("should prevent concurrent ownership transfers", async () => {
+        it("should prevent ownership transfer by non-owner after transfer", async () => {
+            // This test verifies that after ownership is transferred,
+            // the original owner can no longer transfer ownership
+            // (not a true race condition due to transaction isolation)
             await withTestTransaction(async (tx) => {
                 const creator = await createTestUser(tx);
                 const family = await createTestFamily(tx, creator.id);
@@ -219,6 +222,68 @@ describe("Concurrency Tests", () => {
                 await expect(
                     transferOwnership(tx, creator.id, family.id, member2.id),
                 ).rejects.toThrow(ForbiddenError);
+            });
+        });
+
+        it("should handle race condition in concurrent ownership transfers", async () => {
+            // This test simulates a race condition using Promise.allSettled
+            // Note: Unlike invitation acceptance, transferOwnership has no database
+            // constraint preventing concurrent transfers. Both operations read the
+            // same initial state and may both succeed (last write wins).
+            //
+            // This demonstrates a potential race condition in production that could
+            // be solved by adding optimistic locking or a database constraint.
+            await withTestTransaction(async (tx) => {
+                const creator = await createTestUser(tx);
+                const family = await createTestFamily(tx, creator.id);
+
+                // Add two members to the family
+                const member1 = await createTestUser(tx);
+                const member2 = await createTestUser(tx);
+
+                await tx.insert(familyMembers).values({
+                    family_id: family.id,
+                    user_id: member1.id,
+                    role: "member",
+                });
+
+                await tx.insert(familyMembers).values({
+                    family_id: family.id,
+                    user_id: member2.id,
+                    role: "member",
+                });
+
+                // Attempt to transfer ownership to both members simultaneously
+                const results = await Promise.allSettled([
+                    transferOwnership(tx, creator.id, family.id, member1.id),
+                    transferOwnership(tx, creator.id, family.id, member2.id),
+                ]);
+
+                // Without database constraints, both may succeed (last write wins)
+                // OR one may fail if the timing allows the second to see the update
+                const fulfilled = results.filter(
+                    (r) => r.status === "fulfilled",
+                );
+                const rejected = results.filter((r) => r.status === "rejected");
+
+                expect(fulfilled.length + rejected.length).toBe(2);
+
+                // If any failed, verify it's a ForbiddenError
+                rejected.forEach((result) => {
+                    if (result.status === "rejected") {
+                        expect(result.reason).toBeInstanceOf(ForbiddenError);
+                    }
+                });
+
+                // Verify final state: family should have one of the two members as owner
+                const finalFamily = await tx.query.families.findFirst({
+                    where: eq(families.id, family.id),
+                });
+
+                expect(
+                    finalFamily?.creator_id === member1.id ||
+                        finalFamily?.creator_id === member2.id,
+                ).toBe(true);
             });
         });
 
