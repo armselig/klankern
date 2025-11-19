@@ -4,6 +4,7 @@ import type { DbConnection } from "#server/lib/types";
 import {
     ForbiddenError,
     NotFoundError,
+    UnauthorizedError,
     ValidationError,
 } from "#server/lib/errors";
 import { logger } from "#server/utils/logger";
@@ -22,6 +23,22 @@ export async function createFamily(
     userId: string,
     data: { name: string },
 ) {
+    // Authorization check
+    if (!userId) {
+        throw new UnauthorizedError("User ID is required to create a family");
+    }
+
+    // Input Validation
+    if (!data.name || data.name.trim() === "") {
+        throw new ValidationError("Family name cannot be empty");
+    }
+
+    if (data.name.length > 100) {
+        throw new ValidationError(
+            "Family name cannot exceed 100 characters",
+        );
+    }
+
     // Business logic: Create family and add creator as manager
     const [insertedFamily] = await dbConnection
         .insert(families)

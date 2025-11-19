@@ -53,15 +53,17 @@ This part will implement comprehensive authorization tests, broken down by indiv
     - **PR Scope:** Add a new `describe("Authorization", ...)` block within `test/nuxt/services/families.spec.ts` containing all relevant authorization tests.
     - **Outcome:** Implemented with 12 comprehensive authorization tests (+436 lines). Test categories: Unauthenticated Access (3 tests - empty/null/undefined userId), Insufficient Permissions (2 tests - member/manager cannot transfer), Resource Ownership (2 tests - non-creator blocked), Cross-Family Access Prevention (2 tests - multi-tenant isolation), Role-Based Access (1 test - creator-only operations), Business Rule Validation (2 tests - new owner must be member). Tests cover `createFamily` and `transferOwnership` with proper error types (UnauthorizedError, ForbiddenError, ValidationError). Total test count: 192 passing.
 
-- **Issue #5: Authorization Tests for Invitation Service**
+- **✅ Issue #5: Authorization Tests for Invitation Service** _(Completed: PR #59, Issue #48, merged 2025-11-19)_
     - **Title:** `test(security): add authorization tests for invitations service`
     - **Description:** Implement authorization tests for the `server/services/invitations.ts` service, focusing on ensuring that only authorized users (e.g., family managers) can create, accept, or decline invitations.
     - **PR Scope:** Add authorization tests to `test/nuxt/services/invitations.spec.ts`.
+    - **Outcome:** Implemented with 5 comprehensive authorization tests. Test categories: manager-only operations, regular member prevention, non-member prevention, conflict prevention (existing members). Follow-up commit (b6da223f) added authentication check (`UnauthorizedError` for unauthenticated users) and improved test fixtures with counters to prevent race conditions. Total authorization tests: 10 (5 in services + 5 in API tests). All tests passing.
 
-- **Issue #6: Authorization Tests for Admin Services (Users & Roles)**
+- **✅ Issue #6: Authorization Tests for Admin Services (Users & Roles)** _(Completed: Issue #49, merged 2025-11-19)_
     - **Title:** `test(security): add authorization tests for admin (users, roles) services`
     - **Description:** Implement authorization tests for `server/services/users.ts` and `server/services/roles.ts` services, verifying that only users with appropriate administrative roles can perform user and role management operations.
     - **PR Scope:** Add authorization tests to `test/nuxt/services/users.spec.ts` and `test/nuxt/services/roles.spec.ts`.
+    - **Outcome:** Implemented with 12 comprehensive authorization tests (6 for users, 6 for roles). Added admin-only authorization to `getAllUsersWithRoles`, `createUser`, `getAllRoles`, and `createRole` service functions. Test categories: admin-only access, non-admin prevention, unauthenticated prevention. Uses `UnauthorizedError` for unauthenticated and `ForbiddenError` for non-admin users. Refactored API handlers to use updated services. Follow-up commit (6cb936c1) extracted `isAdmin()` helper to `server/lib/authorization.ts` to eliminate code duplication and documented authorization patterns. All 22 authorization tests passing. **Part 2 (Authorization Testing) of Phase 3 is now complete.**
 
 ---
 

@@ -358,3 +358,26 @@
 - Fixed first name and last name not being submitted on user update by including `first_name` and `last_name` in the `UserResponse` schema and ensuring the API endpoint returns these fields.
 - Fixed incorrect status value in the users table by ensuring the `updatedAt` timestamp is explicitly updated in the database when a user's status is toggled, and by correcting the missing `sql` import in the status update API.
 - Committed minor, unspecified changes to `app/assets/styles/base.css` and `app/assets/styles/vars.css` as requested by the user.
+
+## 2025-11-19 11:47:00
+
+- **Phase 3 Test Suite Refactoring: Authorization Testing Complete (Part 2 of 5)**
+- Reviewed last 2 commits related to Phase 3 authorization testing (b6da223f and b9fef432).
+- Identified and addressed code quality issues:
+    - **Code Duplication:** `isAdmin()` function was duplicated in `server/services/users.ts` and `server/services/roles.ts`
+    - **Solution:** Extracted shared `isAdmin()` helper to `server/lib/authorization.ts`
+- Created refactoring commit (6cb936c1) that:
+    - Eliminated code duplication by creating shared authorization utilities
+    - Updated both services to use the shared helper
+    - Documented authorization patterns in Phase 3 implementation guide
+    - Added "Administrative Authorization Pattern" section with usage examples
+    - Noted caching consideration for future performance optimization
+- **All 22 authorization tests passing** (users: 6, roles: 6, invitations: 10)
+- Updated knowledge graph with refactoring details and authorization pattern documentation
+- Updated `vibes/251118_phase3-breakdown.md` to mark Issues #5 and #6 as complete
+- Created comprehensive completion report at `vibes/251119_phase3-authorization-complete.md`
+- **Authorization pattern standardized:**
+    - Authentication check first (UnauthorizedError for missing userId)
+    - Authorization check second (ForbiddenError for insufficient permissions)
+    - Service parameter ordering: `(dbConnection, userId, ...otherParams)`
+- **Part 2 of Phase 3 now complete** - Ready to proceed with Part 3 (Input Validation Testing)

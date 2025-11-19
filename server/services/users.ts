@@ -94,8 +94,49 @@ export async function createUser(
         throw new ForbiddenError("User does not have admin privileges");
     }
 
+    // Input Validation
+    const { email, username, password } = data;
+
+    // Email validation
+    if (!email || email.trim() === "") {
+        throw new ValidationError("Email cannot be empty");
+    }
+    if (email.length > 255) {
+        throw new ValidationError("Email cannot exceed 255 characters");
+    }
+    // Basic email format validation
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        throw new ValidationError("Invalid email format");
+    }
+
+    // Username validation
+    if (!username || username.trim() === "") {
+        throw new ValidationError("Username cannot be empty");
+    }
+    if (username.length < 3) {
+        throw new ValidationError("Username must be at least 3 characters long");
+    }
+    if (username.length > 50) {
+        throw new ValidationError("Username cannot exceed 50 characters");
+    }
+    // Alphanumeric, underscore, or hyphen
+    if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+        throw new ValidationError("Username can only contain alphanumeric characters, underscores, or hyphens");
+    }
+
+    // Password validation
+    if (!password || password === "") {
+        throw new ValidationError("Password cannot be empty");
+    }
+    if (password.length < 8) {
+        throw new ValidationError("Password must be at least 8 characters long");
+    }
+    if (password.length > 128) {
+        throw new ValidationError("Password cannot exceed 128 characters");
+    }
+
     try {
-        const hashedPassword = await customHashPassword(data.password);
+        const hashedPassword = await customHashPassword(password);
 
         const [createdUser] = await dbConnection
             .insert(users)
