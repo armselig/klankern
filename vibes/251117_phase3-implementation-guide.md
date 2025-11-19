@@ -390,6 +390,69 @@ describe("getFamilyMembers - Cross-Family Access", () => {
 });
 ```
 
+### Administrative Authorization Pattern
+
+For operations that should only be performed by administrators, a centralized `isAdmin` helper function has been created in `server/lib/authorization.ts`.
+
+**`isAdmin` Helper:**
+
+This function checks if a given `userId` has the `admin` role in the database.
+
+```typescript
+// server/lib/authorization.ts
+import { and, eq } from "drizzle-orm";
+import { userRoles } from "#server/db/schema";
+import type { DbConnection } from "#server/lib/types";
+
+export async function isAdmin(
+    dbConnection: DbConnection,
+    userId: string,
+): Promise<boolean> {
+    const userRole = await dbConnection.query.userRoles.findFirst({
+        where: and(eq(userRoles.user_id, userId)),
+        with: {
+            role: true,
+        },
+    });
+
+    return userRole?.role.name === "admin";
+}
+```
+
+**Usage in Services:**
+
+Service functions that require admin privileges should use this helper to perform authorization checks at the beginning of the function.
+
+```typescript
+// server/services/users.ts
+import { isAdmin } from "#server/lib/authorization";
+import { UnauthorizedError, ForbiddenError } from "#server/lib/errors";
+
+export async function someAdminOnlyOperation(
+    dbConnection: DbConnection,
+    userId: string | null | undefined,
+    // ... other params
+) {
+    if (!userId) {
+        throw new UnauthorizedError("User not authenticated");
+    }
+
+    if (!(await isAdmin(dbConnection, userId))) {
+        throw new ForbiddenError("User does not have admin privileges");
+    }
+
+    // ... rest of the function logic
+}
+```
+
+This pattern ensures that all administrative operations are consistently protected.
+
+#### Caching Admin Status (Consideration)
+
+To avoid repeated database queries for the admin status within the same request, we could consider implementing a middleware that checks the user's role once and caches the result in the request context (e.g., `event.context.isAdmin = true`).
+
+This would be a performance optimization for API endpoints that call multiple admin-only service functions. For now, the `isAdmin` helper is called in each service function as needed.
+
 ### Authorization Testing Checklist
 
 For each service function that modifies data or accesses restricted data:

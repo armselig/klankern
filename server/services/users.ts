@@ -1,4 +1,4 @@
-import { and, eq, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { users, userRoles, roles } from "#server/db/schema";
 import type { DbConnection } from "#server/lib/types";
 import {
@@ -9,20 +9,7 @@ import {
 } from "#server/lib/errors";
 import { logger } from "#server/utils/logger";
 import { customHashPassword } from "#server/utils/password";
-
-async function isAdmin(
-    dbConnection: DbConnection,
-    userId: string,
-): Promise<boolean> {
-    const userRole = await dbConnection.query.userRoles.findFirst({
-        where: and(eq(userRoles.user_id, userId)),
-        with: {
-            role: true,
-        },
-    });
-
-    return userRole?.role.name === "admin";
-}
+import { isAdmin } from "#server/lib/authorization";
 
 /**
  * Retrieves all users with their roles from the database.
