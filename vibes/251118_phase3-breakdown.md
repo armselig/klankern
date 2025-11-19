@@ -71,10 +71,11 @@ This part will implement comprehensive authorization tests, broken down by indiv
 
 This section focuses on adding robust input validation tests to protect against various attack vectors and ensure data integrity. Refer to the "Input Validation Testing" section of the [Phase 3 Implementation Guide](vibes/251117_phase3-implementation-guide.md).
 
-- **Issue #7: Input Validation Tests for User-Facing Services**
+- **✅ Issue #7: Input Validation Tests for User-Facing Services** _(Completed: PR #60, Issue #50, merged 2025-11-19)_
     - **Title:** `test(security): add input validation tests for families and users services`
     - **Description:** Implement input validation tests for services that directly handle user-provided input, such as `server/services/families.ts` and `server/services/users.ts`. This includes testing for SQL injection payloads, XSS script injection, invalid data formats (e.g., malformed UUIDs, emails), and boundary values (e.g., empty strings, extremely long strings, special characters).
     - **PR Scope:** Add `describe("Input Validation", ...)` blocks to `test/nuxt/services/families.spec.ts` and `test/nuxt/services/users.spec.ts`.
+    - **Outcome:** Implemented with 13 comprehensive input validation tests (2 families + 11 users). **Families service:** validates family name not empty and max 100 chars. **Users service:** validates email format/presence/max 255 chars, username alphanumeric/-/\_/length 3-50 chars, password presence/min 8/max 128 chars. All validations throw `ValidationError`. Code review identified and fixed critical password validation bug (redundant checks with wrong error message). Test assertions updated from string to class comparison for type safety. All 230 tests passing. Input validation pattern established: early validation before business logic, clear error messages, security-focused (DoS prevention via length limits, basic injection prevention via format checks). **Note:** XSS sanitization and additional services (invitations, auth, roles) deferred to future work.
 
 ---
 
