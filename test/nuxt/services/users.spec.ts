@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { withTestTransaction } from "#test/utils/db";
 import { createTestUser, createTestAdminUser } from "#test/utils/fixtures";
 import { getAllUsersWithRoles, createUser } from "#server/services/users";
-import { UnauthorizedError, ForbiddenError, ValidationError } from "#server/lib/errors";
+import { UnauthorizedError, ForbiddenError } from "#server/lib/errors";
 
 describe("users service", () => {
     describe("getAllUsersWithRoles", () => {

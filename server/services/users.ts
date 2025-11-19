@@ -114,14 +114,18 @@ export async function createUser(
         throw new ValidationError("Username cannot be empty");
     }
     if (username.length < 3) {
-        throw new ValidationError("Username must be at least 3 characters long");
+        throw new ValidationError(
+            "Username must be at least 3 characters long",
+        );
     }
     if (username.length > 50) {
         throw new ValidationError("Username cannot exceed 50 characters");
     }
     // Alphanumeric, underscore, or hyphen
     if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
-        throw new ValidationError("Username can only contain alphanumeric characters, underscores, or hyphens");
+        throw new ValidationError(
+            "Username can only contain alphanumeric characters, underscores, or hyphens",
+        );
     }
 
     // Password validation
@@ -129,7 +133,9 @@ export async function createUser(
         throw new ValidationError("Password cannot be empty");
     }
     if (password.length < 8) {
-        throw new ValidationError("Password must be at least 8 characters long");
+        throw new ValidationError(
+            "Password must be at least 8 characters long",
+        );
     }
     if (password.length > 128) {
         throw new ValidationError("Password cannot exceed 128 characters");

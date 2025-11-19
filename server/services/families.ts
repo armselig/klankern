@@ -73,9 +73,7 @@ export async function createFamily(
     }
 
     if (input.name.length > 100) {
-        throw new ValidationError(
-            "Family name cannot exceed 100 characters",
-        );
+        throw new ValidationError("Family name cannot exceed 100 characters");
     }
 
     // Step 1: Create the new family record
