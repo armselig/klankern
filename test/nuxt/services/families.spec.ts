@@ -506,4 +506,27 @@ describe("Family Service", () => {
             });
         });
     });
+
+    describe("Input Validation", () => {
+        describe("createFamily", () => {
+            it("should throw ValidationError if family name is an empty string", async () => {
+                await withTestTransaction(async (tx) => {
+                    const user = await createTestUser(tx);
+                    await expect(
+                        createFamily(tx, user.id, { name: "" }),
+                    ).rejects.toThrow(ValidationError);
+                });
+            });
+
+            it("should throw ValidationError if family name exceeds maximum length (100 characters)", async () => {
+                await withTestTransaction(async (tx) => {
+                    const user = await createTestUser(tx);
+                    const longName = "a".repeat(101); // Max length is 100
+                    await expect(
+                        createFamily(tx, user.id, { name: longName }),
+                    ).rejects.toThrow(ValidationError);
+                });
+            });
+        });
+    });
 });
