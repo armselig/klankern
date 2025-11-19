@@ -6,6 +6,7 @@ import {
     ConflictError,
     UnauthorizedError,
     ForbiddenError,
+    ValidationError,
 } from "#server/lib/errors";
 import { logger } from "#server/utils/logger";
 import { customHashPassword } from "#server/utils/password";
@@ -129,10 +130,10 @@ export async function createUser(
     }
 
     // Password validation
-    if (!password || password === "") {
+    if (!password || password.trim() === "") {
         throw new ValidationError("Password cannot be empty");
     }
-    if (!password || password.trim() === "") {
+    if (password.length < 8) {
         throw new ValidationError(
             "Password must be at least 8 characters long",
         );

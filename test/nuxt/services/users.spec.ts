@@ -2,7 +2,11 @@ import { describe, it, expect } from "vitest";
 import { withTestTransaction } from "#test/utils/db";
 import { createTestUser, createTestAdminUser } from "#test/utils/fixtures";
 import { getAllUsersWithRoles, createUser } from "#server/services/users";
-import { UnauthorizedError, ForbiddenError } from "#server/lib/errors";
+import {
+    UnauthorizedError,
+    ForbiddenError,
+    ValidationError,
+} from "#server/lib/errors";
 
 describe("users service", () => {
     describe("getAllUsersWithRoles", () => {
@@ -82,7 +86,7 @@ describe("users service", () => {
                             username: "testuser",
                             password: "password",
                         }),
-                    ).rejects.toThrow("ValidationError");
+                    ).rejects.toThrow(ValidationError);
                 });
             });
 
@@ -95,7 +99,7 @@ describe("users service", () => {
                             username: "testuser",
                             password: "password",
                         }),
-                    ).rejects.toThrow("ValidationError");
+                    ).rejects.toThrow(ValidationError);
                 });
             });
 
@@ -109,7 +113,7 @@ describe("users service", () => {
                             username: "testuser",
                             password: "password",
                         }),
-                    ).rejects.toThrow("ValidationError");
+                    ).rejects.toThrow(ValidationError);
                 });
             });
 
@@ -122,7 +126,7 @@ describe("users service", () => {
                             username: "",
                             password: "password",
                         }),
-                    ).rejects.toThrow("ValidationError");
+                    ).rejects.toThrow(ValidationError);
                 });
             });
 
@@ -135,7 +139,7 @@ describe("users service", () => {
                             username: "ab",
                             password: "password",
                         }),
-                    ).rejects.toThrow("ValidationError");
+                    ).rejects.toThrow(ValidationError);
                 });
             });
 
@@ -149,7 +153,7 @@ describe("users service", () => {
                             username: longUsername,
                             password: "password",
                         }),
-                    ).rejects.toThrow("ValidationError");
+                    ).rejects.toThrow(ValidationError);
                 });
             });
 
@@ -162,7 +166,7 @@ describe("users service", () => {
                             username: "user!",
                             password: "password",
                         }),
-                    ).rejects.toThrow("ValidationError");
+                    ).rejects.toThrow(ValidationError);
                 });
             });
 
@@ -175,7 +179,7 @@ describe("users service", () => {
                             username: "testuser",
                             password: "",
                         }),
-                    ).rejects.toThrow("ValidationError");
+                    ).rejects.toThrow(ValidationError);
                 });
             });
 
@@ -188,7 +192,7 @@ describe("users service", () => {
                             username: "testuser",
                             password: "short",
                         }),
-                    ).rejects.toThrow("ValidationError");
+                    ).rejects.toThrow(ValidationError);
                 });
             });
 
@@ -202,7 +206,7 @@ describe("users service", () => {
                             username: "testuser",
                             password: longPassword,
                         }),
-                    ).rejects.toThrow("ValidationError");
+                    ).rejects.toThrow(ValidationError);
                 });
             });
         });
