@@ -1,11 +1,19 @@
 import { describe, it, expect } from "vitest";
 import { withTestTransaction } from "#test/utils/db";
-import { createFamilyWithMembers, createTestUser } from "#test/utils/fixtures";
-import { createInvitation } from "#server/services/invitations";
+import {
+    createFamilyWithMembers,
+    createTestUser,
+    createExpiredInvitation,
+} from "#test/utils/fixtures";
+import {
+    createInvitation,
+    acceptInvitation,
+} from "#server/services/invitations";
 import {
     ForbiddenError,
     ConflictError,
     UnauthorizedError,
+    ValidationError,
 } from "#server/lib/errors";
 
 describe("invitations service", () => {
@@ -117,6 +125,111 @@ describe("invitations service", () => {
                             regularMember.user.email,
                         ),
                     ).rejects.toThrow(ConflictError);
+                });
+            });
+        });
+
+        describe("Invitation Token Security", () => {
+            it("should generate unique tokens for each invitation", async () => {
+                await withTestTransaction(async (tx) => {
+                    const creator = await createTestUser(tx);
+                    const { family, managers } = await createFamilyWithMembers(
+                        tx,
+                        creator,
+                        {
+                            managers: 1,
+                        },
+                    );
+                    const manager = managers[0];
+
+                    const invitation1 = await createInvitation(
+                        tx,
+                        manager.user.id,
+                        family.id,
+                        "new.member1@example.com",
+                    );
+
+                    const invitation2 = await createInvitation(
+                        tx,
+                        manager.user.id,
+                        family.id,
+                        "new.member2@example.com",
+                    );
+
+                    expect(invitation1.token).not.toBe(invitation2.token);
+                });
+            });
+        });
+    });
+    describe("acceptInvitation", () => {
+        describe("Invitation Token Security", () => {
+            it("should reject invitation with invalid token", async () => {
+                await withTestTransaction(async (tx) => {
+                    const user = await createTestUser(tx);
+
+                    await expect(
+                        acceptInvitation(tx, user.id, "invalid-token"),
+                    ).rejects.toThrow(ValidationError);
+                });
+            });
+
+            it("should prevent accepting expired invitation", async () => {
+                await withTestTransaction(async (tx) => {
+                    const creator = await createTestUser(tx);
+                    const { family, managers } = await createFamilyWithMembers(
+                        tx,
+                        creator,
+                        {
+                            managers: 1,
+                        },
+                    );
+                    const manager = managers[0];
+                    const invitedUser = await createTestUser(tx);
+
+                    const expiredInvitation = await createExpiredInvitation(
+                        tx,
+                        family.id,
+                        manager.user.id,
+                        { invitedEmail: invitedUser.email },
+                    );
+
+                    await expect(
+                        acceptInvitation(
+                            tx,
+                            invitedUser.id,
+                            expiredInvitation.token,
+                        ),
+                    ).rejects.toThrow(ValidationError);
+                });
+            });
+
+            it("should invalidate invitation after acceptance", async () => {
+                await withTestTransaction(async (tx) => {
+                    const creator = await createTestUser(tx);
+                    const { family, managers } = await createFamilyWithMembers(
+                        tx,
+                        creator,
+                        {
+                            managers: 1,
+                        },
+                    );
+                    const manager = managers[0];
+                    const invitedUser = await createTestUser(tx);
+
+                    const { token } = await createInvitation(
+                        tx,
+                        manager.user.id,
+                        family.id,
+                        invitedUser.email,
+                    );
+
+                    // Accept invitation
+                    await acceptInvitation(tx, invitedUser.id, token);
+
+                    // Try to accept again (should fail)
+                    await expect(
+                        acceptInvitation(tx, invitedUser.id, token),
+                    ).rejects.toThrow(ValidationError);
                 });
             });
         });
