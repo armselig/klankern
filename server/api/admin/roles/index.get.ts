@@ -11,9 +11,7 @@ export default defineEventHandler(
         logger.http(`${event.method} ${event.path}`);
         await requireAdmin(event);
         try {
-            const allRoles = await db.transaction(async (tx) => {
-                return await getAllRoles(tx);
-            });
+            const allRoles = await getAllRoles(db, event.context.user?.id);
             return { roles: allRoles };
         } catch (error) {
             throw translateError(error);

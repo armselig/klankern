@@ -15,9 +15,11 @@ export default defineEventHandler(
             const body = await readBody(event);
             const newRoleData = createRoleSchema.parse(body);
 
-            const newRole = await db.transaction(async (tx) => {
-                return await createRole(tx, newRoleData);
-            });
+            const newRole = await createRole(
+                db,
+                event.context.user?.id,
+                newRoleData,
+            );
 
             return { role: newRole };
         } catch (error) {

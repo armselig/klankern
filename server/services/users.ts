@@ -1,17 +1,50 @@
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { users, userRoles, roles } from "#server/db/schema";
 import type { DbConnection } from "#server/lib/types";
-import { InternalError, ConflictError } from "#server/lib/errors";
+import {
+    InternalError,
+    ConflictError,
+    UnauthorizedError,
+    ForbiddenError,
+} from "#server/lib/errors";
 import { logger } from "#server/utils/logger";
 import { customHashPassword } from "#server/utils/password";
+
+async function isAdmin(
+    dbConnection: DbConnection,
+    userId: string,
+): Promise<boolean> {
+    const userRole = await dbConnection.query.userRoles.findFirst({
+        where: and(eq(userRoles.user_id, userId)),
+        with: {
+            role: true,
+        },
+    });
+
+    return userRole?.role.name === "admin";
+}
 
 /**
  * Retrieves all users with their roles from the database.
  *
  * @param dbConnection - Database connection (db or transaction)
+ * @param userId - ID of the user performing the operation
  * @returns Array of users with their role information
+ * @throws {UnauthorizedError} If user is not authenticated
+ * @throws {ForbiddenError} If user is not an admin
  */
-export async function getAllUsersWithRoles(dbConnection: DbConnection) {
+export async function getAllUsersWithRoles(
+    dbConnection: DbConnection,
+    userId: string | null | undefined,
+) {
+    if (!userId) {
+        throw new UnauthorizedError("User not authenticated");
+    }
+
+    if (!(await isAdmin(dbConnection, userId))) {
+        throw new ForbiddenError("User does not have admin privileges");
+    }
+
     const usersWithRoles = await dbConnection
         .select({
             id: users.id,
@@ -45,13 +78,17 @@ export async function getAllUsersWithRoles(dbConnection: DbConnection) {
  * Creates a new user with assigned roles.
  *
  * @param dbConnection - Database connection (db or transaction)
+ * @param userId - ID of the user performing the operation
  * @param data - User creation data including email, username, password, and optional role IDs
  * @returns The newly created user (without password)
+ * @throws {UnauthorizedError} If user is not authenticated
+ * @throws {ForbiddenError} If user is not an admin
  * @throws {ConflictError} If a user with the same email or username already exists
  * @throws {InternalError} If user creation fails
  */
 export async function createUser(
     dbConnection: DbConnection,
+    userId: string | null | undefined,
     data: {
         email: string;
         username: string;
@@ -62,6 +99,14 @@ export async function createUser(
         roleIds?: string[];
     },
 ) {
+    if (!userId) {
+        throw new UnauthorizedError("User not authenticated");
+    }
+
+    if (!(await isAdmin(dbConnection, userId))) {
+        throw new ForbiddenError("User does not have admin privileges");
+    }
+
     try {
         const hashedPassword = await customHashPassword(data.password);
 
