@@ -79,19 +79,21 @@ This section focuses on adding robust input validation tests to protect against 
 
 ---
 
-## Part 4: Thematic Testing Categories
+## ✅ Part 4: Thematic Testing Categories (COMPLETE)
 
 These categories represent cohesive units of work that can be implemented in single, focused issues.
 
-- **Issue #8: Concurrency Testing**
+- **✅ Issue #8: Concurrency Testing** _(Completed: PR #61, merged 2025-11-19)_
     - **Title:** `test(security): add concurrency tests for unique constraints and race conditions`
     - **Description:** Implement all concurrency tests as described in the "Concurrency Testing" section of the [Phase 3 Implementation Guide](vibes/251117_phase3-implementation-guide.md). This includes verifying unique constraint enforcement (e.g., duplicate email/username registration) and handling of simultaneous operations to prevent race conditions.
     - **PR Scope:** A new test file or suite dedicated to concurrency scenarios, or additions to existing relevant service test files.
+    - **Outcome:** Implemented with 10 comprehensive concurrency tests. Test categories: Unique Constraints (3 tests - email/username duplicates), Simultaneous Invitations (3 tests - same email/race conditions), Concurrent Ownership Transfers (4 tests - race conditions/constraint enforcement). Discovered critical race condition in `transferOwnership` requiring future fix. Total test count: 240 passing. All tests use transaction isolation with `withTestTransaction`. **Part 4 (Concurrency Testing) complete.**
 
-- **Issue #9: Session Management Testing**
+- **✅ Issue #9: Session Management Testing** _(Completed: Issue #52, commit 7fca97fc, 2025-11-19)_
     - **Title:** `test(security): add session management tests for token flows`
     - **Description:** Implement all session management tests as outlined in the "Session Management Testing" section of the [Phase 3 Implementation Guide](vibes/251117_phase3-implementation-guide.md). This covers the email verification flow, invitation token generation and validation, token expiration handling, and prevention of token reuse.
     - **PR Scope:** Add tests to `test/nuxt/services/auth.spec.ts` and `test/nuxt/services/invitations.spec.ts` related to token security and session management.
+    - **Outcome:** Implemented with 7 comprehensive session management tests. Created new test file `test/nuxt/services/auth.spec.ts` with 3 email verification tests (valid token success, invalid token rejection, token reuse prevention, 1 todo for expiration). Added 4 invitation token security tests to `test/nuxt/services/invitations.spec.ts` (unique token generation, invalid token rejection, expired invitation prevention, invalidation after acceptance). All token fixtures use `randomUUID()` for secure generation. Email verification token expiration test marked as todo since `sendVerificationEmail` doesn't set expiration dates yet. Total test count: 248 passing (1 todo). Commit: 7fca97fc (+185 lines). **Part 4 (Session Management Testing) of Phase 3 is now complete.**
 
 ---
 
