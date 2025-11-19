@@ -132,7 +132,7 @@ export async function createUser(
     if (!password || password === "") {
         throw new ValidationError("Password cannot be empty");
     }
-    if (password.length < 8) {
+    if (!password || password.trim() === "") {
         throw new ValidationError(
             "Password must be at least 8 characters long",
         );
