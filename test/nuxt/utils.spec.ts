@@ -65,8 +65,8 @@ describe("Test Utilities", () => {
             // For this unit test of the fixture utilities, we'll just test user creation.
             const user = await createTestUser(tx);
             expect(user).toBeDefined();
-            expect(user.username).toMatch(/^testuser\d+$/);
-            expect(user.email).toMatch(/^test-\d+@example\.com$/);
+            expect(user.username).toMatch(/^testuser\d+\d+$/);
+            expect(user.email).toMatch(/^test-\d+-\d+@example\.com$/);
 
             const userInDb = await tx.query.users.findFirst({
                 where: (users, { eq }) => eq(users.id, user.id),

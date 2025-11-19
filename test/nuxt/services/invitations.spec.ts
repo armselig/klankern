@@ -2,11 +2,34 @@ import { describe, it, expect } from "vitest";
 import { withTestTransaction } from "#test/utils/db";
 import { createFamilyWithMembers, createTestUser } from "#test/utils/fixtures";
 import { createInvitation } from "#server/services/invitations";
-import { ForbiddenError, ConflictError } from "#server/lib/errors";
+import {
+    ForbiddenError,
+    ConflictError,
+    UnauthorizedError,
+} from "#server/lib/errors";
 
 describe("invitations service", () => {
     describe("createInvitation", () => {
         describe("Authorization", () => {
+            it("should throw UnauthorizedError when user is not authenticated", async () => {
+                await withTestTransaction(async (tx) => {
+                    const creator = await createTestUser(tx);
+                    const { family } = await createFamilyWithMembers(
+                        tx,
+                        creator,
+                    );
+
+                    await expect(
+                        createInvitation(
+                            tx,
+                            null,
+                            family.id,
+                            "new.member@example.com",
+                        ),
+                    ).rejects.toThrow(UnauthorizedError);
+                });
+            });
+
             it("should allow a family manager to create an invitation", async () => {
                 await withTestTransaction(async (tx) => {
                     const creator = await createTestUser(tx);
@@ -22,8 +45,8 @@ describe("invitations service", () => {
 
                     const invitation = await createInvitation(
                         tx,
-                        family.id,
                         manager.user.id,
+                        family.id,
                         "new.member@example.com",
                     );
 
@@ -47,8 +70,8 @@ describe("invitations service", () => {
                     await expect(
                         createInvitation(
                             tx,
-                            family.id,
                             regularMember.user.id,
+                            family.id,
                             "new.member@example.com",
                         ),
                     ).rejects.toThrow(ForbiddenError);
@@ -67,8 +90,8 @@ describe("invitations service", () => {
                     await expect(
                         createInvitation(
                             tx,
-                            family.id,
                             nonMember.id,
+                            family.id,
                             "new.member@example.com",
                         ),
                     ).rejects.toThrow(ForbiddenError);
@@ -89,8 +112,8 @@ describe("invitations service", () => {
                     await expect(
                         createInvitation(
                             tx,
-                            family.id,
                             manager.user.id,
+                            family.id,
                             regularMember.user.email,
                         ),
                     ).rejects.toThrow(ConflictError);

@@ -10,15 +10,21 @@ import {
 } from "~~/server/db/schema";
 import type { TestTransaction } from "./db";
 
+let userCounter = 0;
+let validInvitationCounter = 0;
+let expiredInvitationCounter = 0;
+let usedInvitationCounter = 0;
+
 // User Fixture
 export async function createTestUser(
     tx: TestTransaction,
     userData: Partial<typeof users.$inferInsert> = {},
 ) {
+    userCounter++;
     const timestamp = Date.now();
     const defaultUser: typeof users.$inferInsert = {
-        email: `test-${timestamp}@example.com`,
-        username: `testuser${timestamp}`,
+        email: `test-${timestamp}-${userCounter}@example.com`,
+        username: `testuser${timestamp}${userCounter}`,
         password: "hashedpassword", // Use a fixed hash for tests
         display_name: "Test User",
         ...userData,
@@ -68,10 +74,12 @@ export async function createTestAdminUser(
         password: string;
     }>,
 ) {
+    userCounter++;
     const timestamp = Date.now();
     const user = await createTestUser(tx, {
-        email: options?.email || `admin${timestamp}@example.com`,
-        username: options?.username || `admin${timestamp}`,
+        email:
+            options?.email || `admin-${timestamp}-${userCounter}@example.com`,
+        username: options?.username || `admin${timestamp}${userCounter}`,
         password: options?.password || "password123",
     });
 
@@ -116,10 +124,13 @@ export async function createTestUserWithRole(
         password: string;
     }>,
 ) {
+    userCounter++;
     const timestamp = Date.now();
     const user = await createTestUser(tx, {
-        email: options?.email || `${roleName}${timestamp}@example.com`,
-        username: options?.username || `${roleName}${timestamp}`,
+        email:
+            options?.email ||
+            `${roleName}-${timestamp}-${userCounter}@example.com`,
+        username: options?.username || `${roleName}${timestamp}${userCounter}`,
         password: options?.password || "hashedpassword",
     });
 
@@ -251,9 +262,11 @@ export async function createValidInvitation(
         expiresInDays?: number;
     },
 ) {
+    validInvitationCounter++;
     const timestamp = Date.now();
     const invitedEmail =
-        options?.invitedEmail || `invited-${timestamp}@example.com`;
+        options?.invitedEmail ||
+        `invited-${timestamp}-${validInvitationCounter}@example.com`;
     const token = randomUUID();
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + (options?.expiresInDays || 7));
@@ -291,9 +304,11 @@ export async function createExpiredInvitation(
         expiredDaysAgo?: number;
     },
 ) {
+    expiredInvitationCounter++;
     const timestamp = Date.now();
     const invitedEmail =
-        options?.invitedEmail || `expired-${timestamp}@example.com`;
+        options?.invitedEmail ||
+        `expired-${timestamp}-${expiredInvitationCounter}@example.com`;
     const token = randomUUID();
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() - (options?.expiredDaysAgo || 1));
@@ -332,9 +347,11 @@ export async function createUsedInvitation(
         expiresInDays?: number;
     },
 ) {
+    usedInvitationCounter++;
     const timestamp = Date.now();
     const invitedEmail =
-        options?.invitedEmail || `used-${timestamp}@example.com`;
+        options?.invitedEmail ||
+        `used-${timestamp}-${usedInvitationCounter}@example.com`;
     const token = randomUUID();
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + (options?.expiresInDays || 7));
