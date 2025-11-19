@@ -1,65 +1,111 @@
 import { describe, expect, it } from "vitest";
-import { withTestTransaction } from "#test/utils";
+import {
+    withTestTransaction,
+    createTestUser,
+    createTestAdminUser,
+} from "#test/utils";
 import { getAllRoles, createRole } from "#server/services/roles";
+import { ForbiddenError, UnauthorizedError } from "#server/lib/errors";
 
 describe("Admin Roles Service", () => {
-    it("should return a list of roles", async () => {
-        await withTestTransaction(async (tx) => {
-            // 1. Setup: Create test roles
-            await createRole(tx, {
-                name: "Admin",
-                description: "Administrator role",
+    describe("getAllRoles", () => {
+        it("should return a list of roles", async () => {
+            await withTestTransaction(async (tx) => {
+                const admin = await createTestAdminUser(tx);
+                // 1. Setup: Create test roles
+                await createRole(tx, admin.id, {
+                    name: "Admin",
+                    description: "Administrator role",
+                });
+                await createRole(tx, admin.id, {
+                    name: "User",
+                    description: "Standard user role",
+                });
+
+                // 2. Action: Get all roles
+                const roles = await getAllRoles(tx, admin.id);
+
+                // 3. Assertion: Verify roles were retrieved
+                expect(roles).toBeDefined();
+                expect(roles.length).toBeGreaterThanOrEqual(2);
+
+                const roleNames = roles.map((r) => r.name);
+                expect(roleNames).toContain("Admin");
+                expect(roleNames).toContain("User");
             });
-            await createRole(tx, {
-                name: "User",
-                description: "Standard user role",
+        });
+
+        it("should return an empty array when no roles exist", async () => {
+            await withTestTransaction(async (tx) => {
+                const admin = await createTestAdminUser(tx);
+                // Don't create any roles
+
+                // Action: Get all roles
+                const roles = await getAllRoles(tx, admin.id);
+
+                // Assertion: Should return empty array (or only pre-existing roles)
+                expect(roles).toBeDefined();
+                expect(Array.isArray(roles)).toBe(true);
             });
+        });
 
-            // 2. Action: Get all roles
-            const roles = await getAllRoles(tx);
+        it("should throw ForbiddenError for non-admin users", async () => {
+            await withTestTransaction(async (tx) => {
+                const user = await createTestUser(tx);
+                await expect(getAllRoles(tx, user.id)).rejects.toThrow(
+                    ForbiddenError,
+                );
+            });
+        });
 
-            // 3. Assertion: Verify roles were retrieved
-            expect(roles).toBeDefined();
-            expect(roles.length).toBeGreaterThanOrEqual(2);
-
-            const roleNames = roles.map((r) => r.name);
-            expect(roleNames).toContain("Admin");
-            expect(roleNames).toContain("User");
+        it("should throw UnauthorizedError for unauthenticated users", async () => {
+            await withTestTransaction(async (tx) => {
+                await expect(getAllRoles(tx, null)).rejects.toThrow(
+                    UnauthorizedError,
+                );
+            });
         });
     });
 
-    it("should return an empty array when no roles exist", async () => {
-        await withTestTransaction(async (tx) => {
-            // Don't create any roles
+    describe("createRole", () => {
+        it("should create a new role successfully", async () => {
+            await withTestTransaction(async (tx) => {
+                const admin = await createTestAdminUser(tx);
+                // 1. Action: Create a role
+                const newRole = await createRole(tx, admin.id, {
+                    name: "Manager",
+                    description: "Management role",
+                });
 
-            // Action: Get all roles
-            const roles = await getAllRoles(tx);
+                // 2. Assertion: Verify role was created
+                expect(newRole).toBeDefined();
+                expect(newRole.name).toBe("Manager");
+                expect(newRole.description).toBe("Management role");
+                expect(newRole.id).toBeDefined();
 
-            // Assertion: Should return empty array (or only pre-existing roles)
-            expect(roles).toBeDefined();
-            expect(Array.isArray(roles)).toBe(true);
-        });
-    });
-
-    it("should create a new role successfully", async () => {
-        await withTestTransaction(async (tx) => {
-            // 1. Action: Create a role
-            const newRole = await createRole(tx, {
-                name: "Manager",
-                description: "Management role",
+                // 3. Verify it's in the database
+                const roles = await getAllRoles(tx, admin.id);
+                const createdRole = roles.find((r) => r.id === newRole.id);
+                expect(createdRole).toBeDefined();
+                expect(createdRole?.name).toBe("Manager");
             });
+        });
 
-            // 2. Assertion: Verify role was created
-            expect(newRole).toBeDefined();
-            expect(newRole.name).toBe("Manager");
-            expect(newRole.description).toBe("Management role");
-            expect(newRole.id).toBeDefined();
+        it("should throw ForbiddenError for non-admin users", async () => {
+            await withTestTransaction(async (tx) => {
+                const user = await createTestUser(tx);
+                await expect(
+                    createRole(tx, user.id, { name: "test-role" }),
+                ).rejects.toThrow(ForbiddenError);
+            });
+        });
 
-            // 3. Verify it's in the database
-            const roles = await getAllRoles(tx);
-            const createdRole = roles.find((r) => r.id === newRole.id);
-            expect(createdRole).toBeDefined();
-            expect(createdRole?.name).toBe("Manager");
+        it("should throw UnauthorizedError for unauthenticated users", async () => {
+            await withTestTransaction(async (tx) => {
+                await expect(
+                    createRole(tx, null, { name: "test-role" }),
+                ).rejects.toThrow(UnauthorizedError);
+            });
         });
     });
 });

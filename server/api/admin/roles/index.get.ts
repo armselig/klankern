@@ -9,9 +9,7 @@ export default defineEventHandler(
     async (event): Promise<{ roles: RoleResponse[] }> => {
         logger.http(`${event.method} ${event.path}`);
         try {
-            const allRoles = await db.transaction(async (tx) => {
-                return await getAllRoles(tx);
-            });
+            const allRoles = await getAllRoles(db, event.context.user?.id);
             return { roles: allRoles };
         } catch (error) {
             throw translateError(error);
