@@ -34,9 +34,7 @@ export async function createFamily(
     }
 
     if (data.name.length > 100) {
-        throw new ValidationError(
-            "Family name cannot exceed 100 characters",
-        );
+        throw new ValidationError("Family name cannot exceed 100 characters");
     }
 
     // Business logic: Create family and add creator as manager
