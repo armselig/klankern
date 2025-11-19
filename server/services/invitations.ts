@@ -2,7 +2,11 @@ import { and, eq } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 import { familyInvitations, familyMembers, users } from "#server/db/schema";
 import type { DbConnection } from "#server/lib/types";
-import { ForbiddenError, ConflictError } from "#server/lib/errors";
+import {
+    ForbiddenError,
+    ConflictError,
+    UnauthorizedError,
+} from "#server/lib/errors";
 import { logger } from "#server/utils/logger";
 import { notDeleted } from "#server/db/helpers";
 
@@ -10,24 +14,31 @@ import { notDeleted } from "#server/db/helpers";
  * Creates a family invitation.
  *
  * @param dbConnection - Database connection (db or transaction)
+ * @param userId - ID of the user sending the invitation
  * @param familyId - ID of the family
- * @param invitedByUserId - ID of the user sending the invitation
  * @param invitedEmail - Email address to invite
  * @returns Invitation details (token, expires_at, family_name)
+ * @throws {UnauthorizedError} If user is not authenticated
  * @throws {ForbiddenError} If inviting user is not a manager
  * @throws {ConflictError} If invited email is already a member
  */
 export async function createInvitation(
     dbConnection: DbConnection,
+    userId: string | null | undefined,
     familyId: string,
-    invitedByUserId: string,
     invitedEmail: string,
 ) {
+    if (!userId) {
+        throw new UnauthorizedError(
+            "User must be authenticated to create an invitation",
+        );
+    }
+
     // 1. Authorize: Check if the current user is a manager of the family
     const membership = await dbConnection.query.familyMembers.findFirst({
         where: and(
             eq(familyMembers.family_id, familyId),
-            eq(familyMembers.user_id, invitedByUserId),
+            eq(familyMembers.user_id, userId),
             notDeleted(familyMembers),
         ),
         with: {
@@ -65,14 +76,14 @@ export async function createInvitation(
 
     await dbConnection.insert(familyInvitations).values({
         family_id: familyId,
-        invited_by_user_id: invitedByUserId,
+        invited_by_user_id: userId,
         invited_email: invitedEmail,
         token,
         expires_at: expiresAt,
     });
 
     logger.info(
-        `Invitation created for family ${familyId} by user ${invitedByUserId} to ${invitedEmail}`,
+        `Invitation created for family ${familyId} by user ${userId} to ${invitedEmail}`,
     );
 
     return {

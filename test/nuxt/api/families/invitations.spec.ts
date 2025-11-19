@@ -7,10 +7,29 @@ import {
 import { createInvitation } from "#server/services/invitations";
 import { eq, and } from "drizzle-orm";
 import { familyInvitations, familyMembers } from "~~/server/db/schema";
-import { ForbiddenError, ConflictError } from "#server/lib/errors";
+import {
+    ForbiddenError,
+    ConflictError,
+    UnauthorizedError,
+} from "#server/lib/errors";
 
 describe("Family Invitations Service", () => {
     describe("createInvitation", () => {
+        it("should throw UnauthorizedError if user is not authenticated", async () => {
+            await withTestTransaction(async (tx) => {
+                const user = await createTestUser(tx);
+                const family = await createTestFamily(tx, user.id);
+                await expect(
+                    createInvitation(
+                        tx,
+                        null,
+                        family.id,
+                        "invited@example.com",
+                    ),
+                ).rejects.toThrow(UnauthorizedError);
+            });
+        });
+
         it("should throw ForbiddenError if user is not a manager", async () => {
             await withTestTransaction(async (tx) => {
                 // 1. Setup: Create family with a manager
@@ -35,8 +54,8 @@ describe("Family Invitations Service", () => {
                 await expect(
                     createInvitation(
                         tx,
-                        family.id,
                         member.id,
+                        family.id,
                         "invited@example.com",
                     ),
                 ).rejects.toThrow(ForbiddenError);
@@ -67,8 +86,8 @@ describe("Family Invitations Service", () => {
                 await expect(
                     createInvitation(
                         tx,
-                        family.id,
                         manager.id,
+                        family.id,
                         "existing@example.com",
                     ),
                 ).rejects.toThrow(ConflictError);
@@ -90,8 +109,8 @@ describe("Family Invitations Service", () => {
                 const invitedEmail = "newmember@example.com";
                 const result = await createInvitation(
                     tx,
-                    family.id,
                     manager.id,
+                    family.id,
                     invitedEmail,
                 );
 
@@ -145,14 +164,14 @@ describe("Family Invitations Service", () => {
                 const invitedEmail = "shared@example.com";
                 const invitation1 = await createInvitation(
                     tx,
-                    family1.id,
                     manager1.id,
+                    family1.id,
                     invitedEmail,
                 );
                 const invitation2 = await createInvitation(
                     tx,
-                    family2.id,
                     manager2.id,
+                    family2.id,
                     invitedEmail,
                 );
 
