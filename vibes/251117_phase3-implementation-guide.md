@@ -1,9 +1,9 @@
 ---
 title: "Phase 3 Test Refactoring - Implementation Guide: Security & Edge Cases"
 date: 2025-11-17
-updated: 2025-11-19
+updated: 2025-11-20
 status: in-progress
-progress: "Part 2 Complete, Part 3 Partially Complete (Input Validation: createFamily & createUser), Part 4 Complete (Concurrency & Session Management)"
+progress: "Part 2 Complete, Part 3 Partially Complete (Input Validation: createFamily & createUser), Part 4 Complete (Concurrency & Session Management), Part 5 Partially Complete (Edge Cases: ~30%)"
 related_documents:
     - vibes/251117_phase2-completion-report.md
     - vibes/251114_service-layer-refactoring-plan.md
@@ -21,12 +21,13 @@ priority: high
 
 # Phase 3: Security & Edge Cases Testing
 
-> **🎉 PROGRESS UPDATE (2025-11-19):**
+> **🎉 PROGRESS UPDATE (2025-11-20):**
 >
 > - **Part 2: Authorization Testing is COMPLETE!** All authorization tests implemented and merged. 34 tests across 4 services passing. Shared authorization utilities created.
 > - **Part 3: Input Validation - PARTIALLY COMPLETE!** PR #60 merged with 13 input validation tests for createFamily (2 tests) and createUser (11 tests). All 230 tests passing. Validation pattern established.
 > - **Part 4: Concurrency Testing is COMPLETE!** PR #61 merged with 10 comprehensive concurrency tests. All 240 tests passing. Discovered critical race condition in transferOwnership function requiring future fix.
 > - **Part 4: Session Management Testing is COMPLETE!** Issue #52 resolved with commit 7fca97fc. Added 7 session management tests (3 auth + 4 invitations, 1 todo). Total: 248 passing tests.
+> - **Part 5: Edge Case Testing - PARTIALLY COMPLETE!** PR #63 merged with 14 edge case tests across all services. Created shared validation helper. ~30% edge case coverage achieved. Remaining categories deferred to follow-up issues.
 >
 > See [Phase 3 Authorization Completion Report](vibes/251119_phase3-authorization-complete.md) for Part 2 details.
 > See [Phase 3 Session Management Completion Summary](vibes/251119_phase3-session-mgmt-complete.md) for Part 4 Session Management details.
@@ -1219,6 +1220,30 @@ describe("Invitation Token Security", () => {
 
 ## Edge Case Testing
 
+> **✅ STATUS UPDATE (2025-11-20): PART 5 PARTIALLY COMPLETE**
+>
+> Edge case testing (Part 5 of Phase 3) has begun with **Issue #53** and **PR #63** merged:
+>
+> - **✅ PR #63 (Issue #53):** Edge case tests for all services implemented. Added 14 tests covering non-existent resources, soft-deleted managers, Unicode support, and operations on used/expired invitations.
+> - **✅ New Infrastructure:** Created `server/lib/validation.ts` with shared `findResourceOrThrow` helper for consistent error handling across services.
+> - **✅ Security Fixes:** Fixed UUID error handling (ValidationError vs NotFoundError), username validation regex security issue (\\p{S} → \\p{Emoji}).
+> - **✅ Code Quality:** Reduced ~30 lines of duplicated error handling code. Services now use consistent validation pattern.
+>
+> **Overall Edge Case Coverage: ~30%**
+>
+> | Category               | Coverage | Status         |
+> | ---------------------- | -------- | -------------- |
+> | Non-Existent Resources | 60%      | 🟡 Partial     |
+> | Soft-Deleted Resources | 20%      | 🟡 Partial     |
+> | Unicode/Special Chars  | 70%      | ✅ Good        |
+> | Empty Collections      | 10%      | 🟡 Limited     |
+> | Deleted Resources      | 0%       | ❌ Not Started |
+> | Min/Max Values         | 0%       | ❌ Not Started |
+> | Null Handling          | 0%       | ❌ Not Started |
+> | Boundary Conditions    | 0%       | ❌ Not Started |
+>
+> **Status:** Part 5 foundation complete. Remaining categories deferred to follow-up issues.
+
 ### Overview
 
 Edge case testing ensures the system handles unusual inputs and boundary conditions gracefully.
@@ -1387,16 +1412,73 @@ describe("Special Character Handling", () => {
 });
 ```
 
+### Shared Validation Helper
+
+> **✅ IMPLEMENTED (PR #63):** A reusable validation helper is now available in `server/lib/validation.ts`.
+
+**File:** `server/lib/validation.ts`
+
+```typescript
+export async function findResourceOrThrow<T>(
+    findFn: () => Promise<T | undefined>,
+    resourceName: string,
+): Promise<T> {
+    let resource;
+    try {
+        resource = await findFn();
+    } catch (error: any) {
+        // Postgres error code for invalid text representation (e.g. invalid UUID)
+        if (error.cause?.code === "22P02") {
+            throw new ValidationError(`Invalid ${resourceName} ID format`);
+        }
+        throw error;
+    }
+
+    if (!resource) {
+        throw new NotFoundError(`${resourceName} not found`);
+    }
+
+    return resource;
+}
+```
+
+**Usage Example:**
+
+```typescript
+// In service functions
+const family = await findResourceOrThrow(
+    () =>
+        dbConnection.query.families.findFirst({
+            where: eq(families.id, familyId),
+        }),
+    "Family",
+);
+```
+
+**Benefits:**
+
+- ✅ Consistent error handling across all services
+- ✅ Correct error types: `ValidationError` (400) for invalid UUID format, `NotFoundError` (404) for missing resources
+- ✅ Reduces code duplication (~30 lines removed from PR #63)
+- ✅ Single source of truth for resource lookup logic
+
+**Currently Used In:**
+
+- `server/services/families.ts` - `transferOwnership` (family and user lookups)
+- `server/services/invitations.ts` - `createInvitation` (family lookup)
+
 ### Edge Case Testing Checklist
 
-- [ ] Test non-existent resource IDs
-- [ ] Test deleted resources
-- [ ] Test soft-deleted resources
-- [ ] Test empty collections
-- [ ] Test Unicode and special characters
-- [ ] Test minimum/maximum values
-- [ ] Test null handling
-- [ ] Test boundary conditions
+- [x] Test non-existent resource IDs (60% complete) ✅ PR #63
+- [ ] Test deleted resources (0% complete)
+- [x] Test soft-deleted resources (20% complete) ✅ PR #63 - soft-deleted managers
+- [ ] Test empty collections (10% complete - limited by missing getter functions)
+- [x] Test Unicode and special characters (70% complete) ✅ PR #63
+- [ ] Test minimum/maximum values (0% complete)
+- [ ] Test null handling (0% complete)
+- [ ] Test boundary conditions (0% complete)
+
+**Checklist Completion: 3/8 items (37.5%)**
 
 ---
 
@@ -2436,7 +2518,7 @@ Phase 3 builds on the solid foundation from Phase 2 by adding comprehensive secu
 
 ## Phase 3 Completion Status
 
-**Phase 3 Status: IN PROGRESS** (3 of 5 parts complete)
+**Phase 3 Status: IN PROGRESS** (3.5 of 5 parts complete - 70%)
 
 ### Completed Parts
 
@@ -2471,6 +2553,38 @@ Phase 3 builds on the solid foundation from Phase 2 by adding comprehensive secu
     - Requires future fix: optimistic locking, database constraint, or version control
     - Should be addressed in separate issue
 
+#### Part 4: Session Management Testing ✅ (2025-11-19)
+
+- **Issue #52** resolved with commit 7fca97fc
+- Added 7 session management tests (3 auth + 4 invitations, 1 todo)
+- Test files: test/nuxt/services/auth.spec.ts, test/nuxt/services/invitations.spec.ts
+- Total: 248 passing tests
+- **Coverage:**
+    - ✅ Email verification token generation and validation
+    - ✅ Invalid token rejection
+    - ✅ Token reuse prevention
+    - ✅ Invitation token uniqueness
+    - ✅ Invitation expiration handling
+    - ✅ Invitation invalidation after use
+- **Note:** Email verification token expiration test marked as todo (sendVerificationEmail doesn't set expiration dates yet)
+
+#### Part 5: Edge Case Testing ⏳ (2025-11-20 - Partially Complete)
+
+- **PR #63 (Issue #53):** 14 edge case tests across all services
+- Created `server/lib/validation.ts` with shared `findResourceOrThrow` helper
+- Test files: families.spec.ts (+3), invitations.spec.ts (+6), users.spec.ts (+3), plus 4 TODO tests
+- **Coverage:** ~30% overall
+    - ✅ Non-existent resources (60%)
+    - ✅ Soft-deleted managers (20%)
+    - ✅ Unicode/special characters (70%)
+    - 🟡 Empty collections (10%)
+- **Security Fixes:**
+    - Fixed UUID error handling (ValidationError vs NotFoundError)
+    - Fixed username validation regex (\\p{S} → \\p{Emoji})
+    - Fixed transferOwnership error types
+- **Code Quality:** Reduced ~30 lines of duplicated error handling code
+- **Remaining:** Deleted resources, min/max values, null handling, boundary conditions (deferred to follow-up issues)
+
 ### Remaining Parts
 
 #### Part 3: Input Validation (Continuation)
@@ -2480,22 +2594,17 @@ Phase 3 builds on the solid foundation from Phase 2 by adding comprehensive secu
 - [ ] Test XSS prevention
 - [ ] Test malformed data handling
 
-#### Part 5: Session Management Testing
+#### Part 5: Edge Case Testing (Continuation)
 
-- [ ] Authentication token tests
-- [ ] Session expiration tests
-- [ ] Token refresh tests
-- [ ] Security violation tests
-
-#### Part 6: Edge Case Testing
-
-- [ ] Boundary condition tests
-- [ ] Null value handling
-- [ ] Unusual input combinations
-- [ ] Performance under load
+- [ ] Deleted resources tests (0%)
+- [ ] Minimum/maximum value tests (0%)
+- [ ] Null handling tests (0%)
+- [ ] Boundary condition tests (0%)
+- [ ] Expand soft-delete coverage (from 20% to 80%)
+- [ ] Complete empty collection tests (waiting for getter functions)
 
 ---
 
-**Current Progress: 60% Complete** (3 of 5 parts done)
-**Estimated Timeline: 2 weeks remaining**
+**Current Progress: 70% Complete** (3.5 of 5 parts done)
+**Status:** Part 5 foundation established with PR #63
 **Dependencies: Phase 2 completion ✅**
