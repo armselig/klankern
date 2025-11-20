@@ -123,9 +123,9 @@ export async function createUser(
         throw new ValidationError("Username cannot exceed 50 characters");
     }
     // Alphanumeric, underscore, or hyphen
-    if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+    if (!/^[\p{L}\p{N}\p{Emoji}_-]+$/u.test(username)) {
         throw new ValidationError(
-            "Username can only contain alphanumeric characters, underscores, or hyphens",
+            "Username can only contain letters, numbers, emojis, underscores, and hyphens",
         );
     }
 

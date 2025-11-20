@@ -9,11 +9,14 @@ import {
     createInvitation,
     acceptInvitation,
 } from "#server/services/invitations";
+import { and, eq } from "drizzle-orm";
+import { familyMembers } from "#server/db/schema";
 import {
     ForbiddenError,
     ConflictError,
     UnauthorizedError,
     ValidationError,
+    NotFoundError,
 } from "#server/lib/errors";
 
 describe("invitations service", () => {
@@ -127,6 +130,40 @@ describe("invitations service", () => {
                     ).rejects.toThrow(ConflictError);
                 });
             });
+
+            it("should prevent a soft-deleted manager from creating an invitation", async () => {
+                await withTestTransaction(async (tx) => {
+                    const creator = await createTestUser(tx);
+                    const { family, managers } = await createFamilyWithMembers(
+                        tx,
+                        creator,
+                        {
+                            managers: 1,
+                        },
+                    );
+                    const manager = managers[0];
+
+                    // Soft-delete the manager's membership
+                    await tx
+                        .update(familyMembers)
+                        .set({ deleted_at: new Date() })
+                        .where(
+                            and(
+                                eq(familyMembers.family_id, family.id),
+                                eq(familyMembers.user_id, manager.user.id),
+                            ),
+                        );
+
+                    await expect(
+                        createInvitation(
+                            tx,
+                            manager.user.id,
+                            family.id,
+                            "new.member@example.com",
+                        ),
+                    ).rejects.toThrow(ForbiddenError);
+                });
+            });
         });
 
         describe("Invitation Token Security", () => {
@@ -229,6 +266,144 @@ describe("invitations service", () => {
                     // Try to accept again (should fail)
                     await expect(
                         acceptInvitation(tx, invitedUser.id, token),
+                    ).rejects.toThrow(ValidationError);
+                });
+            });
+
+            it("should reject invitation if accepting user email does not match invited email", async () => {
+                await withTestTransaction(async (tx) => {
+                    const creator = await createTestUser(tx);
+                    const { family, managers } = await createFamilyWithMembers(
+                        tx,
+                        creator,
+                        { managers: 1 },
+                    );
+                    const manager = managers[0];
+
+                    // Invite user A
+                    const invitedEmail = "user.a@example.com";
+                    const { token } = await createInvitation(
+                        tx,
+                        manager.user.id,
+                        family.id,
+                        invitedEmail,
+                    );
+
+                    // Try to accept with user B
+                    const userB = await createTestUser(tx, {
+                        email: "user.b@example.com",
+                        username: "userb",
+                    });
+
+                    await expect(
+                        acceptInvitation(tx, userB.id, token),
+                    ).rejects.toThrow(ValidationError);
+                });
+            });
+        });
+    });
+
+    describe("Edge Cases", () => {
+        describe("Non-Existent Resources", () => {
+            it("should throw a ValidationError when accepting a non-existent invitation token", async () => {
+                await withTestTransaction(async (tx) => {
+                    const user = await createTestUser(tx);
+                    await expect(
+                        acceptInvitation(tx, user.id, "non-existent-token"),
+                    ).rejects.toThrow(ValidationError);
+                });
+            });
+
+            it("should throw ValidationError when creating invitation for family with invalid UUID", async () => {
+                await withTestTransaction(async (tx) => {
+                    const user = await createTestUser(tx);
+                    await expect(
+                        createInvitation(
+                            tx,
+                            user.id,
+                            "invalid-uuid",
+                            "test@example.com",
+                        ),
+                    ).rejects.toThrow(ValidationError);
+                });
+            });
+
+            it("should throw a NotFoundError when creating an invitation for a non-existent family", async () => {
+                await withTestTransaction(async (tx) => {
+                    const user = await createTestUser(tx);
+                    await expect(
+                        createInvitation(
+                            tx,
+                            user.id,
+                            "00000000-0000-0000-0000-000000000000",
+                            "test@example.com",
+                        ),
+                    ).rejects.toThrow(NotFoundError);
+                });
+            });
+
+            it.todo(
+                "should return undefined when getting an invitation by a non-existent token",
+                async () => {
+                    // This test requires a getInvitationByToken function which does not exist yet.
+                    // await withTestTransaction(async (tx) => {
+                    //     const result = await getInvitationByToken(tx, "non-existent-token");
+                    //     expect(result).toBeUndefined();
+                    // });
+                },
+            );
+        });
+
+        describe("Operations on Used/Expired Invitations", () => {
+            it("should throw a ValidationError when accepting an already used invitation", async () => {
+                await withTestTransaction(async (tx) => {
+                    const creator = await createTestUser(tx);
+                    const { family, managers } = await createFamilyWithMembers(
+                        tx,
+                        creator,
+                        { managers: 1 },
+                    );
+                    const manager = managers[0];
+                    const invitedUser = await createTestUser(tx);
+                    const { token } = await createInvitation(
+                        tx,
+                        manager.user.id,
+                        family.id,
+                        invitedUser.email,
+                    );
+
+                    await acceptInvitation(tx, invitedUser.id, token);
+
+                    await expect(
+                        acceptInvitation(tx, invitedUser.id, token),
+                    ).rejects.toThrow(ValidationError);
+                });
+            });
+
+            it("should throw a ValidationError when accepting an expired invitation", async () => {
+                await withTestTransaction(async (tx) => {
+                    const creator = await createTestUser(tx);
+                    const { family, managers } = await createFamilyWithMembers(
+                        tx,
+                        creator,
+                        { managers: 1 },
+                    );
+                    const manager = managers[0];
+                    const invitedUser = await createTestUser(tx);
+
+                    const expiredInvitation = await createExpiredInvitation(
+                        tx,
+                        family.id,
+                        manager.user.id,
+                        { invitedEmail: invitedUser.email },
+                    );
+
+                    await expect(
+                        acceptInvitation(
+                            tx,
+                            invitedUser.id,
+                            expiredInvitation.token,
+                        ),
                     ).rejects.toThrow(ValidationError);
                 });
             });
