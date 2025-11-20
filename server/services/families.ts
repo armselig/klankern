@@ -10,8 +10,9 @@
  */
 
 import { and, eq } from "drizzle-orm";
-import { families, familyMembers } from "#server/db/schema";
+import { families, familyMembers, users } from "#server/db/schema";
 import type { DbConnection } from "#server/lib/types";
+import { findResourceOrThrow } from "#server/lib/validation";
 import {
     ForbiddenError,
     InternalError,
@@ -98,37 +99,45 @@ export async function createFamily(
     return insertedFamily;
 }
 
-/**
- * Transfers family ownership to another member.
- *
- * @param dbConnection - Database connection (db or transaction)
- * @param currentUserId - ID of the current owner
- * @param familyId - ID of the family
- * @param newOwnerId - ID of the new owner
- * @returns Success indicator
- * @throws {ForbiddenError} If current user is not the creator
- * @throws {NotFoundError} If family not found
- * @throws {ValidationError} If new owner is not a family member
- */
 export async function transferOwnership(
     dbConnection: DbConnection,
     currentUserId: string,
     familyId: string,
     newOwnerId: string,
 ) {
-    // Authorization: Verify current user is creator
-    const family = await dbConnection.query.families.findFirst({
-        where: and(
-            eq(families.id, familyId),
-            eq(families.creator_id, currentUserId),
-        ),
-    });
+    // Authorization: Verify family exists
+    const family = await findResourceOrThrow(
+        () =>
+            dbConnection.query.families.findFirst({
+                where: eq(families.id, familyId),
+            }),
+        "Family",
+    );
 
-    if (!family) {
+    // Authorization: Verify current user is creator
+    if (family.creator_id !== currentUserId) {
         throw new ForbiddenError(
             "Only the family creator can transfer ownership",
         );
-    }
+    const family = await findResourceOrThrow(
+        () =>
+            dbConnection.query.families.findFirst({
+                where: and(
+                    eq(families.id, familyId),
+                    eq(families.creator_id, currentUserId),
+                ),
+            }),
+        "Family",
+    );
+
+    // Business rule: New owner must exist
+    await findResourceOrThrow(
+        () =>
+            dbConnection.query.users.findFirst({
+                where: eq(users.id, newOwnerId),
+            }),
+        "User",
+    );
 
     // Business rule: New owner must be a member
     const membership = await dbConnection.query.familyMembers.findFirst({

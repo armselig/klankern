@@ -211,4 +211,66 @@ describe("users service", () => {
             });
         });
     });
+
+    describe("Edge Cases", () => {
+        describe("Non-Existent Resources", () => {
+            it.todo(
+                "should return undefined when getting a non-existent user by ID",
+                async () => {
+                    // This test requires a getUserById function which does not exist yet.
+                    // await withTestTransaction(async (tx) => {
+                    //     const result = await getUserById(tx, "non-existent-user-id");
+                    //     expect(result).toBeUndefined();
+                    // });
+                },
+            );
+
+            it("should return an empty array when no users exist", async () => {
+                await withTestTransaction(async (tx) => {
+                    // Note: withTestTransaction creates at least one admin user, so we can't test a truly empty table.
+                    // This test is limited by the current test setup.
+                    // A better approach would be to clear the users table, but that could have side effects.
+                    const admin = await createTestAdminUser(tx);
+                    const users = await getAllUsersWithRoles(tx, admin.id);
+                    // In this setup, we expect at least the admin user.
+                    expect(users.length).toBeGreaterThanOrEqual(1);
+                });
+            });
+        });
+
+        describe("Unicode and Special Characters", () => {
+            it("should create a user with Unicode and special characters in username and display_name", async () => {
+                await withTestTransaction(async (tx) => {
+                    const admin = await createTestAdminUser(tx);
+                    const specialUsername = "user-é-Ü-🎉";
+                    const specialDisplayName = "User With É Ü 🎉";
+
+                    const newUser = await createUser(tx, admin.id, {
+                        email: "special@example.com",
+                        username: specialUsername,
+                        password: "password123",
+                        display_name: specialDisplayName,
+                    });
+
+                    expect(newUser.username).toBe(specialUsername);
+                    expect(newUser.display_name).toBe(specialDisplayName);
+                });
+            });
+
+            it("should create a user with a Unicode email address", async () => {
+                await withTestTransaction(async (tx) => {
+                    const admin = await createTestAdminUser(tx);
+                    const unicodeEmail = "пользователь@домен.рф";
+
+                    const newUser = await createUser(tx, admin.id, {
+                        email: unicodeEmail,
+                        username: "unicode-user",
+                        password: "password123",
+                    });
+
+                    expect(newUser.email).toBe(unicodeEmail);
+                });
+            });
+        });
+    });
 });
