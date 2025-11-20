@@ -3,6 +3,7 @@ import {
     withTestTransaction,
     createTestUser,
     createTestFamily,
+    type TestTransaction,
 } from "#test/utils";
 import { createFamily, transferOwnership } from "#server/services/families";
 import { eq } from "drizzle-orm";
@@ -17,7 +18,7 @@ import {
 describe("Family Service", () => {
     describe("createFamily", () => {
         it("should create a family with the user as creator and manager", async () => {
-            await withTestTransaction(async (tx) => {
+            await withTestTransaction(async (tx: TestTransaction) => {
                 // 1. Setup: Create a test user
                 const user = await createTestUser(tx);
 
@@ -53,7 +54,7 @@ describe("Family Service", () => {
         });
 
         it("should throw an error if family creation fails", async () => {
-            await withTestTransaction(async (tx) => {
+            await withTestTransaction(async (tx: TestTransaction) => {
                 // Test with invalid user ID (non-existent)
                 await expect(
                     createFamily(tx, "non-existent-user-id", {
@@ -64,7 +65,7 @@ describe("Family Service", () => {
         });
 
         it("should create multiple families for the same user", async () => {
-            await withTestTransaction(async (tx) => {
+            await withTestTransaction(async (tx: TestTransaction) => {
                 const user = await createTestUser(tx);
 
                 const family1 = await createFamily(tx, user.id, {
@@ -87,7 +88,7 @@ describe("Family Service", () => {
         describe("createFamily", () => {
             describe("Unauthenticated Access", () => {
                 it("should throw UnauthorizedError when userId is not provided (empty string)", async () => {
-                    await withTestTransaction(async (tx) => {
+                    await withTestTransaction(async (tx: TestTransaction) => {
                         await expect(
                             createFamily(tx, "", { name: "Test Family" }),
                         ).rejects.toThrow(UnauthorizedError);
@@ -95,7 +96,7 @@ describe("Family Service", () => {
                 });
 
                 it("should throw UnauthorizedError when userId is null", async () => {
-                    await withTestTransaction(async (tx) => {
+                    await withTestTransaction(async (tx: TestTransaction) => {
                         await expect(
                             createFamily(tx, null as unknown as string, {
                                 name: "Test Family",
@@ -105,7 +106,7 @@ describe("Family Service", () => {
                 });
 
                 it("should throw UnauthorizedError when userId is undefined", async () => {
-                    await withTestTransaction(async (tx) => {
+                    await withTestTransaction(async (tx: TestTransaction) => {
                         await expect(
                             createFamily(tx, undefined as unknown as string, {
                                 name: "Test Family",
@@ -119,7 +120,7 @@ describe("Family Service", () => {
         describe("transferOwnership", () => {
             describe("Insufficient Permissions", () => {
                 it("should throw ForbiddenError when user is a regular member (not creator)", async () => {
-                    await withTestTransaction(async (tx) => {
+                    await withTestTransaction(async (tx: TestTransaction) => {
                         const creator = await createTestUser(tx, {
                             email: "creator@example.com",
                             username: "creator",
@@ -161,7 +162,7 @@ describe("Family Service", () => {
                 });
 
                 it("should throw ForbiddenError when user is a manager (not creator)", async () => {
-                    await withTestTransaction(async (tx) => {
+                    await withTestTransaction(async (tx: TestTransaction) => {
                         const creator = await createTestUser(tx, {
                             email: "creator@example.com",
                             username: "creator",
@@ -205,7 +206,7 @@ describe("Family Service", () => {
 
             describe("Resource Ownership", () => {
                 it("should throw ForbiddenError when user is not the family creator", async () => {
-                    await withTestTransaction(async (tx) => {
+                    await withTestTransaction(async (tx: TestTransaction) => {
                         const creator = await createTestUser(tx, {
                             email: "creator@example.com",
                             username: "creator",
@@ -242,7 +243,7 @@ describe("Family Service", () => {
                 });
 
                 it("should allow creator to transfer ownership", async () => {
-                    await withTestTransaction(async (tx) => {
+                    await withTestTransaction(async (tx: TestTransaction) => {
                         const creator = await createTestUser(tx, {
                             email: "creator@example.com",
                             username: "creator",
@@ -279,7 +280,7 @@ describe("Family Service", () => {
 
             describe("Cross-Family Access Prevention", () => {
                 it("should throw ForbiddenError when user is creator of different family", async () => {
-                    await withTestTransaction(async (tx) => {
+                    await withTestTransaction(async (tx: TestTransaction) => {
                         // Create first family and its creator
                         const creator1 = await createTestUser(tx, {
                             email: "creator1@example.com",
@@ -326,7 +327,7 @@ describe("Family Service", () => {
                 });
 
                 it("should allow creator to only transfer ownership of their own family", async () => {
-                    await withTestTransaction(async (tx) => {
+                    await withTestTransaction(async (tx: TestTransaction) => {
                         // Create two families
                         const creator1 = await createTestUser(tx, {
                             email: "creator1@example.com",
@@ -390,7 +391,7 @@ describe("Family Service", () => {
 
             describe("Role-Based Access", () => {
                 it("should enforce that only creator can transfer (not manager role)", async () => {
-                    await withTestTransaction(async (tx) => {
+                    await withTestTransaction(async (tx: TestTransaction) => {
                         const creator = await createTestUser(tx, {
                             email: "creator@example.com",
                             username: "creator",
@@ -443,7 +444,7 @@ describe("Family Service", () => {
 
             describe("Business Rule Validation", () => {
                 it("should throw ValidationError when new owner is not a family member", async () => {
-                    await withTestTransaction(async (tx) => {
+                    await withTestTransaction(async (tx: TestTransaction) => {
                         const creator = await createTestUser(tx, {
                             email: "creator@example.com",
                             username: "creator",
@@ -469,7 +470,7 @@ describe("Family Service", () => {
                 });
 
                 it("should successfully transfer ownership when new owner is a member", async () => {
-                    await withTestTransaction(async (tx) => {
+                    await withTestTransaction(async (tx: TestTransaction) => {
                         const creator = await createTestUser(tx, {
                             email: "creator@example.com",
                             username: "creator",
@@ -511,7 +512,7 @@ describe("Family Service", () => {
     describe("Input Validation", () => {
         describe("createFamily", () => {
             it("should throw ValidationError if family name is an empty string", async () => {
-                await withTestTransaction(async (tx) => {
+                await withTestTransaction(async (tx: TestTransaction) => {
                     const user = await createTestUser(tx);
                     await expect(
                         createFamily(tx, user.id, { name: "" }),
@@ -520,7 +521,7 @@ describe("Family Service", () => {
             });
 
             it("should throw ValidationError if family name exceeds maximum length (100 characters)", async () => {
-                await withTestTransaction(async (tx) => {
+                await withTestTransaction(async (tx: TestTransaction) => {
                     const user = await createTestUser(tx);
                     const longName = "a".repeat(101); // Max length is 100
                     await expect(
@@ -534,7 +535,7 @@ describe("Family Service", () => {
     describe("Edge Cases", () => {
         describe("Non-Existent Resources", () => {
             it("should throw NotFoundError when transferring ownership of a non-existent family", async () => {
-                await withTestTransaction(async (tx) => {
+                await withTestTransaction(async (tx: TestTransaction) => {
                     const user = await createTestUser(tx);
                     const anotherUser = await createTestUser(tx);
                     await expect(
@@ -549,7 +550,7 @@ describe("Family Service", () => {
             });
 
             it("should throw NotFoundError when transferring ownership to a non-existent user", async () => {
-                await withTestTransaction(async (tx) => {
+                await withTestTransaction(async (tx: TestTransaction) => {
                     const user = await createTestUser(tx);
                     const family = await createTestFamily(tx, user.id);
                     await expect(
@@ -564,7 +565,7 @@ describe("Family Service", () => {
             });
 
             it("should throw ValidationError when transferring ownership with invalid UUID", async () => {
-                await withTestTransaction(async (tx) => {
+                await withTestTransaction(async (tx: TestTransaction) => {
                     const user = await createTestUser(tx);
                     const anotherUser = await createTestUser(tx);
                     await expect(
@@ -591,7 +592,7 @@ describe("Family Service", () => {
 
         describe("Unicode and Special Characters", () => {
             it("should create a family with Unicode and special characters in the name", async () => {
-                await withTestTransaction(async (tx) => {
+                await withTestTransaction(async (tx: TestTransaction) => {
                     const user = await createTestUser(tx);
                     const specialName = "Familie Müller 🎉-ケーニッヒ";
                     const family = await createFamily(tx, user.id, {
