@@ -1,7 +1,13 @@
 import { and, eq } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
-import { familyInvitations, familyMembers, users } from "#server/db/schema";
+import {
+    familyInvitations,
+    familyMembers,
+    users,
+    families,
+} from "#server/db/schema";
 import type { DbConnection } from "#server/lib/types";
+import { findResourceOrThrow } from "#server/lib/validation";
 import {
     ForbiddenError,
     ConflictError,
@@ -34,6 +40,15 @@ export async function createInvitation(
             "User must be authenticated to create an invitation",
         );
     }
+
+    // Verify family exists
+    await findResourceOrThrow(
+        () =>
+            dbConnection.query.families.findFirst({
+                where: eq(families.id, familyId),
+            }),
+        "Family",
+    );
 
     // 1. Authorize: Check if the current user is a manager of the family
     const membership = await dbConnection.query.familyMembers.findFirst({

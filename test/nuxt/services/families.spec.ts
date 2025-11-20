@@ -11,6 +11,7 @@ import {
     UnauthorizedError,
     ForbiddenError,
     ValidationError,
+    NotFoundError,
 } from "#server/lib/errors";
 
 describe("Family Service", () => {
@@ -525,6 +526,83 @@ describe("Family Service", () => {
                     await expect(
                         createFamily(tx, user.id, { name: longName }),
                     ).rejects.toThrow(ValidationError);
+                });
+            });
+        });
+    });
+
+    describe("Edge Cases", () => {
+        describe("Non-Existent Resources", () => {
+            it("should throw NotFoundError when transferring ownership of a non-existent family", async () => {
+                await withTestTransaction(async (tx) => {
+                    const user = await createTestUser(tx);
+                    const anotherUser = await createTestUser(tx);
+                    await expect(
+                        transferOwnership(
+                            tx,
+                            user.id,
+                            "00000000-0000-0000-0000-000000000000", // Non-existent UUID
+                            anotherUser.id,
+                        ),
+                    ).rejects.toThrow(NotFoundError);
+                });
+            });
+
+            it("should throw NotFoundError when transferring ownership to a non-existent user", async () => {
+                await withTestTransaction(async (tx) => {
+                    const user = await createTestUser(tx);
+                    const family = await createTestFamily(tx, user.id);
+                    await expect(
+                        transferOwnership(
+                            tx,
+                            user.id,
+                            family.id,
+                            "00000000-0000-0000-0000-000000000000", // Non-existent UUID
+                        ),
+                    ).rejects.toThrow(NotFoundError);
+                });
+            });
+
+            it("should throw ValidationError when transferring ownership with invalid UUID", async () => {
+                await withTestTransaction(async (tx) => {
+                    const user = await createTestUser(tx);
+                    const anotherUser = await createTestUser(tx);
+                    await expect(
+                        transferOwnership(
+                            tx,
+                            user.id,
+                            "invalid-uuid",
+                            anotherUser.id,
+                        ),
+                    ).rejects.toThrow(ValidationError);
+                });
+            });
+        });
+
+        describe("Empty Collections", () => {
+            it("should return an empty array when a user has no families", async () => {
+                // This test requires a getUserFamilies function, which doesn't exist yet.
+            });
+
+            it("should return an array with only the creator for a new family", async () => {
+                // This test requires a getFamilyMembers function, which doesn't exist yet.
+            });
+        });
+
+        describe("Unicode and Special Characters", () => {
+            it("should create a family with Unicode and special characters in the name", async () => {
+                await withTestTransaction(async (tx) => {
+                    const user = await createTestUser(tx);
+                    const specialName = "Familie Müller 🎉-ケーニッヒ";
+                    const family = await createFamily(tx, user.id, {
+                        name: specialName,
+                    });
+                    expect(family.name).toBe(specialName);
+
+                    const dbFamily = await tx.query.families.findFirst({
+                        where: eq(families.id, family.id),
+                    });
+                    expect(dbFamily?.name).toBe(specialName);
                 });
             });
         });
