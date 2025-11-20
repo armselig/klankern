@@ -125,11 +125,7 @@ export async function createUser(
     // Alphanumeric, underscore, or hyphen
     if (!/^[\p{L}\p{N}\p{Emoji}_-]+$/u.test(username)) {
         throw new ValidationError(
-    if (!/^[\\p{L}\\p{N}_-]+$/u.test(username)) {
-        throw new ValidationError(
-            "Username can only contain letters, numbers, underscores, and hyphens",
-        );
-    }
+            "Username can only contain letters, numbers, emojis, underscores, and hyphens",
         );
     }
 

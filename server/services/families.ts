@@ -78,21 +78,12 @@ export async function transferOwnership(
         "Family",
     );
 
-    // Authorization: Verify current user is creator
+    // Authorization: Verify current user is the creator of the family
     if (family.creator_id !== currentUserId) {
         throw new ForbiddenError(
             "Only the family creator can transfer ownership",
         );
-    const family = await findResourceOrThrow(
-        () =>
-            dbConnection.query.families.findFirst({
-                where: and(
-                    eq(families.id, familyId),
-                    eq(families.creator_id, currentUserId),
-                ),
-            }),
-        "Family",
-    );
+    }
 
     // Business rule: New owner must exist
     await findResourceOrThrow(
