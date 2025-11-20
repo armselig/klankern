@@ -41,6 +41,18 @@ export async function createInvitation(
         );
     }
 
+    // Input Validation
+    if (!invitedEmail || invitedEmail.trim() === "") {
+        throw new ValidationError("Email cannot be empty");
+    }
+    if (invitedEmail.length > 255) {
+        throw new ValidationError("Email cannot exceed 255 characters");
+    }
+    // Basic email format validation
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(invitedEmail)) {
+        throw new ValidationError("Invalid email format");
+    }
+
     // Verify family exists
     await findResourceOrThrow(
         () =>

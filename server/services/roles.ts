@@ -4,6 +4,7 @@ import {
     InternalError,
     UnauthorizedError,
     ForbiddenError,
+    ValidationError,
 } from "#server/lib/errors";
 import { logger } from "#server/utils/logger";
 import { isAdmin } from "#server/lib/authorization";
@@ -55,6 +56,26 @@ export async function createRole(
 
     if (!(await isAdmin(dbConnection, userId))) {
         throw new ForbiddenError("User does not have admin privileges");
+    }
+
+    // Input Validation
+    if (!data.name || data.name.trim().length < 3) {
+        throw new ValidationError(
+            "Role name must be at least 3 characters long",
+        );
+    }
+    if (data.name.length > 50) {
+        throw new ValidationError("Role name cannot exceed 50 characters");
+    }
+    // Alphanumeric and hyphens only for role names
+    if (!/^[a-z0-9-]+$/.test(data.name)) {
+        throw new ValidationError(
+            "Role name can only contain lowercase letters, numbers, and hyphens",
+        );
+    }
+
+    if (data.description && data.description.length > 255) {
+        throw new ValidationError("Description cannot exceed 255 characters");
     }
 
     const [newRole] = await dbConnection

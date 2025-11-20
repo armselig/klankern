@@ -166,6 +166,78 @@ describe("invitations service", () => {
             });
         });
 
+        describe("Input Validation", () => {
+            it("should reject empty email", async () => {
+                await withTestTransaction(async (tx) => {
+                    const creator = await createTestUser(tx);
+                    const { family, managers } = await createFamilyWithMembers(
+                        tx,
+                        creator,
+                        { managers: 1 },
+                    );
+                    const manager = managers[0];
+
+                    await expect(
+                        createInvitation(tx, manager.user.id, family.id, ""),
+                    ).rejects.toThrow(ValidationError);
+                });
+            });
+
+            it("should reject invalid email format", async () => {
+                await withTestTransaction(async (tx) => {
+                    const creator = await createTestUser(tx);
+                    const { family, managers } = await createFamilyWithMembers(
+                        tx,
+                        creator,
+                        { managers: 1 },
+                    );
+                    const manager = managers[0];
+
+                    const invalidEmails = [
+                        "notanemail",
+                        "@example.com",
+                        "user@",
+                        "user@.com",
+                        "user..name@example.com",
+                    ];
+
+                    for (const email of invalidEmails) {
+                        await expect(
+                            createInvitation(
+                                tx,
+                                manager.user.id,
+                                family.id,
+                                email,
+                            ),
+                        ).rejects.toThrow(ValidationError);
+                    }
+                });
+            });
+
+            it("should reject email exceeding max length", async () => {
+                await withTestTransaction(async (tx) => {
+                    const creator = await createTestUser(tx);
+                    const { family, managers } = await createFamilyWithMembers(
+                        tx,
+                        creator,
+                        { managers: 1 },
+                    );
+                    const manager = managers[0];
+
+                    const longEmail = "a".repeat(245) + "@example.com"; // > 255 chars
+
+                    await expect(
+                        createInvitation(
+                            tx,
+                            manager.user.id,
+                            family.id,
+                            longEmail,
+                        ),
+                    ).rejects.toThrow(ValidationError);
+                });
+            });
+        });
+
         describe("Invitation Token Security", () => {
             it("should generate unique tokens for each invitation", async () => {
                 await withTestTransaction(async (tx) => {
