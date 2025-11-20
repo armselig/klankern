@@ -43,7 +43,9 @@ describe("Advanced Test Fixtures", () => {
                 });
                 expect(adminRole).toBeDefined();
                 expect(adminRole?.name).toBe("admin");
-                expect(adminRole?.description).toBe("Administrator role");
+                expect(adminRole?.description).toBe(
+                    "Administrator role with full access",
+                );
 
                 // Verify user has admin role assigned
                 const userRoleAssignment = await tx.query.userRoles.findFirst({

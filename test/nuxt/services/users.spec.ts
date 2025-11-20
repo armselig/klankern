@@ -66,13 +66,16 @@ describe("users service", () => {
         it("should create a user if user is an admin", async () => {
             await withTestTransaction(async (tx) => {
                 const admin = await createTestAdminUser(tx);
+                const timestamp = Date.now();
                 const newUser = await createUser(tx, admin.id, {
-                    email: "test@example.com",
-                    username: "testuser",
+                    email: `unique-test-${timestamp}@example.com`,
+                    username: `unique-testuser-${timestamp}`,
                     password: "password",
                 });
                 expect(newUser).toBeDefined();
-                expect(newUser.email).toBe("test@example.com");
+                expect(newUser.email).toBe(
+                    `unique-test-${timestamp}@example.com`,
+                );
             });
         });
 
