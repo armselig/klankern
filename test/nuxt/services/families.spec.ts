@@ -511,11 +511,11 @@ describe("Family Service", () => {
 
     describe("Input Validation", () => {
         describe("createFamily", () => {
-            it("should throw ValidationError if family name is an empty string", async () => {
+            it("should throw ValidationError if family name is less than 3 characters", async () => {
                 await withTestTransaction(async (tx: TestTransaction) => {
                     const user = await createTestUser(tx);
                     await expect(
-                        createFamily(tx, user.id, { name: "" }),
+                        createFamily(tx, user.id, { name: "ab" }),
                     ).rejects.toThrow(ValidationError);
                 });
             });

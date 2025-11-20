@@ -2,7 +2,11 @@ import { describe, it, expect } from "vitest";
 import { withTestTransaction } from "#test/utils/db";
 import { createTestUser, createTestAdminUser } from "#test/utils/fixtures";
 import { getAllRoles, createRole } from "#server/services/roles";
-import { UnauthorizedError, ForbiddenError } from "#server/lib/errors";
+import {
+    UnauthorizedError,
+    ForbiddenError,
+    ValidationError,
+} from "#server/lib/errors";
 
 describe("roles service", () => {
     describe("getAllRoles", () => {
@@ -59,6 +63,49 @@ describe("roles service", () => {
                 });
                 expect(newRole).toBeDefined();
                 expect(newRole.name).toBe("test-role");
+            });
+        });
+
+        describe("Input Validation", () => {
+            it("should reject role name shorter than 3 characters", async () => {
+                await withTestTransaction(async (tx) => {
+                    const admin = await createTestAdminUser(tx);
+                    await expect(
+                        createRole(tx, admin.id, { name: "ab" }),
+                    ).rejects.toThrow(ValidationError);
+                });
+            });
+
+            it("should reject role name exceeding max length", async () => {
+                await withTestTransaction(async (tx) => {
+                    const admin = await createTestAdminUser(tx);
+                    const longName = "a".repeat(51);
+                    await expect(
+                        createRole(tx, admin.id, { name: longName }),
+                    ).rejects.toThrow(ValidationError);
+                });
+            });
+
+            it("should reject invalid characters in role name", async () => {
+                await withTestTransaction(async (tx) => {
+                    const admin = await createTestAdminUser(tx);
+                    await expect(
+                        createRole(tx, admin.id, { name: "Invalid Role" }),
+                    ).rejects.toThrow(ValidationError);
+                });
+            });
+
+            it("should reject description exceeding max length", async () => {
+                await withTestTransaction(async (tx) => {
+                    const admin = await createTestAdminUser(tx);
+                    const longDesc = "a".repeat(256);
+                    await expect(
+                        createRole(tx, admin.id, {
+                            name: "valid-role",
+                            description: longDesc,
+                        }),
+                    ).rejects.toThrow(ValidationError);
+                });
             });
         });
     });

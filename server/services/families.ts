@@ -30,8 +30,10 @@ export async function createFamily(
     }
 
     // Input Validation
-    if (!data.name || data.name.trim() === "") {
-        throw new ValidationError("Family name cannot be empty");
+    if (!data.name || data.name.trim().length < 3) {
+        throw new ValidationError(
+            "Family name must be at least 3 characters long",
+        );
     }
 
     if (data.name.length > 100) {

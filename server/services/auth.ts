@@ -24,7 +24,7 @@ export async function sendVerificationEmail(
     dbConnection: DbConnection,
     userId: string,
 ) {
-    if (!userId) {
+    if (!userId || userId.trim() === "") {
         throw new UnauthorizedError("User ID is required");
     }
 
@@ -76,6 +76,11 @@ export async function sendVerificationEmail(
 export async function verifyEmail(dbConnection: DbConnection, token: string) {
     if (!token || token.trim().length === 0) {
         throw new ValidationError("Verification token is required");
+    }
+
+    // Hex string validation (assuming randomBytes(32).toString('hex') produces 64 chars)
+    if (!/^[0-9a-fA-F]{64}$/.test(token)) {
+        throw new ValidationError("Invalid verification token format");
     }
 
     const userRecord = await dbConnection.query.users.findFirst({
