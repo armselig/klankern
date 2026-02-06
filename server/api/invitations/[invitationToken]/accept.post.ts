@@ -4,15 +4,13 @@ import { db } from "#server/db";
 import { familyInvitations, familyMembers } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
 import { notDeleted } from "#server/db/helpers";
+import { requireAuth } from "#server/utils/auth";
 
 export default defineEventHandler(async (event) => {
     logger.http(`${event.method} ${event.path}`);
     const { invitationToken } = await getRouterParams(event);
-    const user = event.context.user;
-
-    if (!user) {
-        throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
-    }
+    const session = await requireAuth(event);
+    const user = session.user;
 
     if (!invitationToken) {
         throw createError({ statusCode: 400, statusMessage: "Invalid token" });

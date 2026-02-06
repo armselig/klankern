@@ -4,15 +4,13 @@ import { db } from "#server/db";
 import { familyMembers } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
 import { notDeleted } from "#server/db/helpers";
+import { requireAuth } from "#server/utils/auth";
 
 export default defineEventHandler(async (event) => {
     logger.http(`${event.method} ${event.path}`);
     const { familyId, userId: userIdToRemove } = await getRouterParams(event);
-    const managerUser = event.context.user;
-
-    if (!managerUser) {
-        throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
-    }
+    const session = await requireAuth(event);
+    const managerUser = session.user;
 
     // 1. Business Rule: Prevent a manager from removing themselves.
     if (managerUser.id === userIdToRemove) {

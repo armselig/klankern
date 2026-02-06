@@ -4,6 +4,7 @@ import { z } from "zod";
 import { db } from "#server/db/index";
 import { roles } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
+import { requireAdmin } from "#server/utils/auth";
 import type { RoleResponse } from "#shared/types/role";
 
 const roleIdSchema = z.string().uuid();
@@ -11,6 +12,7 @@ const roleIdSchema = z.string().uuid();
 export default defineEventHandler(
     async (event): Promise<{ message: string; role: RoleResponse }> => {
         logger.http(`${event.method} ${event.path}`);
+        await requireAdmin(event);
         try {
             const id = getRouterParam(event, "id");
             const parsedRoleId = roleIdSchema.safeParse(id);

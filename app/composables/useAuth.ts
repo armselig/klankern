@@ -7,7 +7,12 @@ import type { LoginCredentials } from "#shared/types/auth";
  * providing a clean and reusable way to manage authentication-related API calls and session handling.
  */
 export const useAuth = () => {
-    const { fetch: refreshSession, clear: clearSession } = useUserSession();
+    const {
+        fetch: refreshSession,
+        clear: clearSession,
+        loggedIn,
+        user,
+    } = useUserSession();
     const logger = useLogger();
 
     /**
@@ -30,12 +35,28 @@ export const useAuth = () => {
     };
 
     /**
-     * Logs the user out by clearing the session and redirecting to the login page.
+     * Logs the user out by clearing the session server-side and client-side,
+     * then redirects to the home page.
      */
     const logout = async () => {
+        try {
+            // Clear server-side session first
+            await $fetch("/api/auth/logout", { method: "POST" });
+        } catch (error) {
+            // Log but don't block logout if server call fails
+            logger.warn("Server logout failed, clearing client session:", {
+                error,
+            });
+        }
         await clearSession();
         await navigateTo("/");
     };
 
-    return { login, logout };
+    return {
+        login,
+        logout,
+        // Expose session state for convenience (prefer useUserSession() directly for reactivity)
+        loggedIn,
+        user,
+    };
 };

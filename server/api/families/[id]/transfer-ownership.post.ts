@@ -9,6 +9,7 @@ import { db } from "#server/db";
 import { families, familyMembers } from "#server/db/schema";
 import { FamilyTransferOwnershipSchema } from "#shared/types/family";
 import { logger } from "#server/utils/logger";
+import { requireAuth } from "#server/utils/auth";
 
 /**
  * @api {post} /api/families/:id/transfer-ownership
@@ -20,14 +21,8 @@ import { logger } from "#server/utils/logger";
  */
 export default defineEventHandler(async (event) => {
     const { id: familyId } = getRouterParams(event);
-    const user = event.context.user;
-
-    if (!user) {
-        throw createError({
-            statusCode: 401,
-            statusMessage: "Unauthorized",
-        });
-    }
+    const session = await requireAuth(event);
+    const user = session.user;
 
     const parseResult = await readValidatedBody(event, (body) =>
         FamilyTransferOwnershipSchema.safeParse(body),

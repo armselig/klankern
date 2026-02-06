@@ -4,13 +4,11 @@ import { db } from "#server/db";
 import { familyInvitations } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
 import { notDeleted } from "#server/db/helpers";
+import { requireAuth } from "#server/utils/auth";
 
 export default defineEventHandler(async (event) => {
-    const user = event.context.user;
-
-    if (!user) {
-        throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
-    }
+    const session = await requireAuth(event);
+    const user = session.user;
 
     try {
         const pendingInvitations = await db.query.familyInvitations.findMany({

@@ -12,14 +12,12 @@ import { logger } from "#server/utils/logger";
 import { sendInvitationEmail } from "#server/utils/email-sender";
 import { InvitationCreateSchema } from "~~/shared/types/invitation";
 import { notDeleted } from "#server/db/helpers";
+import { requireAuth } from "#server/utils/auth";
 
 export default defineEventHandler(async (event) => {
     const { familyId } = await getRouterParams(event);
-    const user = event.context.user;
-
-    if (!user) {
-        throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
-    }
+    const session = await requireAuth(event);
+    const user = session.user;
 
     const parseResult = await readValidatedBody(event, (body) =>
         InvitationCreateSchema.safeParse(body),

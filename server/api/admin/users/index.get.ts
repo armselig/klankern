@@ -3,9 +3,11 @@ import { createError, defineEventHandler } from "h3";
 import { db } from "#server/db";
 import { roles, userRoles, users } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
+import { requireAdmin } from "#server/utils/auth";
 
 export default defineEventHandler(async (event) => {
     logger.http(`${event.method} ${event.path}`);
+    await requireAdmin(event);
     try {
         const usersWithRoles = await db
             .select({

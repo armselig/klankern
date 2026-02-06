@@ -5,9 +5,11 @@ import { db } from "#server/db";
 import { userRoles, users } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
 import { customHashPassword } from "#server/utils/password";
+import { requireAdmin } from "#server/utils/auth";
 
 export default defineEventHandler(async (event) => {
     logger.http(`${event.method} ${event.path}`);
+    await requireAdmin(event);
     try {
         const body = await readValidatedBody(event, (body) =>
             createUserFormSchema.parse(body),

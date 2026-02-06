@@ -6,6 +6,7 @@ import { db } from "#server/db";
 import { users } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
 import { customHashPassword } from "#server/utils/password";
+import { requireAdmin } from "#server/utils/auth";
 
 const userIdSchema = z.string().uuid();
 
@@ -17,6 +18,7 @@ const userIdSchema = z.string().uuid();
 
 export default defineEventHandler(async (event) => {
     logger.http(`${event.method} ${event.path}`);
+    await requireAdmin(event);
     const userId = event.context.params?.id;
     const parsedUserId = userIdSchema.safeParse(userId);
 

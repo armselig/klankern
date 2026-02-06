@@ -3,6 +3,7 @@ import { db } from "#server/db";
 import { families, familyMembers } from "#server/db/schema";
 import { FamilyCreateSchema } from "~~/shared/types/family";
 import { logger } from "#server/utils/logger";
+import { requireAuth } from "#server/utils/auth";
 
 /**
  * @api {post} /api/families
@@ -11,14 +12,8 @@ import { logger } from "#server/utils/logger";
  * @returns {Promise<object>} The newly created family object.
  */
 export default defineEventHandler(async (event) => {
-    const user = event.context.user;
-
-    if (!user) {
-        throw createError({
-            statusCode: 401,
-            statusMessage: "Unauthorized",
-        });
-    }
+    const session = await requireAuth(event);
+    const user = session.user;
 
     const parseResult = await readValidatedBody(event, (body) =>
         FamilyCreateSchema.safeParse(body),

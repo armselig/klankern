@@ -3,11 +3,13 @@ import { z } from "zod";
 import { db } from "#server/db/index";
 import { roles } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
+import { requireAdmin } from "#server/utils/auth";
 import { createRoleSchema, type RoleResponse } from "#shared/types/role";
 
 export default defineEventHandler(
     async (event): Promise<{ role: RoleResponse }> => {
         logger.http(`${event.method} ${event.path}`);
+        await requireAdmin(event);
         try {
             const body = await readBody(event);
             const newRoleData = createRoleSchema.parse(body);

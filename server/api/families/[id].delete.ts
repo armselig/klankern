@@ -3,15 +3,13 @@ import { defineEventHandler, createError, getRouterParams } from "h3";
 import { db } from "#server/db";
 import { families, familyMembers } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
+import { requireAuth } from "#server/utils/auth";
 
 export default defineEventHandler(async (event) => {
     logger.http(`${event.method} ${event.path}`);
     const { id: familyId } = await getRouterParams(event);
-    const user = event.context.user;
-
-    if (!user) {
-        throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
-    }
+    const session = await requireAuth(event);
+    const user = session.user;
 
     try {
         // 1. Authorize: Check if the current user is a manager of this family.

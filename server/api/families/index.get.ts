@@ -4,6 +4,7 @@ import { familyMembers } from "#server/db/schema";
 import { and, eq } from "drizzle-orm";
 import { logger } from "#server/utils/logger";
 import { notDeleted } from "#server/db/helpers";
+import { requireAuth } from "#server/utils/auth";
 
 /**
  * @api {get} /api/families
@@ -11,14 +12,8 @@ import { notDeleted } from "#server/db/helpers";
  * @returns {Promise<object[]>} An array of family objects.
  */
 export default defineEventHandler(async (event) => {
-    const user = event.context.user;
-
-    if (!user) {
-        throw createError({
-            statusCode: 401,
-            statusMessage: "Unauthorized",
-        });
-    }
+    const session = await requireAuth(event);
+    const user = session.user;
 
     try {
         const userFamilyMemberships = await db.query.familyMembers.findMany({

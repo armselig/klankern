@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
-import { useAuth } from "~/composables/useAuth";
+import { useUserSession } from "#imports";
 
 // Define interfaces for our state shape for type safety
 interface FamilyMember {
@@ -32,8 +32,8 @@ export const useFamilyStore = defineStore("family", () => {
     const members = computed(() => currentFamily.value?.members || []);
     const familyName = computed(() => currentFamily.value?.name || "");
 
-    // Get the current authenticated user from the auth composable
-    const { user: authUser } = useAuth();
+    // Get the current authenticated user from the session
+    const { user: authUser } = useUserSession();
 
     const currentUserMembership = computed(() => {
         if (!authUser.value || !currentFamily.value) return null;

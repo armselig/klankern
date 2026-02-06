@@ -4,6 +4,7 @@ import { randomBytes } from "crypto";
 import { db } from "#server/db";
 import { users } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
+import { requireAuth } from "#server/utils/auth";
 
 /**
  * @api {post} /api/auth/send-verification
@@ -13,14 +14,8 @@ import { logger } from "#server/utils/logger";
  * @returns {Promise<object>} Success response.
  */
 export default defineEventHandler(async (event) => {
-    const user = event.context.user;
-
-    if (!user) {
-        throw createError({
-            statusCode: 401,
-            statusMessage: "Unauthorized",
-        });
-    }
+    const session = await requireAuth(event);
+    const user = session.user;
 
     try {
         // Check if email is already verified

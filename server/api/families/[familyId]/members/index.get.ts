@@ -4,14 +4,12 @@ import { db } from "#server/db";
 import { familyMembers } from "#server/db/schema";
 import { logger } from "#server/utils/logger";
 import { notDeleted } from "#server/db/helpers";
+import { requireAuth } from "#server/utils/auth";
 
 export default defineEventHandler(async (event) => {
     const { familyId } = await getRouterParams(event);
-    const user = event.context.user;
-
-    if (!user) {
-        throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
-    }
+    const session = await requireAuth(event);
+    const user = session.user;
 
     try {
         // 1. Authorize: Ensure the current user is a member of the family they are trying to view.
