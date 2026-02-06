@@ -1,83 +1,82 @@
-<!--
-This file is for AI agents. It provides instructions and guidelines for interacting with this project.
-For more information, see https://agents.md/
--->
+# PROJECT KNOWLEDGE BASE
 
-# Klankern Agent Guidelines
+**Generated:** 2026-02-06
+**Commit:** 363356d
+**Branch:** main
 
-This document provides instructions for AI agents to work with the Klankern project. Please follow these guidelines to ensure smooth collaboration.
+## OVERVIEW
 
-## Code Style Guidelines
+Klankern is a Progressive Web App (PWA) for families to manage shared tasks, appointments, and notes. It uses Nuxt.js 4, PostgreSQL with Drizzle ORM, and follows modern frontend/backend practices with TypeScript and strict type safety.
 
-- **NEVER** commit or push to Git without explicit approval.
-- File names and custom elements/components use Kebab-case. DO: `utility-file.ts`, `<my-component />`. DON'T: `utility_file.ts`, `<MyComponent />`.
-- **[Nuxt Auto-Imports](https://nuxt.com/docs/4.x/guide/concepts/auto-imports)** have been disabled.
-- Always make use of the **custom path aliases** defined in `nuxt.config.ts`.
-- **Schemas and types** should be shared and reused across the project via files in `./shared/types` (imported via alias `#shared/types`).
-- **Separation of concerns**: Do not mix presentation with business logic. Example: API calls should be handled by a Pinia store, not by a component. Use composables.
-- **ALWAYS** use TypeScript in compliance with `tsconfig.json` files and `eslint` rules.
-- Take care of type safety by ensuring types can be safely inferred or are defined in a (shared) type/interface.
-- **Commit Messages**: MUST follow conventional commit guidelines. The first line/heading of the message is in all lowercase. If possible, always include a scope. In the message body, explain the changes with a focus on WHY they were made. Always flag breaking changes. Each commit message must first be presented to the user for approval.
+## STRUCTURE
 
-## Test Users & Credentials
+```
+./
+├── app/              # Nuxt frontend components, composables, and pages
+├── server/           # Server-side APIs, database schema, routes
+├── shared/           # Shared TypeScript types and utilities
+├── test/             # Unit and integration tests
+├── vibes/            # Project documentation and decision logs
+├── public/           # Static assets
+└── package.json      # Project dependencies and scripts
+```
 
-The database seed script creates the following default users:
+## WHERE TO LOOK
 
-### Admin User
+| Task              | Location                                                 | Notes                                                   |
+| ----------------- | -------------------------------------------------------- | ------------------------------------------------------- |
+| Authentication    | `app/composables/useAuth.ts`, `server/api/auth/`         | Uses nuxt-auth-utils for session management             |
+| User Management   | `server/api/admin/users/`, `app/components/admin/users/` | Admin panel for managing users and roles                |
+| Family Management | `server/api/families/`, `app/components/families/`       | Group management and family-specific features           |
+| Database Schema   | `server/db/schema.ts`                                    | Full schema using Drizzle ORM with UUID v7 primary keys |
 
-- **Username:** `admin`
-- **Email:** `admin@example.com`
-- **Password:** `password123`
+## CONVENTIONS
 
-### Standard Test User (for E2E tests)
+- **Naming**: Kebab-case for files and components (`utility-file.ts`, `<my-component />`)
+- **Separation of Concerns**: API calls in stores/composables, not components
+- **Path Aliases**: Using custom aliases in `nuxt.config.ts` (`#server`, `#shared`)
+- **Type Safety**: Strict TypeScript usage with shared type definitions
+- **Auto-Imports**: Disabled (explicit imports only)
+- **Code Organization**: Frontend in `app/`, backend in `server/`
 
-- **ID:** `a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11`
-- **Username:** `testuser`
-- **Email:** `user@example.com`
-- **Password:** `password123`
+## ANTI-PATTERNS (THIS PROJECT)
 
-## AI Agent Collaboration
+- **Never** use `console.log` - use `useLogger` composables or Winston on server-side
+- **Never** mix frontend logic with UI components directly - use composables
+- **Never** make direct database connections outside Drizzle ORM context
+- **Never** assume user permissions without proper checks
 
-- **Agent-Relevant Files**: Keep all files relevant for AI agents within the `./vibes/` directory. All filenames start with a datestamp prefix. Example: `YYMMDD_topic_brief-description.md`.
-- **Knowledge Graph**: If the MCP server `memory` is available, proactively and autonomously read the graph at the beginning of each session and keep it updated and maintained as you go.
-    - **Graph Structure**: All entries in the knowledge graph MUST be connected or related to the base parent entity "Klankern project" (lowercase 'p'). This ensures a coherent, searchable graph structure.
-    - **Avoid Duplicates**: Before creating new entities, always search for existing ones. Add observations to existing entities instead of creating duplicates. Never create new project entities—use the existing "Klankern project" parent.
-    - **Naming Convention**: Use the exact entity names from the existing graph (e.g., "Klankern project", not "Klankern Project").
-- **NEVER** assume! **ALWAYS** ask clarifying questions.
-- **NEVER** (re-)start, stop etc. any services on your own. Managing containers and dev servers is solely in the domain of the user. You may ask the user at any time to perform such tasks on your behalf.
+## UNIQUE STYLES
 
-## Development Environment
+- **Database**: UUID v7 primary keys for better performance and sorting
+- **Frontend**: Nuxt 4 with auto-routing and composables
+- **Security**: Robust session management with nuxt-auth-utils
+- **Testing**: Comprehensive unit and integration tests with Vitest
 
-The project supports two development setups:
+## COMMANDS
 
-### Containerized Development (Default)
+```bash
+# Development
+pnpm run dev                  # Start dev server
+pnpm run dev:container        # Start with containerized environment
 
-- Both the Nuxt application and PostgreSQL database run in containers via `podman-compose`
-- The Nuxt container name is `klankern_nuxt`, the database container is `klankern_db`
-- Source code is bind-mounted, so file changes are reflected immediately
-- **Important:** Do NOT start, stop, restart, or otherwise manage containers without explicit user approval
+# Database
+pnpm run db:migrate           # Apply migrations
+pnpm run db:seed              # Seed database
 
-**Available Container Scripts:**
+# Testing
+pnpm run test                 # Run all tests
+pnpm run lint                 # Run linter
+pnpm run typecheck            # Run TypeScript check
 
-- `pnpm run dev:container`: Start all services
-- `pnpm run dev:container:build`: Rebuild and start all services
-- `pnpm run dev:container:stop`: Stop all containers
-- `pnpm run dev:container:restart`: Restart Nuxt container
-- `pnpm run dev:container:logs`: View Nuxt logs
-- `pnpm run dev:container:shell`: Open shell in container
-- `pnpm run db:migrate:container`: Run migrations in container
-- `pnpm run db:seed:container`: Seed database in container
+# Build & Deployment
+pnpm run build                # Build for production
+pnpm run generate             # Generate static site
+```
 
-For ad-hoc commands: `podman exec klankern_nuxt pnpm run <script-name>`
+## NOTES
 
-### Traditional Local Development
-
-- Nuxt runs locally on the host machine
-- Only PostgreSQL runs in a container
-- Standard `pnpm run <script-name>` commands work directly
-- `pnpm run db:start`: Start database container
-- `pnpm run db:stop`: Stop database container
-
-## Further reading
-
-- [Initial project plan](./vibes/PROJECT.md)
+- Project uses modern Nuxt 4 with TypeScript and server-side rendering
+- PostgreSQL database schema designed with performance and GDPR compliance in mind
+- Application follows a PWA-first approach for offline support
+- Containerized development setup recommended for consistency
