@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { withTestTransaction } from "#test/utils/db";
 import { createTestUser } from "#test/utils/fixtures";
 import { sendVerificationEmail, verifyEmail } from "#server/services/auth";
-import { ValidationError } from "#server/lib/errors";
+import { ForbiddenError, ValidationError } from "#server/lib/errors";
 import { users } from "#server/db/schema";
 import { eq } from "drizzle-orm";
 
@@ -80,6 +80,19 @@ describe("Service: auth", () => {
                 await expect(verifyEmail(tx, "")).rejects.toThrow(
                     ValidationError,
                 );
+            });
+        });
+
+        it("should throw ForbiddenError when inactive user requests email verification", async () => {
+            await withTestTransaction(async (tx) => {
+                const user = await createTestUser(tx);
+                await tx
+                    .update(users)
+                    .set({ is_active: false })
+                    .where(eq(users.id, user.id));
+                await expect(
+                    sendVerificationEmail(tx, user.id),
+                ).rejects.toThrow(ForbiddenError);
             });
         });
     });
