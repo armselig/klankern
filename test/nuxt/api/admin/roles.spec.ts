@@ -14,12 +14,12 @@ describe("Admin Roles Service", () => {
                 const admin = await createTestAdminUser(tx);
                 // 1. Setup: Create test roles
                 await createRole(tx, admin.id, {
-                    name: "Admin",
-                    description: "Administrator role",
+                    name: "test-moderator",
+                    description: "Moderator role",
                 });
                 await createRole(tx, admin.id, {
-                    name: "User",
-                    description: "Standard user role",
+                    name: "test-viewer",
+                    description: "Viewer role",
                 });
 
                 // 2. Action: Get all roles
@@ -30,8 +30,8 @@ describe("Admin Roles Service", () => {
                 expect(roles.length).toBeGreaterThanOrEqual(2);
 
                 const roleNames = roles.map((r) => r.name);
-                expect(roleNames).toContain("Admin");
-                expect(roleNames).toContain("User");
+                expect(roleNames).toContain("test-moderator");
+                expect(roleNames).toContain("test-viewer");
             });
         });
 
@@ -73,13 +73,13 @@ describe("Admin Roles Service", () => {
                 const admin = await createTestAdminUser(tx);
                 // 1. Action: Create a role
                 const newRole = await createRole(tx, admin.id, {
-                    name: "Manager",
+                    name: "test-manager",
                     description: "Management role",
                 });
 
                 // 2. Assertion: Verify role was created
                 expect(newRole).toBeDefined();
-                expect(newRole.name).toBe("Manager");
+                expect(newRole.name).toBe("test-manager");
                 expect(newRole.description).toBe("Management role");
                 expect(newRole.id).toBeDefined();
 
@@ -87,7 +87,7 @@ describe("Admin Roles Service", () => {
                 const roles = await getAllRoles(tx, admin.id);
                 const createdRole = roles.find((r) => r.id === newRole.id);
                 expect(createdRole).toBeDefined();
-                expect(createdRole?.name).toBe("Manager");
+                expect(createdRole?.name).toBe("test-manager");
             });
         });
 

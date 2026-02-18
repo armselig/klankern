@@ -46,7 +46,7 @@ describe("Admin Users Service", () => {
                 const admin = await createTestAdminUser(tx);
                 // 1. Setup: Create a role
                 const userRole = await createRole(tx, admin.id, {
-                    name: "UserRole",
+                    name: "user-role",
                     description: "Regular user role",
                 });
 
@@ -141,7 +141,7 @@ describe("Admin Users Service", () => {
                 const admin = await createTestAdminUser(tx);
                 // 1. Setup: Create a role
                 const role = await createRole(tx, admin.id, {
-                    name: "TestRole",
+                    name: "test-role",
                     description: "Test role",
                 });
 
