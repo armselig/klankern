@@ -6,11 +6,13 @@ import {
     ConflictError,
     UnauthorizedError,
     ForbiddenError,
+    NotFoundError,
     ValidationError,
 } from "#server/lib/errors";
 import { logger } from "#server/utils/logger";
 import { customHashPassword } from "#server/utils/password";
 import { isAdmin } from "#server/lib/authorization";
+import { findResourceOrThrow } from "#server/lib/validation";
 
 /**
  * Retrieves all users with their roles from the database.
@@ -197,4 +199,55 @@ export async function createUser(
         }
         throw error;
     }
+}
+
+/**
+ * Permanently deletes a user from the database (hard-delete).
+ *
+ * This is an admin-only operation. All related records (sessions, userRoles,
+ * familyMembers, userConsents) are removed via ON DELETE CASCADE database constraints.
+ * This action is irreversible.
+ *
+ * @param dbConnection - Database connection (db or transaction)
+ * @param adminUserId - ID of the admin performing the deletion
+ * @param targetUserId - ID of the user to permanently delete
+ * @returns Object confirming deletion with the deleted user's ID
+ * @throws {UnauthorizedError} If adminUserId is not provided
+ * @throws {ForbiddenError} If the requesting user is not an admin
+ * @throws {NotFoundError} If the target user does not exist
+ */
+export async function deleteUser(
+    dbConnection: DbConnection,
+    adminUserId: string | null | undefined,
+    targetUserId: string,
+) {
+    if (!adminUserId) {
+        throw new UnauthorizedError("User not authenticated");
+    }
+
+    if (!(await isAdmin(dbConnection, adminUserId))) {
+        throw new ForbiddenError("User does not have admin privileges");
+    }
+
+    // Verify the target user exists before attempting deletion
+    await findResourceOrThrow(
+        () =>
+            dbConnection.query.users.findFirst({
+                where: eq(users.id, targetUserId),
+            }),
+        "User",
+    );
+
+    const [deletedUser] = await dbConnection
+        .delete(users)
+        .where(eq(users.id, targetUserId))
+        .returning({ id: users.id });
+
+    if (!deletedUser) {
+        throw new NotFoundError("User not found");
+    }
+
+    logger.info(`User hard-deleted: ${targetUserId} by admin ${adminUserId}`);
+
+    return { id: deletedUser.id };
 }

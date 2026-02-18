@@ -9,15 +9,24 @@ import {
     createFamily,
     getUserFamilies,
     transferOwnership,
+    deleteFamily,
 } from "#server/services/families";
 import { and, eq } from "drizzle-orm";
-import { families, familyMembers } from "~~/server/db/schema";
+import {
+    families,
+    familyMembers,
+    familyInvitations,
+} from "~~/server/db/schema";
 import {
     UnauthorizedError,
     ForbiddenError,
     ValidationError,
     NotFoundError,
 } from "#server/lib/errors";
+import {
+    createTestAdminUser,
+    createValidInvitation,
+} from "#test/utils/fixtures";
 
 describe("Family Service", () => {
     describe("createFamily", () => {
@@ -784,6 +793,101 @@ describe("Family Service", () => {
                     });
                     expect(dbFamily?.name).toBe(specialName);
                 });
+            });
+        });
+    });
+
+    describe("deleteFamily", () => {
+        it("should throw UnauthorizedError if admin user is not authenticated", async () => {
+            await withTestTransaction(async (tx: TestTransaction) => {
+                const owner = await createTestUser(tx);
+                const family = await createTestFamily(tx, owner.id);
+                await expect(deleteFamily(tx, null, family.id)).rejects.toThrow(
+                    UnauthorizedError,
+                );
+            });
+        });
+
+        it("should throw ForbiddenError if requesting user is not an admin", async () => {
+            await withTestTransaction(async (tx: TestTransaction) => {
+                const owner = await createTestUser(tx);
+                const nonAdmin = await createTestUser(tx);
+                const family = await createTestFamily(tx, owner.id);
+                await expect(
+                    deleteFamily(tx, nonAdmin.id, family.id),
+                ).rejects.toThrow(ForbiddenError);
+            });
+        });
+
+        it("should throw NotFoundError when deleting a non-existent family", async () => {
+            await withTestTransaction(async (tx: TestTransaction) => {
+                const admin = await createTestAdminUser(tx);
+                await expect(
+                    deleteFamily(
+                        tx,
+                        admin.id,
+                        "00000000-0000-0000-0000-000000000000",
+                    ),
+                ).rejects.toThrow(NotFoundError);
+            });
+        });
+
+        it("should permanently delete a family", async () => {
+            await withTestTransaction(async (tx: TestTransaction) => {
+                const admin = await createTestAdminUser(tx);
+                const owner = await createTestUser(tx);
+                const family = await createTestFamily(tx, owner.id);
+
+                await deleteFamily(tx, admin.id, family.id);
+
+                const deletedFamily = await tx.query.families.findFirst({
+                    where: eq(families.id, family.id),
+                });
+                expect(deletedFamily).toBeUndefined();
+            });
+        });
+
+        it("should cascade-delete familyMembers when family is deleted", async () => {
+            await withTestTransaction(async (tx: TestTransaction) => {
+                const admin = await createTestAdminUser(tx);
+                const owner = await createTestUser(tx);
+                const member = await createTestUser(tx);
+                const family = await createTestFamily(tx, owner.id);
+
+                await tx.insert(familyMembers).values({
+                    family_id: family.id,
+                    user_id: member.id,
+                    role: "member",
+                });
+
+                await deleteFamily(tx, admin.id, family.id);
+
+                const remainingMembers = await tx.query.familyMembers.findMany({
+                    where: eq(familyMembers.family_id, family.id),
+                });
+                expect(remainingMembers).toHaveLength(0);
+            });
+        });
+
+        it("should cascade-delete familyInvitations when family is deleted", async () => {
+            await withTestTransaction(async (tx: TestTransaction) => {
+                const admin = await createTestAdminUser(tx);
+                const owner = await createTestUser(tx);
+                const family = await createTestFamily(tx, owner.id);
+
+                const invitation = await createValidInvitation(
+                    tx,
+                    family.id,
+                    owner.id,
+                );
+
+                await deleteFamily(tx, admin.id, family.id);
+
+                const remainingInvitation =
+                    await tx.query.familyInvitations.findFirst({
+                        where: eq(familyInvitations.id, invitation.id),
+                    });
+                expect(remainingInvitation).toBeUndefined();
             });
         });
     });

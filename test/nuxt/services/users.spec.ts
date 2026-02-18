@@ -2,13 +2,19 @@ import { describe, it, expect } from "vitest";
 import { eq } from "drizzle-orm";
 import { withTestTransaction } from "#test/utils/db";
 import { createTestUser, createTestAdminUser } from "#test/utils/fixtures";
-import { getAllUsersWithRoles, createUser } from "#server/services/users";
-import { users } from "#server/db/schema";
+import {
+    getAllUsersWithRoles,
+    createUser,
+    deleteUser,
+} from "#server/services/users";
+import { sessions, userRoles, users, familyMembers } from "#server/db/schema";
 import {
     UnauthorizedError,
     ForbiddenError,
+    NotFoundError,
     ValidationError,
 } from "#server/lib/errors";
+import { createTestFamily } from "#test/utils/fixtures";
 
 describe("users service", () => {
     describe("getAllUsersWithRoles", () => {
@@ -246,6 +252,117 @@ describe("users service", () => {
                         password: "password123",
                     }),
                 ).rejects.toThrow(ForbiddenError);
+            });
+        });
+    });
+
+    describe("deleteUser", () => {
+        it("should throw UnauthorizedError if admin user is not authenticated", async () => {
+            await withTestTransaction(async (tx) => {
+                const target = await createTestUser(tx);
+                await expect(deleteUser(tx, null, target.id)).rejects.toThrow(
+                    UnauthorizedError,
+                );
+            });
+        });
+
+        it("should throw ForbiddenError if requesting user is not an admin", async () => {
+            await withTestTransaction(async (tx) => {
+                const nonAdmin = await createTestUser(tx);
+                const target = await createTestUser(tx);
+                await expect(
+                    deleteUser(tx, nonAdmin.id, target.id),
+                ).rejects.toThrow(ForbiddenError);
+            });
+        });
+
+        it("should throw NotFoundError when deleting a non-existent user", async () => {
+            await withTestTransaction(async (tx) => {
+                const admin = await createTestAdminUser(tx);
+                await expect(
+                    deleteUser(
+                        tx,
+                        admin.id,
+                        "00000000-0000-0000-0000-000000000000",
+                    ),
+                ).rejects.toThrow(NotFoundError);
+            });
+        });
+
+        it("should permanently delete a user", async () => {
+            await withTestTransaction(async (tx) => {
+                const admin = await createTestAdminUser(tx);
+                const target = await createTestUser(tx);
+
+                await deleteUser(tx, admin.id, target.id);
+
+                const deletedUser = await tx.query.users.findFirst({
+                    where: eq(users.id, target.id),
+                });
+                expect(deletedUser).toBeUndefined();
+            });
+        });
+
+        it("should cascade-delete userRoles when user is deleted", async () => {
+            await withTestTransaction(async (tx) => {
+                const admin = await createTestAdminUser(tx);
+                const target = await createTestUser(tx);
+
+                const rolesBeforeDelete = await tx.query.userRoles.findMany({
+                    where: eq(userRoles.user_id, target.id),
+                });
+                expect(rolesBeforeDelete.length).toBeGreaterThanOrEqual(0);
+
+                await deleteUser(tx, admin.id, target.id);
+
+                const rolesAfterDelete = await tx.query.userRoles.findMany({
+                    where: eq(userRoles.user_id, target.id),
+                });
+                expect(rolesAfterDelete).toHaveLength(0);
+            });
+        });
+
+        it("should cascade-delete sessions when user is deleted", async () => {
+            await withTestTransaction(async (tx) => {
+                const admin = await createTestAdminUser(tx);
+                const target = await createTestUser(tx);
+
+                await tx.insert(sessions).values({
+                    user_id: target.id,
+                    ip_address: "127.0.0.1",
+                    user_agent: "test-agent",
+                    expires_at: new Date(Date.now() + 86400000),
+                });
+
+                await deleteUser(tx, admin.id, target.id);
+
+                const remainingSessions = await tx.query.sessions.findMany({
+                    where: eq(sessions.user_id, target.id),
+                });
+                expect(remainingSessions).toHaveLength(0);
+            });
+        });
+
+        it("should cascade-delete familyMembers when user is deleted", async () => {
+            await withTestTransaction(async (tx) => {
+                const admin = await createTestAdminUser(tx);
+                const owner = await createTestUser(tx);
+                const target = await createTestUser(tx);
+                const family = await createTestFamily(tx, owner.id);
+
+                await tx.insert(familyMembers).values({
+                    family_id: family.id,
+                    user_id: target.id,
+                    role: "member",
+                });
+
+                await deleteUser(tx, admin.id, target.id);
+
+                const remainingMemberships =
+                    await tx.query.familyMembers.findMany({
+                        where: eq(familyMembers.user_id, target.id),
+                    });
+                expect(remainingMemberships).toHaveLength(0);
             });
         });
     });
