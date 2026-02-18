@@ -1,5 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
+import { z } from "zod";
 import {
     familyInvitations,
     familyMembers,
@@ -42,15 +43,17 @@ export async function createInvitation(
     }
 
     // Input Validation
-    if (!invitedEmail || invitedEmail.trim() === "") {
-        throw new ValidationError("Email cannot be empty");
-    }
-    if (invitedEmail.length > 255) {
-        throw new ValidationError("Email cannot exceed 255 characters");
-    }
-    // Basic email format validation
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(invitedEmail)) {
-        throw new ValidationError("Invalid email format");
+    const invitedEmailSchema = z
+        .string()
+        .min(1, "Email cannot be empty")
+        .max(255, "Email cannot exceed 255 characters")
+        .email("Invalid email format");
+
+    const emailResult = invitedEmailSchema.safeParse(invitedEmail);
+    if (!emailResult.success) {
+        throw new ValidationError(
+            emailResult.error.issues[0]?.message ?? "Invalid email",
+        );
     }
 
     // Verify family exists
