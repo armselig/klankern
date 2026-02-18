@@ -56,11 +56,11 @@ export async function createInvitation(
         );
     }
 
-    // Verify family exists
+    // Verify family exists and is not soft-deleted
     await findResourceOrThrow(
         () =>
             dbConnection.query.families.findFirst({
-                where: eq(families.id, familyId),
+                where: and(eq(families.id, familyId), notDeleted(families)),
             }),
         "Family",
     );
@@ -146,9 +146,12 @@ export async function acceptInvitation(
         );
     }
 
-    // 1. Find the invitation by token
+    // 1. Find the invitation by token, excluding soft-deleted invitations
     const invitation = await dbConnection.query.familyInvitations.findFirst({
-        where: eq(familyInvitations.token, token),
+        where: and(
+            eq(familyInvitations.token, token),
+            notDeleted(familyInvitations),
+        ),
     });
 
     if (!invitation) {

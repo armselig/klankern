@@ -6,7 +6,7 @@ import {
     type TestTransaction,
 } from "#test/utils";
 import { createFamily, transferOwnership } from "#server/services/families";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { families, familyMembers } from "~~/server/db/schema";
 import {
     UnauthorizedError,
@@ -438,6 +438,81 @@ describe("Family Service", () => {
                             newOwner.id,
                         );
                         expect(result).toEqual({ success: true });
+                    });
+                });
+            });
+
+            describe("Soft-Deleted Resources", () => {
+                it("should throw NotFoundError when transferring ownership of a soft-deleted family", async () => {
+                    await withTestTransaction(async (tx: TestTransaction) => {
+                        const creator = await createTestUser(tx, {
+                            email: "creator@example.com",
+                            username: "creator",
+                        });
+                        const family = await createTestFamily(tx, creator.id);
+                        const member = await createTestUser(tx, {
+                            email: "member@example.com",
+                            username: "member",
+                        });
+                        await tx.insert(familyMembers).values({
+                            family_id: family.id,
+                            user_id: member.id,
+                            role: "member",
+                        });
+
+                        // Soft-delete the family
+                        await tx
+                            .update(families)
+                            .set({ deleted_at: new Date() })
+                            .where(eq(families.id, family.id));
+
+                        await expect(
+                            transferOwnership(
+                                tx,
+                                creator.id,
+                                family.id,
+                                member.id,
+                            ),
+                        ).rejects.toThrow(NotFoundError);
+                    });
+                });
+
+                it("should throw ValidationError when soft-deleted member is designated as new owner", async () => {
+                    await withTestTransaction(async (tx: TestTransaction) => {
+                        const creator = await createTestUser(tx, {
+                            email: "creator@example.com",
+                            username: "creator",
+                        });
+                        const family = await createTestFamily(tx, creator.id);
+                        const member = await createTestUser(tx, {
+                            email: "member@example.com",
+                            username: "member",
+                        });
+                        await tx.insert(familyMembers).values({
+                            family_id: family.id,
+                            user_id: member.id,
+                            role: "member",
+                        });
+
+                        // Soft-delete the member's familyMembers row
+                        await tx
+                            .update(familyMembers)
+                            .set({ deleted_at: new Date() })
+                            .where(
+                                and(
+                                    eq(familyMembers.family_id, family.id),
+                                    eq(familyMembers.user_id, member.id),
+                                ),
+                            );
+
+                        await expect(
+                            transferOwnership(
+                                tx,
+                                creator.id,
+                                family.id,
+                                member.id,
+                            ),
+                        ).rejects.toThrow(ValidationError);
                     });
                 });
             });
