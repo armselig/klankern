@@ -4,6 +4,7 @@ import { users } from "#server/db/schema";
 import type { DbConnection } from "#server/lib/types";
 import {
     UnauthorizedError,
+    ForbiddenError,
     NotFoundError,
     ValidationError,
 } from "#server/lib/errors";
@@ -41,6 +42,10 @@ export async function sendVerificationEmail(
 
     if (!userRecord) {
         throw new NotFoundError("User not found");
+    }
+
+    if (!userRecord.is_active) {
+        throw new ForbiddenError("User account is inactive");
     }
 
     if (userRecord.email_verified) {

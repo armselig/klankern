@@ -1,7 +1,9 @@
 import { describe, it, expect } from "vitest";
+import { eq } from "drizzle-orm";
 import { withTestTransaction } from "#test/utils/db";
 import { createTestUser, createTestAdminUser } from "#test/utils/fixtures";
 import { getAllUsersWithRoles, createUser } from "#server/services/users";
+import { users } from "#server/db/schema";
 import {
     UnauthorizedError,
     ForbiddenError,
@@ -211,6 +213,39 @@ describe("users service", () => {
                         }),
                     ).rejects.toThrow(ValidationError);
                 });
+            });
+        });
+    });
+
+    describe("Inactive user restrictions", () => {
+        it("should throw ForbiddenError when inactive admin calls getAllUsersWithRoles", async () => {
+            await withTestTransaction(async (tx) => {
+                const admin = await createTestAdminUser(tx);
+                await tx
+                    .update(users)
+                    .set({ is_active: false })
+                    .where(eq(users.id, admin.id));
+                await expect(
+                    getAllUsersWithRoles(tx, admin.id),
+                ).rejects.toThrow(ForbiddenError);
+            });
+        });
+
+        it("should throw ForbiddenError when inactive admin calls createUser", async () => {
+            await withTestTransaction(async (tx) => {
+                const admin = await createTestAdminUser(tx);
+                await tx
+                    .update(users)
+                    .set({ is_active: false })
+                    .where(eq(users.id, admin.id));
+                const timestamp = Date.now();
+                await expect(
+                    createUser(tx, admin.id, {
+                        email: `new-${timestamp}@example.com`,
+                        username: `newuser-${timestamp}`,
+                        password: "password123",
+                    }),
+                ).rejects.toThrow(ForbiddenError);
             });
         });
     });

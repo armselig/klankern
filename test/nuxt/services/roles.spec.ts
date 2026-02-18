@@ -1,7 +1,9 @@
 import { describe, it, expect } from "vitest";
+import { eq } from "drizzle-orm";
 import { withTestTransaction } from "#test/utils/db";
 import { createTestUser, createTestAdminUser } from "#test/utils/fixtures";
 import { getAllRoles, createRole } from "#server/services/roles";
+import { users } from "#server/db/schema";
 import {
     UnauthorizedError,
     ForbiddenError,
@@ -63,6 +65,34 @@ describe("roles service", () => {
                 });
                 expect(newRole).toBeDefined();
                 expect(newRole.name).toBe("test-role");
+            });
+        });
+
+        describe("Inactive user restrictions", () => {
+            it("should throw ForbiddenError when inactive admin calls getAllRoles", async () => {
+                await withTestTransaction(async (tx) => {
+                    const admin = await createTestAdminUser(tx);
+                    await tx
+                        .update(users)
+                        .set({ is_active: false })
+                        .where(eq(users.id, admin.id));
+                    await expect(getAllRoles(tx, admin.id)).rejects.toThrow(
+                        ForbiddenError,
+                    );
+                });
+            });
+
+            it("should throw ForbiddenError when inactive admin calls createRole", async () => {
+                await withTestTransaction(async (tx) => {
+                    const admin = await createTestAdminUser(tx);
+                    await tx
+                        .update(users)
+                        .set({ is_active: false })
+                        .where(eq(users.id, admin.id));
+                    await expect(
+                        createRole(tx, admin.id, { name: "test-role" }),
+                    ).rejects.toThrow(ForbiddenError);
+                });
             });
         });
 
