@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { withTestTransaction } from "#test/utils/db";
 import { createTestUser, createTestAdminUser } from "#test/utils/fixtures";
@@ -329,6 +330,7 @@ describe("users service", () => {
 
                 await tx.insert(sessions).values({
                     user_id: target.id,
+                    token: randomUUID(),
                     ip_address: "127.0.0.1",
                     user_agent: "test-agent",
                     expires_at: new Date(Date.now() + 86400000),
