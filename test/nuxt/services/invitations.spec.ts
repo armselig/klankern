@@ -10,7 +10,7 @@ import {
     acceptInvitation,
 } from "#server/services/invitations";
 import { and, eq } from "drizzle-orm";
-import { familyMembers } from "#server/db/schema";
+import { familyMembers, families, familyInvitations } from "#server/db/schema";
 import {
     ForbiddenError,
     ConflictError,
@@ -128,6 +128,33 @@ describe("invitations service", () => {
                             regularMember.user.email,
                         ),
                     ).rejects.toThrow(ConflictError);
+                });
+            });
+
+            it("should throw NotFoundError when creating invitation for a soft-deleted family", async () => {
+                await withTestTransaction(async (tx) => {
+                    const creator = await createTestUser(tx);
+                    const { family, managers } = await createFamilyWithMembers(
+                        tx,
+                        creator,
+                        { managers: 1 },
+                    );
+                    const manager = managers[0];
+
+                    // Soft-delete the family
+                    await tx
+                        .update(families)
+                        .set({ deleted_at: new Date() })
+                        .where(eq(families.id, family.id));
+
+                    await expect(
+                        createInvitation(
+                            tx,
+                            manager.user.id,
+                            family.id,
+                            "new.member@example.com",
+                        ),
+                    ).rejects.toThrow(NotFoundError);
                 });
             });
 
@@ -336,6 +363,36 @@ describe("invitations service", () => {
                     await acceptInvitation(tx, invitedUser.id, token);
 
                     // Try to accept again (should fail)
+                    await expect(
+                        acceptInvitation(tx, invitedUser.id, token),
+                    ).rejects.toThrow(ValidationError);
+                });
+            });
+
+            it("should throw ValidationError when accepting a soft-deleted invitation", async () => {
+                await withTestTransaction(async (tx) => {
+                    const creator = await createTestUser(tx);
+                    const { family, managers } = await createFamilyWithMembers(
+                        tx,
+                        creator,
+                        { managers: 1 },
+                    );
+                    const manager = managers[0];
+                    const invitedUser = await createTestUser(tx);
+
+                    const { token } = await createInvitation(
+                        tx,
+                        manager.user.id,
+                        family.id,
+                        invitedUser.email,
+                    );
+
+                    // Soft-delete the invitation
+                    await tx
+                        .update(familyInvitations)
+                        .set({ deleted_at: new Date() })
+                        .where(eq(familyInvitations.token, token));
+
                     await expect(
                         acceptInvitation(tx, invitedUser.id, token),
                     ).rejects.toThrow(ValidationError);

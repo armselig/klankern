@@ -13,6 +13,7 @@ import { and, eq } from "drizzle-orm";
 import { families, familyMembers, users } from "#server/db/schema";
 import type { DbConnection } from "#server/lib/types";
 import { findResourceOrThrow } from "#server/lib/validation";
+import { notDeleted } from "#server/db/helpers";
 import {
     ForbiddenError,
     InternalError,
@@ -107,11 +108,11 @@ export async function transferOwnership(
     familyId: string,
     newOwnerId: string,
 ) {
-    // Authorization: Verify family exists
+    // Authorization: Verify family exists and is not soft-deleted
     const family = await findResourceOrThrow(
         () =>
             dbConnection.query.families.findFirst({
-                where: eq(families.id, familyId),
+                where: and(eq(families.id, familyId), notDeleted(families)),
             }),
         "Family",
     );
@@ -132,11 +133,12 @@ export async function transferOwnership(
         "User",
     );
 
-    // Business rule: New owner must be a member
+    // Business rule: New owner must be an active (non-soft-deleted) member
     const membership = await dbConnection.query.familyMembers.findFirst({
         where: and(
             eq(familyMembers.family_id, familyId),
             eq(familyMembers.user_id, newOwnerId),
+            notDeleted(familyMembers),
         ),
     });
 
