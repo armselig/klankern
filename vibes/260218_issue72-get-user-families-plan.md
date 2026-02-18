@@ -17,12 +17,13 @@ semantics before implementation.
 
 ---
 
-## Step 1 — Implement `getUserFamilies()` in families service
+## Step 1 — Implement `getUserFamilies()` in families service ✅
 
-**File:** `server/services/families.ts`
+**Commit:** `54f4a39f` **File:** `server/services/families.ts`
 
-Add a new exported function. All required imports (`and`, `eq`, `families`, `familyMembers`,
-`notDeleted`, `UnauthorizedError`) are already present in the file.
+All required imports (`and`, `eq`, `families`, `familyMembers`, `notDeleted`, `UnauthorizedError`)
+were already present in the file. Note: `return await` is required (not bare `return`) to satisfy
+the `@typescript-eslint/require-await` ESLint rule enforced by the pre-commit hook.
 
 ```ts
 /**
@@ -45,7 +46,7 @@ export async function getUserFamilies(
         throw new UnauthorizedError("User ID is required");
     }
 
-    return dbConnection
+    return await dbConnection
         .select({
             id: families.id,
             name: families.name,
@@ -68,13 +69,13 @@ export async function getUserFamilies(
 
 ---
 
-## Step 2 — Add tests to families.spec.ts
+## Step 2 — Add tests to families.spec.ts ✅
 
-**File:** `test/nuxt/services/families.spec.ts`
+**Commit:** `54f4a39f` **File:** `test/nuxt/services/families.spec.ts`
 
-Add `getUserFamilies` to the existing import from `#server/services/families`.
+Added `getUserFamilies` to the existing import from `#server/services/families`.
 
-### In `describe("Empty Collections")` — replace the two empty placeholders:
+### In `describe("Empty Collections")` — replaced the two empty placeholders:
 
 1. `should return an empty array when a user has no families`
     - Create a user, call `getUserFamilies(tx, user.id)`, expect result to be `[]`
@@ -82,7 +83,7 @@ Add `getUserFamilies` to the existing import from `#server/services/families`.
 2. `should return families the user is a member of`
     - Create user + family via `createTestFamily`, expect array length ≥ 1 containing that family's id
 
-### In `describe("Soft-Deleted Resources")` — append after the 3 existing tests:
+### In `describe("Soft-Deleted Resources")` — appended after the 3 existing tests:
 
 3. `should exclude soft-deleted families from getUserFamilies`
     - Create user + family, set `families.deleted_at = new Date()`, call `getUserFamilies`,
@@ -92,27 +93,21 @@ Add `getUserFamilies` to the existing import from `#server/services/families`.
     - Create user + family, set `familyMembers.deleted_at = new Date()` for that user/family pair,
       call `getUserFamilies`, expect `[]`
 
-### In `describe("Authorization")` — append:
+### In `describe("Authorization") > describe("transferOwnership")` — added new sub-describe:
+
+A new `describe("getUserFamilies")` block was added (not a bare test) to follow the existing
+nesting convention:
 
 5. `should throw UnauthorizedError when userId is not provided`
     - Call `getUserFamilies(tx, null)`, expect `UnauthorizedError`
 
-### Fixtures already available (no new fixtures needed):
-
-- `createTestUser(tx)` — `test/utils/fixtures.ts`
-- `createTestFamily(tx, userId)` — `test/utils/fixtures.ts`
-- `withTestTransaction` — `test/utils/db.ts`
-
 ---
 
-## Step 3 — Open new GitHub issue
+## Step 3 — Open new GitHub issue ✅
 
-```bash
-gh issue create \
-  --title "design(schema): clarify user deactivation semantics before adding deleted_at" \
-  --label "design,security" \
-  --body "..."
-```
+**Issue:** #73
+
+Labels `design` and `security` do not exist in this repo — the issue was created without labels.
 
 Body content:
 
@@ -126,33 +121,32 @@ Body content:
 
 ---
 
-## Step 4 — Close issue #72
+## Step 4 — Ship via PR ✅
 
-Post a closing comment on #72 summarising:
+Instead of closing #72 directly, a closing comment was posted on #72 and a PR was created:
 
-- What was fully implemented: families/invitations soft-delete (PR #71), `is_active` enforcement
-  for admin + auth operations (commit `7fa38278`), `getUserFamilies` with soft-delete filters
-- What was intentionally deferred: `deleted_at` on `users` (product decision needed, link new issue)
-- `roles`/`userRoles` `deleted_at`: assessed as N/A — static reference table, not user-managed
-
-Then close the issue.
+- **PR #74** — `test/#72_expand-soft-delete` → `refactor/test-suite`
+- Milestone: "Test Suite Refactoring"
+- Linked to #72 via `Closes #72` in the PR body
+- Issue #72 remains open until the PR is merged
 
 ---
 
-## Verification
+## Verification ✅
 
-```bash
-npx vitest run test/nuxt/services/families.spec.ts
-npx vitest run test/nuxt/services/
 ```
+Test Files  1 passed (1)   — families.spec.ts
+      Tests  29 passed (29)
 
-All 5 new tests should pass. No existing tests should regress.
+Test Files  23 passed (23) — full suite (pre-push hook)
+      Tests  285 passed | 3 todo (288)
+```
 
 ---
 
 ## Critical files
 
-| File                                  | Change                                                              |
-| ------------------------------------- | ------------------------------------------------------------------- |
-| `server/services/families.ts`         | Add `getUserFamilies()` export                                      |
-| `test/nuxt/services/families.spec.ts` | Add 5 tests, replace 2 empty placeholders, import `getUserFamilies` |
+| File                                  | Change                                                                   |
+| ------------------------------------- | ------------------------------------------------------------------------ |
+| `server/services/families.ts`         | Added `getUserFamilies()` export (`return await` required by ESLint)     |
+| `test/nuxt/services/families.spec.ts` | Added 5 tests, replaced 2 empty placeholders, imported `getUserFamilies` |
