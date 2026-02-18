@@ -124,6 +124,21 @@ export async function transferOwnership(
         );
     }
 
+    // Authorization: Verify current user is still an active member of the family
+    const creatorMembership = await dbConnection.query.familyMembers.findFirst({
+        where: and(
+            eq(familyMembers.family_id, familyId),
+            eq(familyMembers.user_id, currentUserId),
+            notDeleted(familyMembers),
+        ),
+    });
+
+    if (!creatorMembership) {
+        throw new ForbiddenError(
+            "Only an active family member can transfer ownership",
+        );
+    }
+
     // Business rule: New owner must exist
     await findResourceOrThrow(
         () =>

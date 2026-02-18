@@ -477,6 +477,45 @@ describe("Family Service", () => {
                     });
                 });
 
+                it("should throw ForbiddenError when soft-deleted creator attempts to transfer ownership", async () => {
+                    await withTestTransaction(async (tx: TestTransaction) => {
+                        const creator = await createTestUser(tx, {
+                            email: "creator@example.com",
+                            username: "creator",
+                        });
+                        const family = await createTestFamily(tx, creator.id);
+                        const member = await createTestUser(tx, {
+                            email: "member@example.com",
+                            username: "member",
+                        });
+                        await tx.insert(familyMembers).values({
+                            family_id: family.id,
+                            user_id: member.id,
+                            role: "member",
+                        });
+
+                        // Soft-delete the creator's membership
+                        await tx
+                            .update(familyMembers)
+                            .set({ deleted_at: new Date() })
+                            .where(
+                                and(
+                                    eq(familyMembers.family_id, family.id),
+                                    eq(familyMembers.user_id, creator.id),
+                                ),
+                            );
+
+                        await expect(
+                            transferOwnership(
+                                tx,
+                                creator.id,
+                                family.id,
+                                member.id,
+                            ),
+                        ).rejects.toThrow(ForbiddenError);
+                    });
+                });
+
                 it("should throw ValidationError when soft-deleted member is designated as new owner", async () => {
                     await withTestTransaction(async (tx: TestTransaction) => {
                         const creator = await createTestUser(tx, {
