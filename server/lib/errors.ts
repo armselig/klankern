@@ -16,6 +16,7 @@ export class ForbiddenError extends DomainError {}
 export class NotFoundError extends DomainError {}
 export class ValidationError extends DomainError {}
 export class ConflictError extends DomainError {}
+export class InternalError extends DomainError {}
 
 /**
  * Translates domain errors to HTTP errors for route handlers.
