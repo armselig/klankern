@@ -176,3 +176,43 @@ export async function transferOwnership(
 
     return { success: true };
 }
+
+/**
+ * Retrieves all active families a user is an active member of.
+ *
+ * Filters out families where deleted_at is set and families where the
+ * user's membership record itself has been soft-deleted, preventing
+ * access via stale membership after removal.
+ *
+ * @param dbConnection - Database connection (db or transaction)
+ * @param userId - ID of the user whose families to retrieve
+ * @returns Array of active family records the user belongs to
+ * @throws {UnauthorizedError} If userId is not provided
+ */
+export async function getUserFamilies(
+    dbConnection: DbConnection,
+    userId: string | null | undefined,
+) {
+    if (!userId) {
+        throw new UnauthorizedError("User ID is required");
+    }
+
+    return await dbConnection
+        .select({
+            id: families.id,
+            name: families.name,
+            creator_id: families.creator_id,
+            created_at: families.created_at,
+            updated_at: families.updated_at,
+            deleted_at: families.deleted_at,
+        })
+        .from(families)
+        .innerJoin(familyMembers, eq(familyMembers.family_id, families.id))
+        .where(
+            and(
+                eq(familyMembers.user_id, userId),
+                notDeleted(familyMembers),
+                notDeleted(families),
+            ),
+        );
+}

@@ -5,7 +5,11 @@ import {
     createTestFamily,
     type TestTransaction,
 } from "#test/utils";
-import { createFamily, transferOwnership } from "#server/services/families";
+import {
+    createFamily,
+    getUserFamilies,
+    transferOwnership,
+} from "#server/services/families";
 import { and, eq } from "drizzle-orm";
 import { families, familyMembers } from "~~/server/db/schema";
 import {
@@ -554,6 +558,53 @@ describe("Family Service", () => {
                         ).rejects.toThrow(ValidationError);
                     });
                 });
+
+                it("should exclude soft-deleted families from getUserFamilies", async () => {
+                    await withTestTransaction(async (tx: TestTransaction) => {
+                        const user = await createTestUser(tx);
+                        const family = await createTestFamily(tx, user.id);
+
+                        await tx
+                            .update(families)
+                            .set({ deleted_at: new Date() })
+                            .where(eq(families.id, family.id));
+
+                        const result = await getUserFamilies(tx, user.id);
+
+                        expect(result).toEqual([]);
+                    });
+                });
+
+                it("should exclude families where the user's membership is soft-deleted", async () => {
+                    await withTestTransaction(async (tx: TestTransaction) => {
+                        const user = await createTestUser(tx);
+                        const family = await createTestFamily(tx, user.id);
+
+                        await tx
+                            .update(familyMembers)
+                            .set({ deleted_at: new Date() })
+                            .where(
+                                and(
+                                    eq(familyMembers.family_id, family.id),
+                                    eq(familyMembers.user_id, user.id),
+                                ),
+                            );
+
+                        const result = await getUserFamilies(tx, user.id);
+
+                        expect(result).toEqual([]);
+                    });
+                });
+            });
+
+            describe("getUserFamilies", () => {
+                it("should throw UnauthorizedError when userId is not provided", async () => {
+                    await withTestTransaction(async (tx: TestTransaction) => {
+                        await expect(getUserFamilies(tx, null)).rejects.toThrow(
+                            UnauthorizedError,
+                        );
+                    });
+                });
             });
 
             describe("Business Rule Validation", () => {
@@ -696,11 +747,25 @@ describe("Family Service", () => {
 
         describe("Empty Collections", () => {
             it("should return an empty array when a user has no families", async () => {
-                // This test requires a getUserFamilies function, which doesn't exist yet.
+                await withTestTransaction(async (tx: TestTransaction) => {
+                    const user = await createTestUser(tx);
+
+                    const result = await getUserFamilies(tx, user.id);
+
+                    expect(result).toEqual([]);
+                });
             });
 
-            it("should return an array with only the creator for a new family", async () => {
-                // This test requires a getFamilyMembers function, which doesn't exist yet.
+            it("should return families the user is a member of", async () => {
+                await withTestTransaction(async (tx: TestTransaction) => {
+                    const user = await createTestUser(tx);
+                    const family = await createTestFamily(tx, user.id);
+
+                    const result = await getUserFamilies(tx, user.id);
+
+                    expect(result.length).toBeGreaterThanOrEqual(1);
+                    expect(result.some((f) => f.id === family.id)).toBe(true);
+                });
             });
         });
 
