@@ -214,6 +214,7 @@ export async function createUser(
  * @returns Object confirming deletion with the deleted user's ID
  * @throws {UnauthorizedError} If adminUserId is not provided
  * @throws {ForbiddenError} If the requesting user is not an admin
+ * @throws {ForbiddenError} If the admin attempts to delete their own account
  * @throws {NotFoundError} If the target user does not exist
  */
 export async function deleteUser(
@@ -227,6 +228,11 @@ export async function deleteUser(
 
     if (!(await isAdmin(dbConnection, adminUserId))) {
         throw new ForbiddenError("User does not have admin privileges");
+    }
+
+    // Prevent admins from deleting their own account to avoid accidental lockouts
+    if (adminUserId === targetUserId) {
+        throw new ForbiddenError("Admin cannot delete their own account");
     }
 
     // Verify the target user exists before attempting deletion

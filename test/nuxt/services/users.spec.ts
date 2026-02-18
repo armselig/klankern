@@ -277,6 +277,15 @@ describe("users service", () => {
             });
         });
 
+        it("should throw ForbiddenError when admin tries to delete their own account", async () => {
+            await withTestTransaction(async (tx) => {
+                const admin = await createTestAdminUser(tx);
+                await expect(
+                    deleteUser(tx, admin.id, admin.id),
+                ).rejects.toThrow(ForbiddenError);
+            });
+        });
+
         it("should throw NotFoundError when deleting a non-existent user", async () => {
             await withTestTransaction(async (tx) => {
                 const admin = await createTestAdminUser(tx);
