@@ -66,5 +66,21 @@ describe("Service: auth", () => {
             // 4. Attempt to verify the email with the expired token
             // 5. Expect a ValidationError
         });
+        it("should reject malformed verification token", async () => {
+            await withTestTransaction(async (tx) => {
+                const malformedToken = "not-a-hex-string";
+                await expect(verifyEmail(tx, malformedToken)).rejects.toThrow(
+                    ValidationError,
+                );
+            });
+        });
+
+        it("should reject empty verification token", async () => {
+            await withTestTransaction(async (tx) => {
+                await expect(verifyEmail(tx, "")).rejects.toThrow(
+                    ValidationError,
+                );
+            });
+        });
     });
 });

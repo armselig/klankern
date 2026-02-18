@@ -1,5 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
+import { z } from "zod";
 import {
     familyInvitations,
     familyMembers,
@@ -38,6 +39,20 @@ export async function createInvitation(
     if (!userId) {
         throw new UnauthorizedError(
             "User must be authenticated to create an invitation",
+        );
+    }
+
+    // Input Validation
+    const invitedEmailSchema = z
+        .string()
+        .min(1, "Email cannot be empty")
+        .max(255, "Email cannot exceed 255 characters")
+        .email("Invalid email format");
+
+    const emailResult = invitedEmailSchema.safeParse(invitedEmail);
+    if (!emailResult.success) {
+        throw new ValidationError(
+            emailResult.error.issues[0]?.message ?? "Invalid email",
         );
     }
 

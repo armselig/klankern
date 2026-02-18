@@ -10,6 +10,12 @@ import {
 import { logger } from "#server/utils/logger";
 
 /**
+ * Expected length of email verification tokens.
+ * This matches the output of randomBytes(32).toString('hex') which produces 64 hexadecimal characters.
+ */
+const EMAIL_VERIFICATION_TOKEN_LENGTH = 64;
+
+/**
  * Generates a verification token and stores it for the user.
  * Note: Email sending is not yet implemented.
  *
@@ -24,7 +30,7 @@ export async function sendVerificationEmail(
     dbConnection: DbConnection,
     userId: string,
 ) {
-    if (!userId) {
+    if (!userId || userId.trim() === "") {
         throw new UnauthorizedError("User ID is required");
     }
 
@@ -76,6 +82,14 @@ export async function sendVerificationEmail(
 export async function verifyEmail(dbConnection: DbConnection, token: string) {
     if (!token || token.trim().length === 0) {
         throw new ValidationError("Verification token is required");
+    }
+
+    // Hex string validation (matches randomBytes(32).toString('hex') output)
+    const tokenPattern = new RegExp(
+        `^[0-9a-fA-F]{${EMAIL_VERIFICATION_TOKEN_LENGTH}}$`,
+    );
+    if (!tokenPattern.test(token)) {
+        throw new ValidationError("Invalid verification token format");
     }
 
     const userRecord = await dbConnection.query.users.findFirst({
