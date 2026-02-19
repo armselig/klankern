@@ -64,6 +64,21 @@ export function translateError(error: unknown) {
         });
     }
 
+    // InternalError: Intentionally returns a generic message.
+    // The error message is for internal logging only and must not be exposed to clients.
+    if (error instanceof InternalError) {
+        logger.error("Internal service error:", {
+            message: error.message,
+            stack: error.stack,
+            name: error.name,
+        });
+
+        return createError({
+            statusCode: 500,
+            statusMessage: "An unexpected error occurred.",
+        });
+    }
+
     // System/unexpected errors: Log but don't expose details
     logger.error("Unexpected service error:", {
         message: error instanceof Error ? error.message : String(error),
