@@ -232,6 +232,112 @@ describe("users service", () => {
                     ).rejects.toThrow(ValidationError);
                 });
             });
+
+            describe("Boundary Values", () => {
+                it("should accept username at exactly 3 characters (at-minimum)", async () => {
+                    await withTestTransaction(async (tx) => {
+                        const admin = await createTestAdminUser(tx);
+                        const newUser = await createUser(tx, admin.id, {
+                            email: "boundary-user-min@example.com",
+                            username: "abc",
+                            password: "password123",
+                        });
+                        expect(newUser.username).toBe("abc");
+                    });
+                });
+
+                it("should accept username at exactly 50 characters (at-maximum)", async () => {
+                    await withTestTransaction(async (tx) => {
+                        const admin = await createTestAdminUser(tx);
+                        const maxUsername = "a".repeat(50);
+                        const newUser = await createUser(tx, admin.id, {
+                            email: "boundary-user-max@example.com",
+                            username: maxUsername,
+                            password: "password123",
+                        });
+                        expect(newUser.username).toBe(maxUsername);
+                    });
+                });
+
+                it("should accept password at exactly 8 characters (at-minimum)", async () => {
+                    await withTestTransaction(async (tx) => {
+                        const admin = await createTestAdminUser(tx);
+                        const newUser = await createUser(tx, admin.id, {
+                            email: "boundary-pass-min@example.com",
+                            username: "passminuser",
+                            password: "12345678",
+                        });
+                        expect(newUser).toBeDefined();
+                    });
+                });
+
+                it("should accept password at exactly 128 characters (at-maximum)", async () => {
+                    await withTestTransaction(async (tx) => {
+                        const admin = await createTestAdminUser(tx);
+                        const maxPassword = "a".repeat(128);
+                        const newUser = await createUser(tx, admin.id, {
+                            email: "boundary-pass-max@example.com",
+                            username: "passmaxuser",
+                            password: maxPassword,
+                        });
+                        expect(newUser).toBeDefined();
+                    });
+                });
+
+                it("should accept email at exactly 255 characters (at-maximum)", async () => {
+                    await withTestTransaction(async (tx) => {
+                        const admin = await createTestAdminUser(tx);
+                        const maxEmail = "a".repeat(243) + "@example.com"; // 243 + 12 = 255
+                        const newUser = await createUser(tx, admin.id, {
+                            email: maxEmail,
+                            username: "emailmaxuser",
+                            password: "password123",
+                        });
+                        expect(newUser.email).toBe(maxEmail);
+                    });
+                });
+
+                it("should accept display_name as undefined (optional field stored as null)", async () => {
+                    await withTestTransaction(async (tx) => {
+                        const admin = await createTestAdminUser(tx);
+                        const newUser = await createUser(tx, admin.id, {
+                            email: "boundary-displayname-null@example.com",
+                            username: "displaynulluser",
+                            password: "password123",
+                        });
+                        expect(newUser.display_name).toBeNull();
+                    });
+                });
+
+                it("should accept display_name at exactly 100 characters (at-maximum)", async () => {
+                    await withTestTransaction(async (tx) => {
+                        const admin = await createTestAdminUser(tx);
+                        const maxDisplayName = "a".repeat(100);
+                        const newUser = await createUser(tx, admin.id, {
+                            email: "boundary-displayname-max@example.com",
+                            username: "displaymaxuser",
+                            password: "password123",
+                            display_name: maxDisplayName,
+                        });
+                        expect(newUser.display_name).toBe(maxDisplayName);
+                    });
+                });
+
+                it("should throw ValidationError for display_name at 101 characters (over-maximum)", async () => {
+                    await withTestTransaction(async (tx) => {
+                        const admin = await createTestAdminUser(tx);
+                        const overMaxDisplayName = "a".repeat(101);
+                        await expect(
+                            createUser(tx, admin.id, {
+                                email: "boundary-displayname-over@example.com",
+                                username: "displayoveruser",
+                                password: "password123",
+                                display_name: overMaxDisplayName,
+                            }),
+                        ).rejects.toThrow(ValidationError);
+                    });
+                });
+            });
         });
     });
 
