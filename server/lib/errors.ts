@@ -16,6 +16,7 @@ export class ForbiddenError extends DomainError {}
 export class NotFoundError extends DomainError {}
 export class ValidationError extends DomainError {}
 export class ConflictError extends DomainError {}
+export class InternalError extends DomainError {}
 
 /**
  * Translates domain errors to HTTP errors for route handlers.
@@ -60,6 +61,21 @@ export function translateError(error: unknown) {
         return createError({
             statusCode: 409,
             statusMessage: error.message,
+        });
+    }
+
+    // InternalError: Intentionally returns a generic message.
+    // The error message is for internal logging only and must not be exposed to clients.
+    if (error instanceof InternalError) {
+        logger.error("Internal service error:", {
+            message: error.message,
+            stack: error.stack,
+            name: error.name,
+        });
+
+        return createError({
+            statusCode: 500,
+            statusMessage: "An unexpected error occurred.",
         });
     }
 

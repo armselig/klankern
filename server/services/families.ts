@@ -10,6 +10,7 @@ import {
     ValidationError,
 } from "#server/lib/errors";
 import { logger } from "#server/utils/logger";
+import { isAdmin } from "#server/lib/authorization";
 
 /**
  * Creates a new family with the specified user as creator and manager.
@@ -179,4 +180,46 @@ export async function getUserFamilies(
                 notDeleted(families),
             ),
         );
+}
+
+/**
+ * Permanently deletes a family from the database (hard-delete).
+ *
+ * This is an admin-only operation. All related records (familyMembers,
+ * familyInvitations) are removed via ON DELETE CASCADE database constraints.
+ * This action is irreversible.
+ *
+ * @param dbConnection - Database connection (db or transaction)
+ * @param adminUserId - ID of the admin performing the deletion
+ * @param familyId - ID of the family to permanently delete
+ * @returns Object confirming deletion with the deleted family's ID
+ * @throws {UnauthorizedError} If adminUserId is not provided
+ * @throws {ForbiddenError} If the requesting user is not an admin
+ * @throws {NotFoundError} If the family does not exist
+ */
+export async function deleteFamily(
+    dbConnection: DbConnection,
+    adminUserId: string | null | undefined,
+    familyId: string,
+) {
+    if (!adminUserId) {
+        throw new UnauthorizedError("User not authenticated");
+    }
+
+    if (!(await isAdmin(dbConnection, adminUserId))) {
+        throw new ForbiddenError("User does not have admin privileges");
+    }
+
+    const [deletedFamily] = await dbConnection
+        .delete(families)
+        .where(eq(families.id, familyId))
+        .returning({ id: families.id });
+
+    if (!deletedFamily) {
+        throw new NotFoundError("Family not found");
+    }
+
+    logger.info(`Family hard-deleted: ${familyId} by admin ${adminUserId}`);
+
+    return { id: deletedFamily.id };
 }

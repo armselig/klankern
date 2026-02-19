@@ -4,6 +4,7 @@ import type { DbConnection } from "#server/lib/types";
 import {
     InternalError,
     ConflictError,
+    NotFoundError,
     UnauthorizedError,
     ForbiddenError,
     ValidationError,
@@ -197,4 +198,52 @@ export async function createUser(
         }
         throw error;
     }
+}
+
+/**
+ * Permanently deletes a user from the database (hard-delete).
+ *
+ * This is an admin-only operation. All related records (sessions, userRoles,
+ * familyMembers, userConsents) are removed via ON DELETE CASCADE database constraints.
+ * This action is irreversible.
+ *
+ * @param dbConnection - Database connection (db or transaction)
+ * @param adminUserId - ID of the admin performing the deletion
+ * @param targetUserId - ID of the user to permanently delete
+ * @returns Object confirming deletion with the deleted user's ID
+ * @throws {UnauthorizedError} If adminUserId is not provided
+ * @throws {ForbiddenError} If the requesting user is not an admin
+ * @throws {ForbiddenError} If the admin attempts to delete their own account
+ * @throws {NotFoundError} If the target user does not exist
+ */
+export async function deleteUser(
+    dbConnection: DbConnection,
+    adminUserId: string | null | undefined,
+    targetUserId: string,
+) {
+    if (!adminUserId) {
+        throw new UnauthorizedError("User not authenticated");
+    }
+
+    if (!(await isAdmin(dbConnection, adminUserId))) {
+        throw new ForbiddenError("User does not have admin privileges");
+    }
+
+    // Prevent admins from deleting their own account to avoid accidental lockouts
+    if (adminUserId === targetUserId) {
+        throw new ForbiddenError("Admin cannot delete their own account");
+    }
+
+    const [deletedUser] = await dbConnection
+        .delete(users)
+        .where(eq(users.id, targetUserId))
+        .returning({ id: users.id });
+
+    if (!deletedUser) {
+        throw new NotFoundError("User not found");
+    }
+
+    logger.info(`User hard-deleted: ${targetUserId} by admin ${adminUserId}`);
+
+    return { id: deletedUser.id };
 }

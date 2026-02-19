@@ -4,35 +4,35 @@ import { db } from "#server/db";
 import { logger } from "#server/utils/logger";
 import { requireAdmin } from "#server/utils/auth";
 import { translateError } from "#server/lib/errors";
-import { deleteUser } from "#server/services/users";
+import { deleteFamily } from "#server/services/families";
 
-const userIdSchema = z.string().uuid("Invalid user ID format");
+const familyIdSchema = z.string().uuid("Invalid family ID format");
 
 export default defineEventHandler(async (event) => {
     logger.http(`${event.method} ${event.path}`);
     await requireAdmin(event);
 
-    const parsedUserId = userIdSchema.safeParse(event.context.params?.id);
+    const parsedFamilyId = familyIdSchema.safeParse(event.context.params?.id);
 
-    if (!parsedUserId.success) {
+    if (!parsedFamilyId.success) {
         throw createError({
             statusCode: 400,
-            statusMessage: "Invalid user ID",
-            data: parsedUserId.error.issues,
+            statusMessage: "Invalid family ID",
+            data: parsedFamilyId.error.issues,
         });
     }
 
     try {
-        const result = await deleteUser(
+        const result = await deleteFamily(
             db,
             event.context.user?.id,
-            parsedUserId.data,
+            parsedFamilyId.data,
         );
 
-        return { message: "User deleted successfully", id: result.id };
+        return { message: "Family deleted successfully", id: result.id };
     } catch (error) {
         logger.error(
-            `Error deleting user with ID ${parsedUserId.data}:`,
+            `Error deleting family with ID ${parsedFamilyId.data}:`,
             error,
         );
         throw translateError(error);
