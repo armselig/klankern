@@ -53,9 +53,18 @@ export const updateUserSchema = z.object({
         .string()
         .min(8, "Password must be at least 8 characters long")
         .optional(),
-    display_name: z.string().optional(),
-    first_name: z.string().optional(),
-    last_name: z.string().optional(),
+    display_name: z
+        .string()
+        .max(100, "Display name cannot exceed 100 characters")
+        .optional(),
+    first_name: z
+        .string()
+        .max(100, "First name cannot exceed 100 characters")
+        .optional(),
+    last_name: z
+        .string()
+        .max(100, "Last name cannot exceed 100 characters")
+        .optional(),
     is_active: z.boolean().optional(),
     roleIds: z.array(z.string().uuid()).optional(),
 });
@@ -71,9 +80,18 @@ export type PasswordReset = z.infer<typeof passwordResetSchema>;
 export const baseUserFormSchema = z.object({
     email: z.string().email(),
     username: z.string().min(3),
-    display_name: z.string().optional(),
-    first_name: z.string().optional(),
-    last_name: z.string().optional(),
+    display_name: z
+        .string()
+        .max(100, "Display name cannot exceed 100 characters")
+        .optional(),
+    first_name: z
+        .string()
+        .max(100, "First name cannot exceed 100 characters")
+        .optional(),
+    last_name: z
+        .string()
+        .max(100, "Last name cannot exceed 100 characters")
+        .optional(),
     is_active: z.boolean().optional(),
     roleIds: z.array(z.string().uuid()).optional(),
 });

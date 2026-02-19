@@ -12,6 +12,7 @@ import {
     createUser,
     deleteUser,
 } from "#server/services/users";
+import { updateUserSchema } from "#shared/types/user";
 import {
     sessions,
     userRoles,
@@ -585,6 +586,50 @@ describe("users service", () => {
                 });
                 expect(remainingConsents).toHaveLength(0);
             });
+        });
+    });
+
+    describe("updateUserSchema boundary values", () => {
+        it("should accept display_name at exactly 100 characters (at-maximum)", () => {
+            const result = updateUserSchema.safeParse({
+                display_name: "a".repeat(100),
+            });
+            expect(result.success).toBe(true);
+        });
+
+        it("should reject display_name at 101 characters (over-maximum)", () => {
+            const result = updateUserSchema.safeParse({
+                display_name: "a".repeat(101),
+            });
+            expect(result.success).toBe(false);
+        });
+
+        it("should accept first_name at exactly 100 characters (at-maximum)", () => {
+            const result = updateUserSchema.safeParse({
+                first_name: "a".repeat(100),
+            });
+            expect(result.success).toBe(true);
+        });
+
+        it("should reject first_name at 101 characters (over-maximum)", () => {
+            const result = updateUserSchema.safeParse({
+                first_name: "a".repeat(101),
+            });
+            expect(result.success).toBe(false);
+        });
+
+        it("should accept last_name at exactly 100 characters (at-maximum)", () => {
+            const result = updateUserSchema.safeParse({
+                last_name: "a".repeat(100),
+            });
+            expect(result.success).toBe(true);
+        });
+
+        it("should reject last_name at 101 characters (over-maximum)", () => {
+            const result = updateUserSchema.safeParse({
+                last_name: "a".repeat(101),
+            });
+            expect(result.success).toBe(false);
         });
     });
 
