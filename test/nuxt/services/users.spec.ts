@@ -2,7 +2,11 @@ import { describe, it, expect } from "vitest";
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { withTestTransaction } from "#test/utils/db";
-import { createTestUser, createTestAdminUser } from "#test/utils/fixtures";
+import {
+    createTestUser,
+    createTestAdminUser,
+    createTestUserWithRole,
+} from "#test/utils/fixtures";
 import {
     getAllUsersWithRoles,
     createUser,
@@ -322,12 +326,12 @@ describe("users service", () => {
         it("should cascade-delete userRoles when user is deleted", async () => {
             await withTestTransaction(async (tx) => {
                 const admin = await createTestAdminUser(tx);
-                const target = await createTestUser(tx);
+                const target = await createTestUserWithRole(tx, "member");
 
                 const rolesBeforeDelete = await tx.query.userRoles.findMany({
                     where: eq(userRoles.user_id, target.id),
                 });
-                expect(rolesBeforeDelete.length).toBeGreaterThanOrEqual(0);
+                expect(rolesBeforeDelete).toHaveLength(1);
 
                 await deleteUser(tx, admin.id, target.id);
 
