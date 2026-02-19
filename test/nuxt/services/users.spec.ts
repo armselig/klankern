@@ -15,6 +15,7 @@ import {
 import {
     sessions,
     userRoles,
+    userConsents,
     users,
     families,
     familyMembers,
@@ -399,6 +400,26 @@ describe("users service", () => {
                     where: eq(families.id, family.id),
                 });
                 expect(deletedFamily).toBeUndefined();
+            });
+        });
+
+        it("should cascade-delete userConsents when user is deleted", async () => {
+            await withTestTransaction(async (tx) => {
+                const admin = await createTestAdminUser(tx);
+                const target = await createTestUser(tx);
+
+                await tx.insert(userConsents).values({
+                    user_id: target.id,
+                    consent_type: "data_processing",
+                    granted: true,
+                });
+
+                await deleteUser(tx, admin.id, target.id);
+
+                const remainingConsents = await tx.query.userConsents.findMany({
+                    where: eq(userConsents.user_id, target.id),
+                });
+                expect(remainingConsents).toHaveLength(0);
             });
         });
     });
