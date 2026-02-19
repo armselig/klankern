@@ -263,6 +263,48 @@ describe("invitations service", () => {
                     ).rejects.toThrow(ValidationError);
                 });
             });
+
+            describe("Boundary Values", () => {
+                it("should accept email at exactly 255 characters (at-maximum)", async () => {
+                    await withTestTransaction(async (tx) => {
+                        const creator = await createTestUser(tx);
+                        const { family, managers } =
+                            await createFamilyWithMembers(tx, creator, {
+                                managers: 1,
+                            });
+                        const manager = managers[0];
+
+                        const maxEmail = "a".repeat(243) + "@example.com"; // 243 + 12 = 255
+
+                        const invitation = await createInvitation(
+                            tx,
+                            manager.user.id,
+                            family.id,
+                            maxEmail,
+                        );
+                        expect(invitation.token).toBeTypeOf("string");
+                    });
+                });
+
+                it("should accept minimum valid email format (at-minimum)", async () => {
+                    await withTestTransaction(async (tx) => {
+                        const creator = await createTestUser(tx);
+                        const { family, managers } =
+                            await createFamilyWithMembers(tx, creator, {
+                                managers: 1,
+                            });
+                        const manager = managers[0];
+
+                        const invitation = await createInvitation(
+                            tx,
+                            manager.user.id,
+                            family.id,
+                            "a@b.co",
+                        );
+                        expect(invitation.token).toBeTypeOf("string");
+                    });
+                });
+            });
         });
 
         describe("Invitation Token Security", () => {

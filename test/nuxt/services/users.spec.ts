@@ -12,6 +12,7 @@ import {
     createUser,
     deleteUser,
 } from "#server/services/users";
+import { updateUserSchema } from "#shared/types/user";
 import {
     sessions,
     userRoles,
@@ -232,6 +233,170 @@ describe("users service", () => {
                     ).rejects.toThrow(ValidationError);
                 });
             });
+
+            describe("Boundary Values", () => {
+                it("should accept username at exactly 3 characters (at-minimum)", async () => {
+                    await withTestTransaction(async (tx) => {
+                        const admin = await createTestAdminUser(tx);
+                        const newUser = await createUser(tx, admin.id, {
+                            email: "boundary-user-min@example.com",
+                            username: "abc",
+                            password: "password123",
+                        });
+                        expect(newUser.username).toBe("abc");
+                    });
+                });
+
+                it("should accept username at exactly 50 characters (at-maximum)", async () => {
+                    await withTestTransaction(async (tx) => {
+                        const admin = await createTestAdminUser(tx);
+                        const maxUsername = "a".repeat(50);
+                        const newUser = await createUser(tx, admin.id, {
+                            email: "boundary-user-max@example.com",
+                            username: maxUsername,
+                            password: "password123",
+                        });
+                        expect(newUser.username).toBe(maxUsername);
+                    });
+                });
+
+                it("should accept password at exactly 8 characters (at-minimum)", async () => {
+                    await withTestTransaction(async (tx) => {
+                        const admin = await createTestAdminUser(tx);
+                        const newUser = await createUser(tx, admin.id, {
+                            email: "boundary-pass-min@example.com",
+                            username: "passminuser",
+                            password: "12345678",
+                        });
+                        expect(newUser).toBeDefined();
+                    });
+                });
+
+                it("should accept password at exactly 128 characters (at-maximum)", async () => {
+                    await withTestTransaction(async (tx) => {
+                        const admin = await createTestAdminUser(tx);
+                        const maxPassword = "a".repeat(128);
+                        const newUser = await createUser(tx, admin.id, {
+                            email: "boundary-pass-max@example.com",
+                            username: "passmaxuser",
+                            password: maxPassword,
+                        });
+                        expect(newUser).toBeDefined();
+                    });
+                });
+
+                it("should accept email at exactly 255 characters (at-maximum)", async () => {
+                    await withTestTransaction(async (tx) => {
+                        const admin = await createTestAdminUser(tx);
+                        const maxEmail = "a".repeat(243) + "@example.com"; // 243 + 12 = 255
+                        const newUser = await createUser(tx, admin.id, {
+                            email: maxEmail,
+                            username: "emailmaxuser",
+                            password: "password123",
+                        });
+                        expect(newUser.email).toBe(maxEmail);
+                    });
+                });
+
+                it("should accept display_name as undefined (optional field stored as null)", async () => {
+                    await withTestTransaction(async (tx) => {
+                        const admin = await createTestAdminUser(tx);
+                        const newUser = await createUser(tx, admin.id, {
+                            email: "boundary-displayname-null@example.com",
+                            username: "displaynulluser",
+                            password: "password123",
+                        });
+                        expect(newUser.display_name).toBeNull();
+                    });
+                });
+
+                it("should accept display_name at exactly 100 characters (at-maximum)", async () => {
+                    await withTestTransaction(async (tx) => {
+                        const admin = await createTestAdminUser(tx);
+                        const maxDisplayName = "a".repeat(100);
+                        const newUser = await createUser(tx, admin.id, {
+                            email: "boundary-displayname-max@example.com",
+                            username: "displaymaxuser",
+                            password: "password123",
+                            display_name: maxDisplayName,
+                        });
+                        expect(newUser.display_name).toBe(maxDisplayName);
+                    });
+                });
+
+                it("should throw ValidationError for display_name at 101 characters (over-maximum)", async () => {
+                    await withTestTransaction(async (tx) => {
+                        const admin = await createTestAdminUser(tx);
+                        const overMaxDisplayName = "a".repeat(101);
+                        await expect(
+                            createUser(tx, admin.id, {
+                                email: "boundary-displayname-over@example.com",
+                                username: "displayoveruser",
+                                password: "password123",
+                                display_name: overMaxDisplayName,
+                            }),
+                        ).rejects.toThrow(ValidationError);
+                    });
+                });
+
+                it("should accept first_name at exactly 100 characters (at-maximum)", async () => {
+                    await withTestTransaction(async (tx) => {
+                        const admin = await createTestAdminUser(tx);
+                        const maxFirstName = "a".repeat(100);
+                        const newUser = await createUser(tx, admin.id, {
+                            email: "boundary-firstname-max@example.com",
+                            username: "firstmaxuser",
+                            password: "password123",
+                            first_name: maxFirstName,
+                        });
+                        expect(newUser.first_name).toBe(maxFirstName);
+                    });
+                });
+
+                it("should throw ValidationError for first_name at 101 characters (over-maximum)", async () => {
+                    await withTestTransaction(async (tx) => {
+                        const admin = await createTestAdminUser(tx);
+                        const overMaxFirstName = "a".repeat(101);
+                        await expect(
+                            createUser(tx, admin.id, {
+                                email: "boundary-firstname-over@example.com",
+                                username: "firstoveruser",
+                                password: "password123",
+                                first_name: overMaxFirstName,
+                            }),
+                        ).rejects.toThrow(ValidationError);
+                    });
+                });
+
+                it("should accept last_name at exactly 100 characters (at-maximum)", async () => {
+                    await withTestTransaction(async (tx) => {
+                        const admin = await createTestAdminUser(tx);
+                        const maxLastName = "a".repeat(100);
+                        const newUser = await createUser(tx, admin.id, {
+                            email: "boundary-lastname-max@example.com",
+                            username: "lastmaxuser",
+                            password: "password123",
+                            last_name: maxLastName,
+                        });
+                        expect(newUser.last_name).toBe(maxLastName);
+                    });
+                });
+
+                it("should throw ValidationError for last_name at 101 characters (over-maximum)", async () => {
+                    await withTestTransaction(async (tx) => {
+                        const admin = await createTestAdminUser(tx);
+                        const overMaxLastName = "a".repeat(101);
+                        await expect(
+                            createUser(tx, admin.id, {
+                                email: "boundary-lastname-over@example.com",
+                                username: "lastoveruser",
+                                password: "password123",
+                                last_name: overMaxLastName,
+                            }),
+                        ).rejects.toThrow(ValidationError);
+                    });
+                });
+            });
         });
     });
 
@@ -421,6 +586,50 @@ describe("users service", () => {
                 });
                 expect(remainingConsents).toHaveLength(0);
             });
+        });
+    });
+
+    describe("updateUserSchema boundary values", () => {
+        it("should accept display_name at exactly 100 characters (at-maximum)", () => {
+            const result = updateUserSchema.safeParse({
+                display_name: "a".repeat(100),
+            });
+            expect(result.success).toBe(true);
+        });
+
+        it("should reject display_name at 101 characters (over-maximum)", () => {
+            const result = updateUserSchema.safeParse({
+                display_name: "a".repeat(101),
+            });
+            expect(result.success).toBe(false);
+        });
+
+        it("should accept first_name at exactly 100 characters (at-maximum)", () => {
+            const result = updateUserSchema.safeParse({
+                first_name: "a".repeat(100),
+            });
+            expect(result.success).toBe(true);
+        });
+
+        it("should reject first_name at 101 characters (over-maximum)", () => {
+            const result = updateUserSchema.safeParse({
+                first_name: "a".repeat(101),
+            });
+            expect(result.success).toBe(false);
+        });
+
+        it("should accept last_name at exactly 100 characters (at-maximum)", () => {
+            const result = updateUserSchema.safeParse({
+                last_name: "a".repeat(100),
+            });
+            expect(result.success).toBe(true);
+        });
+
+        it("should reject last_name at 101 characters (over-maximum)", () => {
+            const result = updateUserSchema.safeParse({
+                last_name: "a".repeat(101),
+            });
+            expect(result.success).toBe(false);
         });
     });
 

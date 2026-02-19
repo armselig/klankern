@@ -143,6 +143,17 @@ export async function createUser(
         throw new ValidationError("Password cannot exceed 128 characters");
     }
 
+    // display_name validation (optional field)
+    if (data.display_name != null && data.display_name.length > 100) {
+        throw new ValidationError("Display name cannot exceed 100 characters");
+    }
+    if (data.first_name != null && data.first_name.length > 100) {
+        throw new ValidationError("First name cannot exceed 100 characters");
+    }
+    if (data.last_name != null && data.last_name.length > 100) {
+        throw new ValidationError("Last name cannot exceed 100 characters");
+    }
+
     try {
         const hashedPassword = await customHashPassword(password);
 

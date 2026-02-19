@@ -702,6 +702,38 @@ describe("Family Service", () => {
                     ).rejects.toThrow(ValidationError);
                 });
             });
+
+            describe("Boundary Values", () => {
+                it("should accept family name at exactly 3 characters (at-minimum)", async () => {
+                    await withTestTransaction(async (tx) => {
+                        const user = await createTestUser(tx);
+                        const family = await createFamily(tx, user.id, {
+                            name: "abc",
+                        });
+                        expect(family.name).toBe("abc");
+                    });
+                });
+
+                it("should reject family name at exactly 2 characters (just-below-minimum)", async () => {
+                    await withTestTransaction(async (tx) => {
+                        const user = await createTestUser(tx);
+                        await expect(
+                            createFamily(tx, user.id, { name: "ab" }),
+                        ).rejects.toThrow(ValidationError);
+                    });
+                });
+
+                it("should accept family name at exactly 100 characters (at-maximum)", async () => {
+                    await withTestTransaction(async (tx) => {
+                        const user = await createTestUser(tx);
+                        const maxLengthName = "a".repeat(100);
+                        const family = await createFamily(tx, user.id, {
+                            name: maxLengthName,
+                        });
+                        expect(family.name).toBe(maxLengthName);
+                    });
+                });
+            });
         });
     });
 
