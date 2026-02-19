@@ -8,7 +8,13 @@ import {
     createUser,
     deleteUser,
 } from "#server/services/users";
-import { sessions, userRoles, users, familyMembers } from "#server/db/schema";
+import {
+    sessions,
+    userRoles,
+    users,
+    families,
+    familyMembers,
+} from "#server/db/schema";
 import {
     UnauthorizedError,
     ForbiddenError,
@@ -374,6 +380,21 @@ describe("users service", () => {
                         where: eq(familyMembers.user_id, target.id),
                     });
                 expect(remainingMemberships).toHaveLength(0);
+            });
+        });
+
+        it("should cascade-delete families when creator user is deleted", async () => {
+            await withTestTransaction(async (tx) => {
+                const admin = await createTestAdminUser(tx);
+                const creator = await createTestUser(tx);
+                const family = await createTestFamily(tx, creator.id);
+
+                await deleteUser(tx, admin.id, creator.id);
+
+                const deletedFamily = await tx.query.families.findFirst({
+                    where: eq(families.id, family.id),
+                });
+                expect(deletedFamily).toBeUndefined();
             });
         });
     });

@@ -4,9 +4,9 @@ import type { DbConnection } from "#server/lib/types";
 import {
     InternalError,
     ConflictError,
+    NotFoundError,
     UnauthorizedError,
     ForbiddenError,
-    NotFoundError,
     ValidationError,
 } from "#server/lib/errors";
 import { logger } from "#server/utils/logger";
