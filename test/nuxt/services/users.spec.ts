@@ -337,6 +337,64 @@ describe("users service", () => {
                         ).rejects.toThrow(ValidationError);
                     });
                 });
+
+                it("should accept first_name at exactly 100 characters (at-maximum)", async () => {
+                    await withTestTransaction(async (tx) => {
+                        const admin = await createTestAdminUser(tx);
+                        const maxFirstName = "a".repeat(100);
+                        const newUser = await createUser(tx, admin.id, {
+                            email: "boundary-firstname-max@example.com",
+                            username: "firstmaxuser",
+                            password: "password123",
+                            first_name: maxFirstName,
+                        });
+                        expect(newUser.first_name).toBe(maxFirstName);
+                    });
+                });
+
+                it("should throw ValidationError for first_name at 101 characters (over-maximum)", async () => {
+                    await withTestTransaction(async (tx) => {
+                        const admin = await createTestAdminUser(tx);
+                        const overMaxFirstName = "a".repeat(101);
+                        await expect(
+                            createUser(tx, admin.id, {
+                                email: "boundary-firstname-over@example.com",
+                                username: "firstoveruser",
+                                password: "password123",
+                                first_name: overMaxFirstName,
+                            }),
+                        ).rejects.toThrow(ValidationError);
+                    });
+                });
+
+                it("should accept last_name at exactly 100 characters (at-maximum)", async () => {
+                    await withTestTransaction(async (tx) => {
+                        const admin = await createTestAdminUser(tx);
+                        const maxLastName = "a".repeat(100);
+                        const newUser = await createUser(tx, admin.id, {
+                            email: "boundary-lastname-max@example.com",
+                            username: "lastmaxuser",
+                            password: "password123",
+                            last_name: maxLastName,
+                        });
+                        expect(newUser.last_name).toBe(maxLastName);
+                    });
+                });
+
+                it("should throw ValidationError for last_name at 101 characters (over-maximum)", async () => {
+                    await withTestTransaction(async (tx) => {
+                        const admin = await createTestAdminUser(tx);
+                        const overMaxLastName = "a".repeat(101);
+                        await expect(
+                            createUser(tx, admin.id, {
+                                email: "boundary-lastname-over@example.com",
+                                username: "lastoveruser",
+                                password: "password123",
+                                last_name: overMaxLastName,
+                            }),
+                        ).rejects.toThrow(ValidationError);
+                    });
+                });
             });
         });
     });
