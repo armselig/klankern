@@ -210,15 +210,6 @@ export async function deleteFamily(
         throw new ForbiddenError("User does not have admin privileges");
     }
 
-    // Verify the family exists before attempting deletion
-    await findResourceOrThrow(
-        () =>
-            dbConnection.query.families.findFirst({
-                where: eq(families.id, familyId),
-            }),
-        "Family",
-    );
-
     const [deletedFamily] = await dbConnection
         .delete(families)
         .where(eq(families.id, familyId))

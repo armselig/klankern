@@ -12,7 +12,6 @@ import {
 import { logger } from "#server/utils/logger";
 import { customHashPassword } from "#server/utils/password";
 import { isAdmin } from "#server/lib/authorization";
-import { findResourceOrThrow } from "#server/lib/validation";
 
 /**
  * Retrieves all users with their roles from the database.
@@ -234,15 +233,6 @@ export async function deleteUser(
     if (adminUserId === targetUserId) {
         throw new ForbiddenError("Admin cannot delete their own account");
     }
-
-    // Verify the target user exists before attempting deletion
-    await findResourceOrThrow(
-        () =>
-            dbConnection.query.users.findFirst({
-                where: eq(users.id, targetUserId),
-            }),
-        "User",
-    );
 
     const [deletedUser] = await dbConnection
         .delete(users)
