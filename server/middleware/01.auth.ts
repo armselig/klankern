@@ -28,11 +28,21 @@ export default defineEventHandler(async (event) => {
     const publicPaths = [
         "/api/auth/credentials", // Login endpoint
         "/api/auth/logout", // Logout endpoint (should work even with expired session)
+        "/api/auth/register", // Registration endpoint
         "/api/auth/verify-email", // Email verification (token-based)
         "/api/health", // Health check
     ];
 
     if (publicPaths.some((p) => path === p)) {
+        return;
+    }
+
+    // Public path prefixes - routes under these prefixes need no auth
+    const publicPrefixes = [
+        "/api/invitations/metadata/", // Invite metadata for display (no PII returned)
+    ];
+
+    if (publicPrefixes.some((prefix) => path.startsWith(prefix))) {
         return;
     }
 

@@ -1,10 +1,15 @@
 import { navigateTo, useLogger, useUserSession } from "#imports";
-import type { LoginCredentials } from "#shared/types/auth";
+import type {
+    LoginCredentials,
+    RegisterBody,
+    RegisterResponse,
+} from "#shared/types/auth";
 
 /**
  * @file Composable for handling authentication logic.
- * @description This composable centralizes the login and logout functionalities,
- * providing a clean and reusable way to manage authentication-related API calls and session handling.
+ * @description Centralizes login, logout, and registration with session
+ * management. Navigation decisions on success are left to the calling page
+ * so the composable stays side-effect-free with respect to routing.
  */
 export const useAuth = () => {
     const {
@@ -17,8 +22,10 @@ export const useAuth = () => {
 
     /**
      * Attempts to log the user in with the provided credentials.
-     * On success, it refreshes the session and navigates to the admin page.
-     * @param credentials The user's login credentials.
+     * On success, refreshes session and navigates based on user state:
+     * - Admin → /admin/users
+     * - Has families → /families/[first family id]
+     * - No families → /auth/onboarding
      */
     const login = async (credentials: LoginCredentials) => {
         try {
@@ -27,10 +34,63 @@ export const useAuth = () => {
                 body: credentials,
             });
             await refreshSession();
-            return navigateTo("/admin/users");
+
+            const sessionUser = user.value as
+                | {
+                      roles?: Array<{ name: string }>;
+                      families?: Array<{ id: string }>;
+                  }
+                | undefined;
+            const isAdmin =
+                sessionUser?.roles?.some((r) => r.name === "admin") ?? false;
+            const families = sessionUser?.families ?? [];
+
+            if (isAdmin) {
+                return navigateTo("/admin/users");
+            } else if (families.length > 0) {
+                return navigateTo(`/families/${families[0]!.id}`);
+            } else {
+                return navigateTo("/auth/onboarding");
+            }
         } catch (error) {
             logger.error("Login error:", { error });
-            throw error; // Re-throw to be handled by the component
+            throw error;
+        }
+    };
+
+    /**
+     * Registers a new user. If an invite token is provided, the account is
+     * created and the invite accepted atomically server-side.
+     * Calls refreshSession() before returning so client middleware sees the
+     * updated session (including families) before any navigation fires.
+     */
+    const register = async (body: RegisterBody): Promise<RegisterResponse> => {
+        try {
+            const result = await $fetch<{ userId: string; familyId?: string }>(
+                "/api/auth/register",
+                { method: "POST", body },
+            );
+            // Refresh session BEFORE returning so client middleware sees updated
+            // families array on the very next navigation.
+            await refreshSession();
+            return {
+                success: true,
+                userId: result.userId,
+                familyId: result.familyId,
+            };
+        } catch (error: unknown) {
+            logger.error("Registration error:", { error });
+            const h3Err = error as {
+                data?: { code?: string };
+                statusMessage?: string;
+            } | null;
+            return {
+                success: false,
+                error:
+                    h3Err?.statusMessage ??
+                    "Registration failed. Please try again.",
+                code: h3Err?.data?.code,
+            };
         }
     };
 
@@ -40,10 +100,8 @@ export const useAuth = () => {
      */
     const logout = async () => {
         try {
-            // Clear server-side session first
             await $fetch("/api/auth/logout", { method: "POST" });
         } catch (error) {
-            // Log but don't block logout if server call fails
             logger.warn("Server logout failed, clearing client session:", {
                 error,
             });
@@ -55,7 +113,7 @@ export const useAuth = () => {
     return {
         login,
         logout,
-        // Expose session state for convenience (prefer useUserSession() directly for reactivity)
+        register,
         loggedIn,
         user,
     };

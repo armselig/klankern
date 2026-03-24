@@ -4,7 +4,7 @@ import { logger } from "#server/utils/logger";
 
 /**
  * User object structure from the session.
- * Matches what is set in credentials.post.ts
+ * Matches what is set in credentials.post.ts and register.post.ts
  */
 export interface SessionUser {
     id: string;
@@ -14,6 +14,8 @@ export interface SessionUser {
         name: string;
         description: string | null;
     }>;
+    families: Array<{ id: string; name: string }>;
+    emailVerified: boolean;
 }
 
 /**

@@ -33,3 +33,4 @@ server/db/migrations_temp/
 .gemini/
 gha-creds-*.json
 package-lock.json
+.gstack/

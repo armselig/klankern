@@ -4,16 +4,17 @@ import { useRouter } from "vue-router";
 import { useFamilyStore } from "~/stores/families";
 import { storeToRefs } from "pinia";
 import { definePageMeta } from "#imports";
+import { useUserSession } from "#imports";
 
-// Define component-specific metadata
 definePageMeta({
-    middleware: ["auth"], // Ensure only authenticated users can access this page
+    middleware: ["auth"],
+    layout: "family",
 });
 
 const router = useRouter();
 const familyStore = useFamilyStore();
+const { fetch: refreshSession } = useUserSession();
 
-// Use storeToRefs to keep reactivity on state and getters
 const { isCreating, error } = storeToRefs(familyStore);
 
 const familyName = ref("");
@@ -27,7 +28,9 @@ async function handleCreateFamily() {
     const newFamily = await familyStore.createFamily(familyName.value);
 
     if (newFamily && newFamily.id) {
-        // Redirect to the new family's dashboard page
+        // Refresh session BEFORE navigating so client middleware sees the new
+        // family and doesn't redirect back to /auth/onboarding (redirect loop fix).
+        await refreshSession();
         await router.push(`/families/${newFamily.id}`);
     }
 }
@@ -57,12 +60,14 @@ async function handleCreateFamily() {
                 <p>Error: {{ error }}</p>
             </div>
         </form>
+
+        <auth-progress-dots :current-step="3" :total-steps="3" />
     </div>
 </template>
 
 <style scoped>
 .error-message {
-    color: red;
-    margin-top: 1rem;
+    color: var(--color-error);
+    margin-top: var(--spacing-sm);
 }
 </style>

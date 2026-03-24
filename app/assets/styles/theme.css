@@ -8,7 +8,7 @@
     --color-text-grey: light-dark(#666666, #ffffffa6);
     --color-border: light-dark(#d9d9d9, #434343);
     --color-success: light-dark(#52c41a, #95de64);
-    --color-error: light-dark(#620404, #d43232);
+    --color-error: light-dark(#d32f2f, #d43232);
 
     /* Spacing */
     --spacing-xs: 0.25rem;
@@ -25,6 +25,10 @@
     --font-serif: Charter, "Bitstream Charter", "Sitka Text", Cambria, serif;
     --font-md: 1rem;
     --font-sm: 0.8rem;
+    --font-lg: 1.25rem;
+    --font-xl: 2rem;
+
+    --radius-sm: 4px;
 
     --border-base: 1px solid var(--color-border);
     --outline-base: 2px solid var(--color-primary);

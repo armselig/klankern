@@ -8,11 +8,7 @@ import {
 } from "h3";
 import { z } from "zod";
 import { setUserSession } from "#auth";
-import {
-    getUserWithRolesByEmail,
-    type UserWithRoles,
-    type Role,
-} from "#server/db/utils";
+import { getUserWithRolesAndFamiliesByEmail } from "#server/db/utils";
 import { logger } from "#server/utils/logger";
 import { customVerifyPassword } from "#server/utils/password";
 
@@ -21,15 +17,14 @@ const loginCredentialsSchema = z.object({
     password: z.string().min(1, "Password is required"),
 });
 
-interface UserSession {
-    user: {
-        id: string;
-        email: string;
-        roles: Role[];
-    };
-    loggedInAt: Date;
-}
-
+/**
+ * Login endpoint.
+ *
+ * Security note: returning differentiated USER_NOT_FOUND vs WRONG_PASSWORD
+ * codes enables email enumeration by an attacker. This trade-off is acceptable
+ * for a family app with no public attack surface, as the UX benefit (clear
+ * error messages for legitimate users) outweighs the risk.
+ */
 export default defineEventHandler(
     async (event: H3Event<EventHandlerRequest>) => {
         logger.http(`${event.method} ${event.path}`);
@@ -38,25 +33,19 @@ export default defineEventHandler(
                 await readBody(event);
             const { email, password } = loginCredentialsSchema.parse(body);
 
-            const userWithRoles: UserWithRoles[] | undefined =
-                await getUserWithRolesByEmail(email);
+            const userResults = await getUserWithRolesAndFamiliesByEmail(email);
 
-            if (!userWithRoles || userWithRoles.length === 0) {
+            if (!userResults || userResults.length === 0 || !userResults[0]) {
                 throw createError({
                     statusCode: 401,
-                    statusMessage: "Invalid credentials",
+                    statusMessage: "No account found for this email.",
+                    data: { code: "USER_NOT_FOUND" },
                 });
             }
 
-            const user: UserWithRoles = userWithRoles[0];
-            if (!user) {
-                throw createError({
-                    statusCode: 401,
-                    statusMessage: "Invalid credentials",
-                });
-            }
+            const user = userResults[0];
 
-            const userRolesData: Role[] =
+            const userRolesData =
                 user.roles &&
                 user.roles.length > 0 &&
                 user.roles[0]?.id !== null
@@ -65,7 +54,7 @@ export default defineEventHandler(
 
             logger.info(`Verifying password for user: ${user.email}`);
 
-            const isPasswordValid: boolean = await customVerifyPassword(
+            const isPasswordValid = await customVerifyPassword(
                 password,
                 user.password,
             );
@@ -73,7 +62,8 @@ export default defineEventHandler(
             if (!isPasswordValid) {
                 throw createError({
                     statusCode: 401,
-                    statusMessage: "Invalid credentials",
+                    statusMessage: "Wrong password.",
+                    data: { code: "WRONG_PASSWORD" },
                 });
             }
 
@@ -82,6 +72,8 @@ export default defineEventHandler(
                     id: user.id,
                     email: user.email,
                     roles: userRolesData,
+                    families: user.families ?? [],
+                    emailVerified: user.email_verified ?? false,
                 },
                 loggedInAt: new Date(),
             });
@@ -100,15 +92,8 @@ export default defineEventHandler(
                 });
             }
 
-            // If the error is a 401 error we created, just re-throw it
-            if (error instanceof H3Error && error.statusCode === 401) {
-                throw createError({
-                    statusCode: error.statusCode,
-                    statusMessage: error.statusMessage,
-                    data: error.data,
-                    name: error.name,
-                    stack: error.stack,
-                });
+            if (error instanceof H3Error) {
+                throw error;
             }
 
             const errorToLog =

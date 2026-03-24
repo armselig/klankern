@@ -7,7 +7,8 @@ import { definePageMeta } from "#imports";
 
 // Define component-specific metadata
 definePageMeta({
-    middleware: ["auth"], // Ensure only authenticated users can access this page
+    middleware: ["auth"],
+    layout: "family",
 });
 
 const route = useRoute();
